@@ -17,6 +17,15 @@
         <a href="#">Forgot Username/Password?</a>
         <input type="submit" class="button" value="Login">
       </form>
+      {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flashes">
+              {% for message in messages %}
+                <p>{{ message }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+      {% endwith %}
       <div class="signup">
         <span class="signup">Don't have an account?
          <label for="check">Signup</label>
@@ -26,8 +35,8 @@
     <div class="registration form">
       <header>Signup</header>
       <form action="#">
-        <input type="fname" placeholder="First name">
-        <input type="lname" placeholder="Last name">
+        <input type="text" placeholder="First name">
+        <input type="text" placeholder="Last name">
         <input type="email" placeholder="Enter your email">
         <input type="password" placeholder="Create a password">
         <input type="password" placeholder="Confirm your password">
