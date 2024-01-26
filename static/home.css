@@ -87,3 +87,11 @@ body{
 .signup label:hover{
   text-decoration: underline;
 }
+div.flashes {
+    list-style-type: none;
+    text-align: center;
+}
+
+div.flashes p {
+    color: lightcoral;
+}
