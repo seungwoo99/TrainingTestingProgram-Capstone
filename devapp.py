@@ -25,12 +25,61 @@ bcrypt = Bcrypt(app)
 
 # print(hashed_password)
 
+@app.route('/random_test_creation')
+def show_options():
+    try:
+        # Start a connection and execute queries within the context
+        with db.engine.connect() as connection:
+            # Fetch distinct Bloom's taxonomy levels
+            blooms_query = text("SELECT DISTINCT name FROM blooms_tax")
+            blooms_levels = connection.execute(blooms_query).fetchall()
+            #print("Bloom's Taxonomy Levels:", blooms_levels)
+
+            # Fetch distinct subjects
+            subjects_query = text("SELECT DISTINCT name FROM subjects")
+            subjects = connection.execute(subjects_query).fetchall()
+            #print("Subjects:", subjects)
+
+            # Fetch distinct topics
+            topics_query = text("SELECT DISTINCT name FROM topics")
+            topics = connection.execute(topics_query).fetchall()
+            #print("Topics:", topics)
+
+            # Fetch distinct question types
+            question_types_query = text("SELECT DISTINCT question_type FROM questions")
+            question_types = connection.execute(question_types_query).fetchall()
+            #print("Question Types:", question_types)
+            
+            # Fetch distinct question types
+            question_difficulty_query = text("SELECT DISTINCT question_difficulty FROM questions")
+            question_difficulty = connection.execute(question_difficulty_query).fetchall()
+            #print("Question Difficulty:", question_difficulty)
+            
+        # Clean and simplify the data
+        blooms_levels = [level[0].strip() for level in blooms_levels]
+        subjects = [subject[0].strip() for subject in subjects]
+        topics = [topic[0].strip() for topic in topics]
+        question_types = [q_type[0].strip() for q_type in question_types]
+        question_difficulty = [str(q_difficulty[0]).strip() for q_difficulty in question_difficulty]
+        
+        return render_template(
+            'random_test_creation.html', 
+            blooms_levels=blooms_levels,
+            subjects=subjects, 
+            topics=topics, 
+            question_types=question_types,
+            question_difficulty=question_difficulty
+        )
+
+    except Exception as e:  # Catching a general exception for broader error coverage
+        print("An error occurred: ", str(e))
+        return "An error occurred while fetching data from the database."
+
 
 @app.route('/logout')
 def logout():
     session.pop('user', None)
     return redirect(url_for('trylogin'))
-
 
 @app.route("/trylogin")
 def trylogin():
@@ -73,7 +122,6 @@ def homepage():
 
     # Serve homepage
     return "<h2>This is the under-construction homepage</h2><a href=\"/logout\">Logout</a>"
-
 
 @app.route("/login", methods=["POST"])
 def login():

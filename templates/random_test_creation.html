@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Creation Form</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/random_test_creation.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Font+Name:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div class="container">
+      <form>
+        <h1>Select options to determine the pool of potential questions from the database:</h1>
+        <div class="criteria-container">
+          <!-- Bloom's Taxonomy Section -->
+          <div class="section">
+            <div class="label-container">
+              <label>Bloom's Taxonomy</label>
+            </div>
+            <div class="selection-container">
+              {% for level in blooms_levels %}
+                <div class="toggle-btn" data-selected="false">
+                  <input type="checkbox" id="blooms_{{ level }}" name="blooms_taxonomy" value="{{ level }}" style="display: none;">
+                  <toggle-btn-label for="blooms_{{ level }}" class="toggle-btn-label">{{ level }}</label>
+                </div>
+              {% endfor %}            
+            </div>
+          </div>
+  
+          <!-- Subject Section -->
+          <div class="section">
+            <div class="label-container">
+              <label>Subject</label>
+            </div>
+            <div class="selection-container">
+              {% for subject in subjects %}
+                <div class="toggle-btn" data-selected="false">
+                  <input type="checkbox" id="subject_{{ subject }}" name="subject" value="{{ subject }}" style="display: none;">
+                  <toggle-btn-label for="subject_{{ subject }}" class="toggle-btn-label">{{ subject }}</toggle-btn-label>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+  
+          <!-- Topic Section -->
+          <div class="section">
+            <div class="label-container">
+              <label>Topic</label>
+            </div>
+            <div class="selection-container">
+              {% for topic in topics %}
+                <div class="toggle-btn" data-selected="false">
+                  <input type="checkbox" id="topic_{{ topic }}" name="topic" value="{{ topic }}" style="display: none;">
+                  <toggle-btn-label for="topic_{{ topic }}" class="toggle-btn-label">{{ topic }}</toggle-btn-label>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+  
+          <!-- Question Type Section -->
+          <div class="section">
+            <div class="label-container">
+              <label>Question Type</label>
+            </div>
+            <div class="selection-container">
+              {% for q_type in question_types %}
+                <div class="toggle-btn" data-selected="false">
+                  <input type="checkbox" id="question_type_{{ q_type }}" name="question_type" value="{{ q_type }}" style="display: none;">
+                  <toggle-btn-label for="question_type_{{ q_type }}" class="toggle-btn-label">{{ q_type }}</toggle-btn-label>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+          <!-- Question Difficulty Section--> 
+          <div class="section">
+            <div class="label-container">
+              <label>Question Difficulty</label>
+            </div>
+            <div class="selection-container">
+              {% for q_difficulty in question_difficulty %}
+                <div class="toggle-btn" data-selected="false">
+                  <input type="checkbox" id="question_difficulty_{{ q_difficulty }}" name="question_difficulty_" value="{{ q_difficulty }}" style="display: none;">
+                  <toggle-btn-label for="question_difficulty_{{ q_difficulty }}" class="toggle-btn-label">{{ q_difficulty }}</toggle-btn-label>
+                </div>
+              {% endfor %}
+              </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="grid-container">
+            <div class="grid-item">
+              <div class ="label-textboxsection-container">
+                <label>Number of Questions</label>
+              </div>
+              <div class="textinput-container">
+                <input type="text" id="number_of_questions" name="number_of_questions">
+              </div>
+            </div>
+            <div class="grid-item">
+              <div class ="label-textboxsection-container">
+                <label>Max Points</label>
+              </div>
+              <div class="textinput-container">
+                <input type="text" id="test_point_value" name="test_point_value">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="grid-container">
+            <div class="grid-item">
+              <div class ="label-textboxsection-container">
+                <label>Training Level</label>
+              </div>
+              <div class="textinput-container">
+                <select id="dropdownInput" name="dropdownInput">
+                  <option value="">Applicant</option>
+                  <option value="">Apprentice</option>
+                  <option value="">Joureyman</option>
+                  <option value="">Senior</option>
+                  <option value="">Chief</option>
+                  <option value="">Coordinator</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid-item">
+              <div class ="label-textboxsection-container">
+                <label>Test Name</label>
+              </div>
+              <div class="textinput-container">
+                <input type="text" id="test_name" name="test_name">
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <!-- Form Footer for Submission -->
+        <div class="section"> 
+          <div class="centered-button-container">
+            <button type="submit">Generate Test</button>
+          </div>
+        </div>
+      </form>
+    </div>
+    <script src="{{ url_for('static', filename='js/random_test_creation.js') }}"></script>
+  </body>
+</html>
