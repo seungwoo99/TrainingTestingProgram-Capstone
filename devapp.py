@@ -50,7 +50,7 @@ def trylogin():
     messages = get_flashed_messages()
 
     # Serve login page
-    return render_template("home.html", messages=messages)
+    return render_template("login.html", messages=messages)
 
 
 @app.route("/homepage")
