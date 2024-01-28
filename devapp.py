@@ -25,12 +25,57 @@ bcrypt = Bcrypt(app)
 
 # print(hashed_password)
 
+#@app.route('/random_test_creation')
+from sqlalchemy.exc import SQLAlchemyError
+
+@app.route('/random_test_creation')
+def show_options():
+    try:
+        # Start a connection and execute queries within the context
+        with db.engine.connect() as connection:
+            # Fetch distinct Bloom's taxonomy levels
+            blooms_query = text("SELECT DISTINCT name FROM blooms_tax")
+            blooms_levels = connection.execute(blooms_query).fetchall()
+            #print("Bloom's Taxonomy Levels:", blooms_levels)
+
+            # Fetch distinct subjects
+            subjects_query = text("SELECT DISTINCT name FROM subjects")
+            subjects = connection.execute(subjects_query).fetchall()
+            #print("Subjects:", subjects)
+
+            # Fetch distinct topics
+            topics_query = text("SELECT DISTINCT name FROM topics")
+            topics = connection.execute(topics_query).fetchall()
+            #print("Topics:", topics)
+
+            # Fetch distinct question types
+            question_types_query = text("SELECT DISTINCT question_type FROM questions")
+            question_types = connection.execute(question_types_query).fetchall()
+            #print("Question Types:", question_types)
+            
+        # Clean and simplify the data
+        blooms_levels = [level[0].strip() for level in blooms_levels]
+        subjects = [subject[0].strip() for subject in subjects]
+        topics = [topic[0].strip() for topic in topics]
+        question_types = [q_type[0].strip() for q_type in question_types]
+        
+        return render_template(
+            'random_test_creation.html', 
+            blooms_levels=blooms_levels,
+            subjects=subjects, 
+            topics=topics, 
+            question_types=question_types
+        )
+
+    except Exception as e:  # Catching a general exception for broader error coverage
+        print("An error occurred: ", str(e))
+        return "An error occurred while fetching data from the database."
+
 
 @app.route('/logout')
 def logout():
     session.pop('user', None)
     return redirect(url_for('trylogin'))
-
 
 @app.route("/trylogin")
 def trylogin():
@@ -44,7 +89,6 @@ def trylogin():
     # Serve login page
     return render_template("home.html", messages=messages)
 
-
 @app.route("/homepage")
 def homepage():
     # Check if user session is inactive
@@ -54,7 +98,6 @@ def homepage():
 
     # Serve homepage
     return "<h2>This is the under-construction homepage</h2><a href=\"/logout\">Logout</a>"
-
 
 @app.route("/login", methods=["POST"])
 def login():
@@ -95,7 +138,6 @@ def login():
             # Flash failed authentication message and redirect to login page
             flash("Invalid username or password")
             return redirect(url_for('trylogin'))
-
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
