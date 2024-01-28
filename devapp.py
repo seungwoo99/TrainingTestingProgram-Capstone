@@ -15,7 +15,7 @@ load_dotenv()
 app = Flask(__name__)
 
 # Configure Flask app to use SQLAlchemy for a local MySQL database
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:password@localhost:3306/test_train_db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:@localhost:3306/test_train_db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 # Configure Flask app to use Mail system
