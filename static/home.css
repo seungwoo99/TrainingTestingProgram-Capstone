@@ -52,6 +52,19 @@ body{
    border-radius: 6px;
    outline: none;
  }
+
+.form input[type="checkbox"] {
+    height: 20px; /* Adjust the height to align with the label */
+    width: 20px; /* Adjust the width to align with the label */
+    margin-bottom: 0; /* Remove the margin-bottom for better alignment */
+}
+
+/* Style for checkbox labels in form */
+.form input[type="checkbox"] + label {
+    vertical-align: middle; /* Align the label vertically with the checkbox */
+    margin-left: 20px;
+}
+
  .form input:focus{
    box-shadow: 0 1px 0 rgba(0,0,0,0.2);
  }
