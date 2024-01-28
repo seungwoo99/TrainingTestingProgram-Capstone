@@ -72,6 +72,20 @@
               {% endfor %}
             </div>
           </div>
+          <!-- Question Difficulty Section--> 
+          <div class="section">
+            <div class="label-container">
+              <label>Question Difficulty</label>
+            </div>
+            <div class="selection-container">
+              {% for q_difficulty in question_difficulty %}
+                <div class="toggle-btn" data-selected="false">
+                  <input type="checkbox" id="question_difficulty_{{ q_difficulty }}" name="question_difficulty_" value="{{ q_difficulty }}" style="display: none;">
+                  <toggle-btn-label for="question_difficulty_{{ q_difficulty }}" class="toggle-btn-label">{{ q_difficulty }}</toggle-btn-label>
+                </div>
+              {% endfor %}
+              </div>
+          </div>
         </div>
 
         <div class="section">

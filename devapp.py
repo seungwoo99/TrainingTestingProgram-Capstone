@@ -25,9 +25,6 @@ bcrypt = Bcrypt(app)
 
 # print(hashed_password)
 
-#@app.route('/random_test_creation')
-from sqlalchemy.exc import SQLAlchemyError
-
 @app.route('/random_test_creation')
 def show_options():
     try:
@@ -53,18 +50,25 @@ def show_options():
             question_types = connection.execute(question_types_query).fetchall()
             #print("Question Types:", question_types)
             
+            # Fetch distinct question types
+            question_difficulty_query = text("SELECT DISTINCT question_difficulty FROM questions")
+            question_difficulty = connection.execute(question_difficulty_query).fetchall()
+            #print("Question Difficulty:", question_difficulty)
+            
         # Clean and simplify the data
         blooms_levels = [level[0].strip() for level in blooms_levels]
         subjects = [subject[0].strip() for subject in subjects]
         topics = [topic[0].strip() for topic in topics]
         question_types = [q_type[0].strip() for q_type in question_types]
+        question_difficulty = [str(q_difficulty[0]).strip() for q_difficulty in question_difficulty]
         
         return render_template(
             'random_test_creation.html', 
             blooms_levels=blooms_levels,
             subjects=subjects, 
             topics=topics, 
-            question_types=question_types
+            question_types=question_types,
+            question_difficulty=question_difficulty
         )
 
     except Exception as e:  # Catching a general exception for broader error coverage
