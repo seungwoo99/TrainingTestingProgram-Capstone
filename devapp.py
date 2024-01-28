@@ -25,6 +25,10 @@ bcrypt = Bcrypt(app)
 
 # print(hashed_password)
 
+@app.route('/')
+def index():
+    return redirect(url_for('trylogin'))
+
 @app.route('/random_test_creation')
 def show_options():
     try:
@@ -215,7 +219,7 @@ def register():
                 VALUES (:username, :email, :password, :name, :is_admin, :is_verified)
             """)
 
-            # Assuming you have a function to hash passwords (e.g., hash_password)
+            # Hash password for database storage
             hashed_password = bcrypt.generate_password_hash(input_password)
 
             if input_is_admin == "on":
