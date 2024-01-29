@@ -296,6 +296,117 @@ def register():
             # Return to homepage
             return redirect(url_for("homepage"))
 
+@app.route("/password_reset", methods=["GET", "POST"])
+def password_reset():
+    if request.method == "POST":
+        input_email = request.form.get("email")
+
+        # Query hashed password by email
+        query = text("SELECT * FROM user WHERE email = :email")
+        result = db.engine.execute(query, email=input_email)
+
+        row = result.fetchone()
+        if row:
+            # Store the email in the session for later use
+            session['reset_email'] = input_email
+
+            otp_created_time = datetime.now(timezone.utc)
+            otp = generate_otp(row['email'], otp_created_time)
+
+            # Send email to user using SMTP - Simple Mail Transfer Protocol
+            msg = Message('Training Test Program Password Reset.', sender=app.config['MAIL_USERNAME'],
+                          recipients=[row['email']])
+            msg.body = ('We received a request to renew your password.' +
+                        '\nPlease insert verification code.\nVerification code: ' + str(otp))
+            mail.send(msg)
+
+            return render_template('reset_otp.html', time=otp_created_time,
+                                   user_email=row['email'])
+        else:
+            flash("Invalid email address. Please try again.", 'error')
+            return redirect(url_for("password_reset"))  # Redirect back to password reset form
+    else:
+        # Render the password reset form
+        return render_template("password_reset.html")
+@app.route('/reset_otp', methods=['GET', 'POST'])
+def reset_otp():
+
+    otp = request.form['otp']
+    session_email = request.form['user_email']
+
+    session_otp = session.get(f'otp_{session_email}')
+    session_time = session.get(f'time_{session_email}')
+
+    # When otp and time is not stored in session
+    if not session_otp or not session_time:
+        verification_result = {'category': 'error', 'message': 'Invalid OTP. Please try again.'}
+        return render_template('reset_otp.html', verification_result=verification_result, user_email=session_email)
+
+    # When session is over
+    current_time = datetime.now(timezone.utc)
+    if current_time > session_time + timedelta(minutes=5):
+        # Delete otp and time in session
+        session.pop(f'otp_{session_email}')
+        session.pop(f'time_{session_email}')
+        verification_result = {'category': 'error', 'message': 'OTP verification is expired. Please try again.'}
+        return render_template('reset_otp.html', verification_result=verification_result, user_email=session_email)
+
+    if otp == session_otp:  # Success in verification
+        session.pop(f'otp_{session_email}')
+        session.pop(f'time_{session_email}')
+        return render_template('update_password.html')
+    elif otp != session_otp:
+        verification_result = {'category': 'error', 'message': 'Invalid OTP. Please try again.'}
+        return render_template('reset_otp.html', verification_result=verification_result, user_email=session_email)
+
+
+@app.route("/update_password", methods=["POST"])
+def update_password():
+    if request.method == "POST":
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+
+        if new_password != confirm_password:
+            flash('Passwords do not match. Please try again.', 'error')
+            return redirect(url_for('reset_otp'))  # Redirect back to password reset form
+
+        # Hash the new password before updating in the database
+        hashed_password = bcrypt.generate_password_hash(new_password).decode('utf-8')
+
+        # Retrieve the email of the user whose password is being reset
+        session_email = session.get('reset_email')
+
+        if not session_email:
+            flash('Invalid request. Please try again.', 'error')
+            return redirect(url_for('trylogin'))  # Redirect to login page if no email found in session
+
+        # Update the password in the database
+        try:
+            
+            update_query = text("UPDATE user SET password = :hashed_password WHERE email = :email")
+            db.engine.execute(update_query, hashed_password=hashed_password, email=session_email)
+
+            
+            # Check if the password was successfully updated in the database
+            user_query = text("SELECT * FROM user WHERE email = :email")
+            result = db.engine.execute(user_query, email=session_email)
+            row = result.fetchone()
+            newly_hashed_password = row['password']
+
+
+            if bcrypt.check_password_hash(newly_hashed_password, new_password):
+                # Password update was successful
+                flash('Password updated successfully!', 'success')
+                session.pop('reset_email')
+                return redirect(url_for('trylogin'))  # Redirect to login page after password update
+            else:
+                flash('Failed to update password. Please try again later.', 'error')
+                return redirect(url_for('reset_otp'))  # Redirect back to password reset form
+
+        except Exception as e:
+            flash('Failed to update password. Please try again later.', 'error')
+            return redirect(url_for('reset_otp'))  # Redirect back to password reset form
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
