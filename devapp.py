@@ -1,14 +1,24 @@
-import os
-from flask import Flask, render_template, request, url_for, redirect, session, flash, get_flashed_messages
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import create_engine
-from sqlalchemy.sql import func, text
-from flask_bcrypt import Bcrypt
-from dotenv import load_dotenv, dotenv_values  # pip install python-dotenv
-from flask_mail import Message, Mail
-from random import randint
+# Standard library imports
 from datetime import datetime, timezone, timedelta
+import os
+from random import randint
+import logging
+
+
+# Related third party imports
+from dotenv import load_dotenv, dotenv_values  # pip install python-dotenv
+from flask import Flask, render_template, request, url_for, redirect, session, flash, get_flashed_messages, jsonify
+from flask_bcrypt import Bcrypt
+from flask_mail import Message, Mail
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import create_engine, text
+from sqlalchemy.sql import func
+from sqlalchemy.exc import SQLAlchemyError
+
+# Local application/library specific imports
 from config import MailConfig
+from db_config import db
+from data_retrieval import fetch_test_creation_options, get_questions, select_questions
 
 load_dotenv()
 
@@ -22,71 +32,99 @@ app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config.from_object(MailConfig)
 
 # Initialize SQLAlchemy
-db = SQLAlchemy(app)
+db.init_app(app)
 bcrypt = Bcrypt(app)
 # Initialize Mail
 mail = Mail(app)
-
 
 # Hash the password before storing it in the database
 # hashed_password = bcrypt.generate_password_hash(password,12).decode('utf-8')
 
 # print(hashed_password)
 
-@app.route('/')
-def index():
-    return redirect(url_for('trylogin'))
+#@app.route('/')
+#def index():
+#    return redirect(url_for('trylogin'))
 
+# This route renders a page for creating a random test with various options.
 @app.route('/random_test_creation')
 def show_options():
     try:
-        # Start a connection and execute queries within the context
-        with db.engine.connect() as connection:
-            # Fetch distinct Bloom's taxonomy levels
-            blooms_query = text("SELECT DISTINCT name FROM blooms_tax")
-            blooms_levels = connection.execute(blooms_query).fetchall()
-            #print("Bloom's Taxonomy Levels:", blooms_levels)
-
-            # Fetch distinct subjects
-            subjects_query = text("SELECT DISTINCT name FROM subjects")
-            subjects = connection.execute(subjects_query).fetchall()
-            #print("Subjects:", subjects)
-
-            # Fetch distinct topics
-            topics_query = text("SELECT DISTINCT name FROM topics")
-            topics = connection.execute(topics_query).fetchall()
-            #print("Topics:", topics)
-
-            # Fetch distinct question types
-            question_types_query = text("SELECT DISTINCT question_type FROM questions")
-            question_types = connection.execute(question_types_query).fetchall()
-            #print("Question Types:", question_types)
-            
-            # Fetch distinct question types
-            question_difficulty_query = text("SELECT DISTINCT question_difficulty FROM questions")
-            question_difficulty = connection.execute(question_difficulty_query).fetchall()
-            #print("Question Difficulty:", question_difficulty)
-            
-        # Clean and simplify the data
-        blooms_levels = [level[0].strip() for level in blooms_levels]
-        subjects = [subject[0].strip() for subject in subjects]
-        topics = [topic[0].strip() for topic in topics]
-        question_types = [q_type[0].strip() for q_type in question_types]
-        question_difficulty = [str(q_difficulty[0]).strip() for q_difficulty in question_difficulty]
-        
+        # Fetch test creation options from a function.
+        options = fetch_test_creation_options()
+        # Render the template 'random_test_creation.html' with the fetched options.
         return render_template(
-            'random_test_creation.html', 
-            blooms_levels=blooms_levels,
-            subjects=subjects, 
-            topics=topics, 
-            question_types=question_types,
-            question_difficulty=question_difficulty
+            'random_test_creation.html',
+            blooms_levels=options['blooms_levels'],
+            subjects=options['subjects'],
+            topics=options['topics'],
+            question_types=options['question_types'],
+            question_difficulty=options['question_difficulty']
         )
+    except Exception as e:
+        # Handle any exceptions that may occur and provide an error message.
+        print("An error occurred in show_options:", str(e))
+        return "An error occurred while preparing the test creation page."
 
-    except Exception as e:  # Catching a general exception for broader error coverage
-        print("An error occurred: ", str(e))
-        return "An error occurred while fetching data from the database."
+# This route handles the POST request to get random questions based on user selections.
+@app.route('/get-questions', methods=['POST'])    
+def handle_get_questions():
+    try:
+        # Parse JSON data from the request.
+        data = request.json
+        logging.debug(f"Received data: {data}")
 
+        # Extract various filters and parameters from the JSON data.
+        blooms_levels = data.get('blooms_levels', [])
+        subjects = data.get('subjects', [])
+        topics = data.get('topics', [])
+        question_types = data.get('question_types', [])
+        question_difficulties = data.get('question_difficulties', [])
+        num_questions = int(data.get('num_questions', 0))
+        max_points = int(data.get('max_points', 0))
+
+        logging.debug(f"Filter parameters: blooms_levels: {blooms_levels}, subjects: {subjects}, topics: {topics}, question_types: {question_types}, question_difficulties: {question_difficulties}")
+        logging.debug(f"Test parameters: num_questions: {num_questions}, max_points: {max_points}")
+
+        # Retrieve a pool of questions based on the user's filters.
+        questions_pool = get_questions(blooms_levels, subjects, topics, question_types, question_difficulties)
+        total_questions_in_pool = len(questions_pool)
+        logging.debug(f"Total questions in pool: {total_questions_in_pool}")
+
+        # If no questions meet the selection criteria, return a message.
+        if total_questions_in_pool == 0:
+            logging.warning("No questions found that meet the selection criteria.")
+            return jsonify({
+                'total_questions_in_pool': total_questions_in_pool,
+                'questions_chosen_for_test': 0,
+                'selected_questions': [],
+                'message': "No questions found that meet the selection criteria."
+            })
+
+        # Select a subset of questions for the test based on user preferences.
+        selected_questions = select_questions(questions_pool, num_questions, max_points)
+        questions_chosen_for_test = len(selected_questions)
+        logging.debug(f"Questions chosen for test: {questions_chosen_for_test}")
+
+        # Return information about the selected questions and the test creation status.
+        response = jsonify({
+            'total_questions_in_pool': total_questions_in_pool,
+            'questions_chosen_for_test': questions_chosen_for_test,
+            'selected_questions': [question[0] for question in selected_questions],
+            'message': "Questions successfully retrieved and test created."
+        })
+        logging.debug(f"Response: {response.get_data(as_text=True)}")
+        return response
+
+    except ValueError as ve:
+        logging.error(f"ValueError: {ve}")
+        return jsonify({'error': str(ve), 'selected_questions': []}), 400
+    except SQLAlchemyError as sae:
+        logging.error(f"SQLAlchemyError: {sae}")
+        return jsonify({'error': "A database error occurred."}), 500
+    except Exception as e:
+        logging.error(f"Unhandled exception: {e}", exc_info=True)
+        return jsonify({'error': "An error occurred while preparing the test creation page."}), 500
 
 @app.route('/logout')
 def logout():
@@ -104,7 +142,6 @@ def trylogin():
 
     # Serve login page
     return render_template("login.html", messages=messages)
-
 
 @app.route("/tryregister")
 def tryregister():
@@ -195,14 +232,12 @@ def login():
             flash("Invalid username or password")
             return redirect(url_for('trylogin'))
 
-
 # Generate a verification otp
 def generate_otp(email, time):
     otp = str(randint(100000, 999999))
     session[f'otp_{email}'] = otp
     session[f'time_{email}'] = time
     return otp
-
 
 # Action when submit button is clicked on verification page
 @app.route('/verification', methods=['POST'])
@@ -234,7 +269,6 @@ def verify_otp():
     elif otp != session_otp:
         verification_result = {'category': 'error', 'message': 'Invalid OTP. Please try again.'}
         return render_template('verification.html', verification_result=verification_result, user_email=session_email)
-
 
 @app.route("/register", methods=["POST"])
 def register():
@@ -295,7 +329,6 @@ def register():
 
             # Return to homepage
             return redirect(url_for("homepage"))
-
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')

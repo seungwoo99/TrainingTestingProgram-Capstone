@@ -1,13 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap');
-
-@font-face {
-    font-family: 'Code Next';
-    src: url('path-to-your-font/CodeNext-Regular.woff2') format('woff2'),
-         url('path-to-your-font/CodeNext-Regular.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-  }
-
 body {
     min-height: 100vh;
     width: 100%;
@@ -34,6 +24,15 @@ h1 {
     padding-bottom: 5px;
 }
 
+h2 {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 200%;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    color: #3B4856; 
+}
+
 /* Elements that style the sections */
 .section {
     margin-bottom: 50px;
@@ -43,15 +42,6 @@ h1 {
     width: 98.5%;
     margin: 10px;
     border-bottom: 1px solid black;
-}
-
-.section label {
-    display: block;
-    margin-bottom: 5px;
-    font-size: 200%;
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 700;
-    color: #3B4856;
 }
 
 /* Elements that style the text input sections */
@@ -77,7 +67,7 @@ h1 {
     padding-bottom: 10px;
 }
 
-.section input[type="text"] {
+.section input[type="text"], input[type="number"] {
     width: 50%;
     padding: 10px;
     margin-top: 5px;
@@ -85,7 +75,8 @@ h1 {
     cursor: pointer;
 }
 
-.section input[type="text"]:hover {
+.section input[type="text"]:hover, 
+.section input[type="number"]:hover {
     box-shadow: 0 5px 10px rgba(0,0,0,0.3);
     border: 2px solid black;
 }
@@ -123,6 +114,7 @@ button:hover {
     margin-top: 5px;
     font-size: 18px;
     cursor: pointer;
+    font-family: 'Code Next', sans-serif;
 }
 
 #dropdownInput:hover {
@@ -156,38 +148,65 @@ button:hover {
     border-bottom: 1px solid black;
 }
 
-toggle-btn-label {
+.criteria-container .selection-container .toggle-btn {
+    padding: 15px;
+    margin: 5px;
+    border: none;
+    cursor: pointer;
+    border-radius: 8px;
+    background-color: #6B95BC;
+    text-shadow: -1px -1px 0 #364b5e, 1px -1px 0 #364b5e, -1px 1px 0 #364b5e, 1px 1px 0 #364b5e;
+}
+
+.criteria-container .selection-container .toggle-btn .toggle-btn-label {
     display: inline-block;
     margin-bottom: 5px;
     font-size: 24px;
+    font-family: 'Code Next', sans-serif;
+    color: #FFF;
 }
 
-.toggle-btn {
+.criteria-container .selection-container .toggle-btn:hover {
+    background-color: #0a679a;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+}
+
+.criteria-container .section .selectCategory {
     padding: 15px;
     margin: 5px;
     border: none;
     cursor: pointer;
     display: inline-block;
-    border-radius: 8px;
-    background-color: #6B95BC;
-    color: #FFF;
+    font-size: 24px;
     font-family: 'Code Next', sans-serif;
-    text-shadow: -1px -1px 0 #364b5e, 1px -1px 0 #364b5e, -1px 1px 0 #364b5e, 1px 1px 0 #364b5e;
-  }
-  
-  .toggle-btn:hover {
-    background-color: #0a679a;
-    box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+    border-radius: 8px;
+    background-color: #cad9e7;
+    color: #3b4044;
+    font-family: 'Code Next', sans-serif;
+    text-shadow: -1px -1px 0 #c4d5e4, 1px -1px 0 #c4d5e4, -1px 1px 0 #c4d5e4, 1px 1px 0 #c4d5e4;
+    border: 2px solid #4e555b;
 }
 
-  .selected {
+.criteria-container .section .selectCategory:hover {
+    background-color: #8995a0;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+    border: 2px solid #cad9e7;
+}
+
+.criteria-container .section label {
+    display: inline-block;
+    margin-bottom: 5px;
+    font-size: 24px;
+}
+
+.selected {
     background: linear-gradient(to bottom, #00ACD4 -1.1%, #7AFAC4 100.7%);
     color: #fff;
     text-shadow: -1px -1px 0 #338879, 1px -1px 0 #338879, -1px 1px 0 #338879, 1px 1px 0 #338879;
-  }
+}
   
-  #confirmSelection {
+#confirmSelection {
     margin-top: 20px;
-  }
+}
   
   
