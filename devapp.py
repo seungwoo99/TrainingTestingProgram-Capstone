@@ -184,6 +184,16 @@ def homepage():
     # Serve homepage
     return "<h2>This is the under-construction homepage</h2><a href=\"/logout\">Logout</a>"
 
+
+@app.route('/datahierarchy')
+def data():
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
+    return render_template('datahierarchy.html')
+
+
 # Processes login attempt
 @app.route("/login", methods=["POST"])
 def login():
