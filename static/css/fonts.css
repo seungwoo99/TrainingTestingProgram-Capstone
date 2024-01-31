@@ -1,0 +1,269 @@
+/* Montserrat fonts */
+@font-face {
+    font-family: 'Montserrat';
+    src: url('fonts/Montserrat/static/Montserrat-Black.ttf') format('truetype');
+    font-weight: 900; /* Adjust as needed */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('fonts/Montserrat/static/Montserrat-BlackItalic.ttf') format('truetype');
+    font-weight: 900; /* Adjust as needed */
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('fonts/Montserrat/static/Montserrat-Bold.ttf') format('truetype');
+    font-weight: bold; /* Adjust as needed */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('fonts/Montserrat/static/Montserrat-BoldItalic.ttf') format('truetype');
+    font-weight: bold; /* Adjust as needed */
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('fonts/Montserrat/static/Montserrat-ExtraBold.ttf') format('truetype');
+    font-weight: 800; /* Adjust as needed */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('fonts/Montserrat/static/Montserrat-ExtraBoldItalic.ttf') format('truetype');
+    font-weight: 800; /* Adjust as needed */
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('fonts/Montserrat/static/Montserrat-ExtraLight.ttf') format('truetype');
+    font-weight: 200; /* Adjust as needed */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('fonts/Montserrat/static/Montserrat-ExtraLightItalic.ttf') format('truetype');
+    font-weight: 200; /* Adjust as needed */
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('fonts/Montserrat/static/Montserrat-Italic.ttf') format('truetype');
+    font-weight: normal; /* Adjust as needed */
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('fonts/Montserrat/static/Montserrat-Light.ttf') format('truetype');
+    font-weight: 300; /* Adjust as needed */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('fonts/Montserrat/static/Montserrat-LightItalic.ttf') format('truetype');
+    font-weight: 300; /* Adjust as needed */
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('fonts/Montserrat/static/Montserrat-Medium.ttf') format('truetype');
+    font-weight: 500; /* Adjust as needed */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('fonts/Montserrat/static/Montserrat-MediumItalic.ttf') format('truetype');
+    font-weight: 500; /* Adjust as needed */
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('fonts/Montserrat/static/Montserrat-Regular.ttf') format('truetype');
+    font-weight: normal; /* Adjust as needed */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('fonts/Montserrat/static/Montserrat-SemiBold.ttf') format('truetype');
+    font-weight: 600; /* Adjust as needed */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('fonts/Montserrat/static/Montserrat-SemiBoldItalic.ttf') format('truetype');
+    font-weight: 600; /* Adjust as needed */
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('fonts/Montserrat/static/Montserrat-Thin.ttf') format('truetype');
+    font-weight: 100; /* Adjust as needed */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('fonts/Montserrat/static/Montserrat-ThinItalic.ttf') format('truetype');
+    font-weight: 100; /* Adjust as needed */
+    font-style: italic;
+}
+
+
+/* Code-Next */
+@font-face {
+    font-family: 'CodeNext';
+    src: url('fonts/code_next/static/CodeNext-Trial-Black.ttf') format('truetype');
+    font-weight: 900; /* Adjust as needed */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'CodeNext';
+    src: url('fonts/code_next/static/CodeNext-Trial-BlackItalic.ttf') format('truetype');
+    font-weight: 900; /* Adjust as needed */
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'CodeNext';
+    src: url('fonts/code_next/static/CodeNext-Trial-Bold.ttf') format('truetype');
+    font-weight: bold; /* Adjust as needed */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'CodeNext';
+    src: url('fonts/code_next/CodeNext-Trial-BoldItalic.ttf') format('truetype');
+    font-weight: bold; /* Adjust as needed */
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'CodeNext';
+    src: url('fonts/code_next/CodeNext-Trial-Book.ttf') format('truetype');
+    font-weight: normal; /* Adjust as needed */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'CodeNext';
+    src: url('fonts/code_next/CodeNext-Trial-BookItalic.ttf') format('truetype');
+    font-weight: normal; /* Adjust as needed */
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'CodeNext';
+    src: url('fonts/code_next/CodeNext-Trial-ExtraBold.ttf') format('truetype');
+    font-weight: 800; /* Adjust as needed */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'CodeNext';
+    src: url('fonts/code_next/CodeNext-Trial-ExtraBoldItalic.ttf') format('truetype');
+    font-weight: 800;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'CodeNext';
+    src: url('fonts/code_next/CodeNext-Trial-Hairline.ttf') format('truetype');
+    font-weight: 100; /* Adjust as needed */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'CodeNext';
+    src: url('fonts/code_next/CodeNext-Trial-HairlineItalic.ttf') format('truetype');
+    font-weight: 100; /* Adjust as needed */
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'CodeNext';
+    src: url('fonts/code_next/CodeNext-Trial-Heavy.ttf') format('truetype');
+    font-weight: 900; /* Adjust as needed */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'CodeNext';
+    src: url('fonts/code_next/CodeNext-Trial-HeavyItalic.ttf') format('truetype');
+    font-weight: 900; /* Adjust as needed */
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'CodeNext';
+    src: url('fonts/code_next/CodeNext-Trial-Light.ttf') format('truetype');
+    font-weight: 300; /* Adjust as needed */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'CodeNext';
+    src: url('fonts/code_next/CodeNext-Trial-LightItalic.ttf') format('truetype');
+    font-weight: 300; /* Adjust as needed */
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'CodeNext';
+    src: url('fonts/code_next/CodeNext-Trial-Regular.ttf') format('truetype');
+    font-weight: normal; /* Adjust as needed */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'CodeNext';
+    src: url('fonts/code_next/CodeNext-Trial-RegularItalic.ttf') format('truetype');
+    font-weight: normal; /* Adjust as needed */
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'CodeNext';
+    src: url('fonts/code_next/CodeNext-Trial-SemiBold.ttf') format('truetype');
+    font-weight: 600; /* Adjust as needed */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'CodeNext';
+    src: url('fonts/code_next/CodeNext-Trial-SemiBoldItalic.ttf') format('truetype');
+    font-weight: 600; /* Adjust as needed */
+    font-style: italic;
+}
+
+
+@font-face {
+    font-family: 'CodeNext';
+    src: url('fonts/code_next/CodeNext-Trial-Thin.ttf') format('truetype');
+    font-weight: 100; /* Adjust as needed */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'CodeNext';
+    src: url('fonts/code_next/CodeNext-Trial-ThinItalic.ttf') format('truetype');
+    font-weight: 100; /* Adjust as needed */
+    font-style: italic; 
+}

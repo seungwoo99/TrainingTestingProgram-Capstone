@@ -5,86 +5,92 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Test Creation Form</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/random_test_creation.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Font+Name:wght@400;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
   </head>
   <body>
     <div class="container">
-      <form>
+      <form id="randomTestCreationForm"> 
         <h1>Select options to determine the pool of potential questions from the database:</h1>
         <div class="criteria-container">
+          
           <!-- Bloom's Taxonomy Section -->
           <div class="section">
             <div class="label-container">
-              <label>Bloom's Taxonomy</label>
+              <h2>Bloom's Taxonomy</h2>
             </div>
             <div class="selection-container">
               {% for level in blooms_levels %}
-                <div class="toggle-btn" data-selected="false">
-                  <input type="checkbox" id="blooms_{{ level }}" name="blooms_taxonomy" value="{{ level }}" style="display: none;">
-                  <toggle-btn-label for="blooms_{{ level }}" class="toggle-btn-label">{{ level }}</label>
-                </div>
-              {% endfor %}            
+                <label class="toggle-btn" data-selected="false">
+                  <input type="checkbox" id="blooms_{{ level }}" name="blooms_taxonomy" value="{{ level }}" data-category="blooms_levels" style="display: none;">
+                  <span class="toggle-btn-label">{{ level }}</span>
+                </label>
+              {% endfor %}         
             </div>
+            <button type="button" class="selectCategory" data-category="blooms_levels">Select All Levels</button>
           </div>
   
           <!-- Subject Section -->
           <div class="section">
             <div class="label-container">
-              <label>Subject</label>
+              <h2>Subject</h2>
             </div>
             <div class="selection-container">
               {% for subject in subjects %}
-                <div class="toggle-btn" data-selected="false">
-                  <input type="checkbox" id="subject_{{ subject }}" name="subject" value="{{ subject }}" style="display: none;">
-                  <toggle-btn-label for="subject_{{ subject }}" class="toggle-btn-label">{{ subject }}</toggle-btn-label>
-                </div>
+                <label class="toggle-btn" data-selected="false">
+                  <input type="checkbox" id="subject_{{ subject }}" name="subject" value="{{ subject }}" data-category="subjects" style="display: none;">
+                  <span class="toggle-btn-label" for="subject_{{ subject }}">{{ subject }}</span>
+                </label>
               {% endfor %}
             </div>
+            <button type="button" class="selectCategory" data-category="subjects">Select All Subjects</button>
           </div>
   
           <!-- Topic Section -->
           <div class="section">
             <div class="label-container">
-              <label>Topic</label>
+              <h2>Topic</h2>
             </div>
             <div class="selection-container">
               {% for topic in topics %}
-                <div class="toggle-btn" data-selected="false">
-                  <input type="checkbox" id="topic_{{ topic }}" name="topic" value="{{ topic }}" style="display: none;">
-                  <toggle-btn-label for="topic_{{ topic }}" class="toggle-btn-label">{{ topic }}</toggle-btn-label>
-                </div>
+                <label class="toggle-btn" data-selected="false">
+                  <input type="checkbox" id="topic_{{ topic }}" name="topic" value="{{ topic }}" data-category="topics" style="display: none;">
+                  <span class="toggle-btn-label">{{ topic }}</span>
+                </label>
               {% endfor %}
             </div>
+            <button type="button" class="selectCategory" data-category="topics">Select All Topics</button>
           </div>
   
           <!-- Question Type Section -->
           <div class="section">
             <div class="label-container">
-              <label>Question Type</label>
+              <h2>Question Type</h2>
             </div>
             <div class="selection-container">
               {% for q_type in question_types %}
-                <div class="toggle-btn" data-selected="false">
-                  <input type="checkbox" id="question_type_{{ q_type }}" name="question_type" value="{{ q_type }}" style="display: none;">
-                  <toggle-btn-label for="question_type_{{ q_type }}" class="toggle-btn-label">{{ q_type }}</toggle-btn-label>
-                </div>
+                <label class="toggle-btn" data-selected="false">
+                  <input type="checkbox" id="question_type_{{ q_type }}" name="question_type" value="{{ q_type }}" data-category="question_types" style="display: none;">
+                  <span class="toggle-btn-label">{{ q_type }}</span>
+                </label>
               {% endfor %}
             </div>
+            <button type="button" class="selectCategory" data-category="question_types">Select All Types</button>
           </div>
+          
           <!-- Question Difficulty Section--> 
           <div class="section">
             <div class="label-container">
-              <label>Question Difficulty</label>
+              <h2>Question Difficulty</h2>
             </div>
             <div class="selection-container">
               {% for q_difficulty in question_difficulty %}
-                <div class="toggle-btn" data-selected="false">
-                  <input type="checkbox" id="question_difficulty_{{ q_difficulty }}" name="question_difficulty_" value="{{ q_difficulty }}" style="display: none;">
-                  <toggle-btn-label for="question_difficulty_{{ q_difficulty }}" class="toggle-btn-label">{{ q_difficulty }}</toggle-btn-label>
-                </div>
+                <label class="toggle-btn" data-selected="false">
+                  <input type="checkbox" id="question_difficulty_{{ q_difficulty }}" name="question_difficulty" value="{{ q_difficulty }}" data-category="question_difficulties" style="display: none;">
+                  <span class="toggle-btn-label">{{ q_difficulty }}</span>
+                </label>
               {% endfor %}
-              </div>
+            </div>
+            <button type="button" class="selectCategory" data-category="question_difficulties">Select All Difficulties</button>
           </div>
         </div>
 
@@ -92,18 +98,18 @@
           <div class="grid-container">
             <div class="grid-item">
               <div class ="label-textboxsection-container">
-                <label>Number of Questions</label>
+                <h2>Number of Questions</h2>
               </div>
               <div class="textinput-container">
-                <input type="text" id="number_of_questions" name="number_of_questions">
+                <input type="number" id="number_of_questions" name="number_of_questions">
               </div>
             </div>
             <div class="grid-item">
               <div class ="label-textboxsection-container">
-                <label>Max Points</label>
+                <h2>Max Points</h2>
               </div>
               <div class="textinput-container">
-                <input type="text" id="test_point_value" name="test_point_value">
+                <input type="number" id="test_point_value" name="test_point_value">
               </div>
             </div>
           </div>
@@ -113,7 +119,7 @@
           <div class="grid-container">
             <div class="grid-item">
               <div class ="label-textboxsection-container">
-                <label>Training Level</label>
+                <h2>Training Level</h2>
               </div>
               <div class="textinput-container">
                 <select id="dropdownInput" name="dropdownInput">
@@ -128,7 +134,7 @@
             </div>
             <div class="grid-item">
               <div class ="label-textboxsection-container">
-                <label>Test Name</label>
+                <h2>Test Name</h2>
               </div>
               <div class="textinput-container">
                 <input type="text" id="test_name" name="test_name">
@@ -140,7 +146,7 @@
         <!-- Form Footer for Submission -->
         <div class="section"> 
           <div class="centered-button-container">
-            <button type="submit">Generate Test</button>
+            <button type="button" id="confirmSelection">Generate Test</button>
           </div>
         </div>
       </form>
