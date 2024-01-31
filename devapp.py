@@ -42,13 +42,18 @@ mail = Mail(app)
 
 # print(hashed_password)
 
-#@app.route('/')
-#def index():
-#    return redirect(url_for('trylogin'))
+@app.route('/')
+def index():
+    return redirect(url_for('trylogin'))
 
 # This route renders a page for creating a random test with various options.
 @app.route('/random_test_creation')
 def show_options():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     try:
         # Fetch test creation options from a function.
         options = fetch_test_creation_options()
@@ -126,11 +131,13 @@ def handle_get_questions():
         logging.error(f"Unhandled exception: {e}", exc_info=True)
         return jsonify({'error': "An error occurred while preparing the test creation page."}), 500
 
+# Logouts user and redirects to login
 @app.route('/logout')
 def logout():
     session.pop('user', None)
     return redirect(url_for('trylogin'))
 
+# Route for the login page
 @app.route("/trylogin")
 def trylogin():
     # Check if user session is already active
@@ -143,6 +150,7 @@ def trylogin():
     # Serve login page
     return render_template("login.html", messages=messages)
 
+# Route for the registration page, admin only.
 @app.route("/tryregister")
 def tryregister():
 
@@ -162,6 +170,7 @@ def tryregister():
     # Serve login page
     return render_template("register.html", messages=messages)
 
+# Route for the homepage, logged in users only.
 @app.route("/homepage")
 def homepage():
     # Check if user session is inactive
@@ -172,6 +181,7 @@ def homepage():
     # Serve homepage
     return "<h2>This is the under-construction homepage</h2><a href=\"/logout\">Logout</a>"
 
+# Processes login attempt
 @app.route("/login", methods=["POST"])
 def login():
     if request.method == "POST":
@@ -223,7 +233,6 @@ def login():
 
             # Set up user session cookie
             session['user'] = user
-            session['user']['is_authenticated'] = True
 
             # Move to verification page
             return render_template('verification.html', password=input_password, time=otp_created_time, user_email=user['email'])
@@ -265,7 +274,11 @@ def verify_otp():
     if otp == session_otp:  # Success in verification
         session.pop(f'otp_{session_email}')
         session.pop(f'time_{session_email}')
+
+        # Update session as authenticated
+        session['user']['is_authenticated'] = True
         return redirect(url_for('homepage'))
+
     elif otp != session_otp:
         verification_result = {'category': 'error', 'message': 'Invalid OTP. Please try again.'}
         return render_template('verification.html', verification_result=verification_result, user_email=session_email)
