@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel = "stylesheet" href = "{{url_for('static', filename='/css/datahierarchy.css')}}">
+</head>
+
+<header class="navigation">
+    <ul class="nav-links">
+        <li class="center"><a href="#">Home</a></li>
+        <li class="center"><a href="/datahierarchy">Data Hierarchy</a></li>
+        <li class="center"><a href="#">Testing</a></li>
+        <li class="center"><a href="#">Scoring Metrics</a></li>
+        <li class="center"><a href="/home">Logout/Login</a></li>
+    </ul>
+</header>
+
+<body>
+<div class="container">
+<h2>Data Hierarchy</h2>
+
+<table id="datasTable">
+    <thead>
+        <tr>
+            <th>Subject</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>DOE - Mechanical Science</td>
+            <td>Description here</td>
+        </tr>
+        <tr>
+            <td>DOE - Electrical Science</td>
+            <td>Description here</td>
+        </tr>
+        <tr>
+            <td>Fish Ladders</td>
+            <td>Covers fish ladders, fish flow theory, and operation of fish facilities</td>
+        </tr>
+        <tr>
+            <td>Bulk Electric System</td>
+            <td>Description here</td>
+        </tr>
+        <tr>
+            <td>Subject</td>
+            <td>Description here</td>
+        </tr>
+
+    </tbody>
+</table>
+
+<!-- Buttons -->
+<button onclick="viewAllDatas()">View Topics</button>
+<button onclick="addData()">Add</button>
+<button onclick="editData()">Edit</button>
+<button onclick="deleteData()">Delete</button>
+
+<!-- JS -->
+<script>
+    // Sample data for demonstration
+    let data = [
+        { data: 'DOE - Mechanical Science', description: 'Description here' },
+        { data: 'DOE - Electrical Science', description: 'Description here' },
+        { data: 'Fish Ladders', description: 'Covers fish ladders, fish flow theory, and operation of fish facilities' },
+        { data: 'Bulk Electric System', description: 'Description here' },
+        { data: 'Subject', description: 'Description here' },
+        { data: 'Subject', description: 'Description here' },
+    ];
+
+    // Function to view topics that are part of the data theme *work in progress
+    function viewAllDatas() {
+        const tableBody = document.getElementById('datasTable').getElementsByTagName('tbody')[0];
+        clearTable(tableBody);
+
+        data.forEach(data => {
+            const row = tableBody.insertRow();
+            row.insertCell(0).innerText = data.data;
+            row.insertCell(1).innerText = data.description;
+        });
+    }
+
+    // Function to add data entries
+    function addData() {
+        const newData = prompt('Enter the new data:');
+        const newDescription = prompt('Enter the description for the new data:');
+
+        if (newData && newDescription) {
+            data.push({ data: newData, description: newDescription });
+            viewAllDatas();
+        }
+    }
+
+    // Function to edit data entries
+    function editData() {
+        const rowIndex = prompt('Enter the row index to edit:');
+        const dataToEdit = data[rowIndex];
+
+        if (dataToEdit) {
+            const updatedData = prompt('Enter the updated data:', dataToEdit.data);
+            const updatedDescription = prompt('Enter the updated description:', dataToEdit.description);
+
+            if (updatedData !== null && updatedDescription !== null) {
+                dataToEdit.data = updatedData;
+                dataToEdit.description = updatedDescription;
+                viewAllDatas(); // Refresh the table after editing
+            }
+        }
+    }
+
+    // Function to delete data
+    function deleteData() {
+        const rowIndex = prompt('Enter the row index to delete:');
+        if (rowIndex !== null && rowIndex >= 0 && rowIndex < data.length) {
+            data.splice(rowIndex, 1);
+            viewAllDatas();
+        }
+    }
+
+    // Function to clear table
+    function clearTable(tableBody) {
+        while (tableBody.firstChild) {
+            tableBody.removeChild(tableBody.firstChild);
+        }
+    }
+</script>
+</div>
+</body>
+</html>
