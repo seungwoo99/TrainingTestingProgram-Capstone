@@ -4,13 +4,11 @@ import os
 from random import randint
 import logging
 
-
 # Related third party imports
 from dotenv import load_dotenv, dotenv_values  # pip install python-dotenv
 from flask import Flask, render_template, request, url_for, redirect, session, flash, get_flashed_messages, jsonify
 from flask_bcrypt import Bcrypt
 from flask_mail import Message, Mail
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine, text
 from sqlalchemy.sql import func
 from sqlalchemy.exc import SQLAlchemyError
@@ -21,33 +19,162 @@ from config import MailConfig
 from db_config import db
 from data_retrieval import fetch_test_creation_options, get_questions, select_questions
 
+# Load environment variables from a .env file
 load_dotenv()
 
+#Initialize Flask App
 app = Flask(__name__)
 
 # Configure Flask app to use SQLAlchemy for a local MySQL database
 app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:@localhost:3306/test_train_db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# Configure Flask app with a secret key
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+
 # Configure Flask app to use Mail system
 app.config.from_object(MailConfig)
+
 # Configure Flask app to use Token system
 app.config["SECURITY_PASSWORD_SALT"] = os.getenv("SECRET_KEY")
 
 # Initialize SQLAlchemy
 db.init_app(app)
+
+# Initialize Bcrypt for password hashing
 bcrypt = Bcrypt(app)
+
 # Initialize Mail
 mail = Mail(app)
 
 # Hash the password before storing it in the database
 # hashed_password = bcrypt.generate_password_hash(password,12).decode('utf-8')
+# print("Password: ", hashed_password)
 
-# print(hashed_password)
+#----------Helper functions for OTP and token generation----------
+
+# Generate a verification otp
+def generate_otp(email, time):
+    otp = str(randint(100000, 999999))
+    session[f'otp_{email}'] = otp
+    session[f'time_{email}'] = time
+    return otp
+
+def generate_token(email):
+    serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+    return serializer.dumps(email, salt=app.config['SECURITY_PASSWORD_SALT'])
+
+def confirm_token(token, expiration=300):
+    serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+    try:
+        email = serializer.loads(
+            token, salt=app.config['SECURITY_PASSWORD_SALT'], max_age=expiration
+        )
+        return email
+    except Exception:
+        return False
+
+#----------Routes for login and authentication----------
 
 @app.route('/')
 def index():
     return redirect(url_for('trylogin'))
+
+# Logouts user and redirects to login
+@app.route('/logout')
+def logout():
+    session.pop('user', None)
+    return redirect(url_for('trylogin'))
+
+# Route for the login page
+@app.route("/trylogin")
+def trylogin():
+    # Check if user session is already active
+    if 'user' in session and session['user'].get('is_authenticated', False):
+        return redirect(url_for('homepage'))
+
+    # Check for any failed login or access denied messages
+    messages = get_flashed_messages()
+
+    # Serve login page
+    return render_template("login.html", messages=messages)
+
+# Processes login attempt
+@app.route("/login", methods=["POST"])
+def login():
+    if request.method == "POST":
+
+        # Load form variables
+        input_username = request.form.get("username")
+        input_password = request.form.get("password")
+
+        # Query hashed password by username
+        query = text("SELECT * FROM user WHERE username = :username")
+        result = db.engine.execute(query, username=input_username)
+
+        row = result.fetchone()
+
+        # Check if a row was found
+        if row:
+            # Extract the hashed password from the 'password' column
+            hashed_password = row['password']
+        else:
+            flash("Invalid username or password")
+            return redirect(url_for('trylogin'))
+
+        user = {'username': row['username'], 'email': row['email'],
+                'name': row['name'], 'is_verified': row['is_verified'],
+                'is_admin': row['is_admin'], 'is_authenticated': False}
+
+        # Check if entered password matches hashed_password
+        if bcrypt.check_password_hash(hashed_password, input_password):
+            # Check if account is verified
+            if user['is_verified'] == 0:
+
+                # Flash failed authentication message and redirect to login page
+                flash("Account not verified, please check your email")
+                return redirect(url_for('trylogin'))
+
+            # Create otp
+            session[f'email_{input_username}'] = user['email']
+            otp_created_time = datetime.now(timezone.utc)
+            otp = generate_otp(user['email'], otp_created_time)
+
+            # Send email to user using SMTP - Simple Mail Transfer Protocol
+            # Create URL link
+            full_url = request.url + 'code'
+            token = generate_token(user['email'])
+            confirm_url = f"{full_url}?token={token}"
+            msg = Message('Training Test Program Verification.', sender=app.config['MAIL_USERNAME'],
+                          recipients=[user['email']])
+            msg.body = ('Dear ' + user['name'] +
+                        '\n\nWe received a request to access your account ' + user['username'] + '.' +
+                        '\nPlease insert verification code.\nVerification code: ' + str(otp) +
+                        '\nURL: ' + confirm_url)
+            mail.send(msg)
+
+            # Set up user session cookie
+            session['user'] = user
+
+            # Move to verification page
+            return render_template('verification.html', password=input_password, time=otp_created_time, user_email=user['email'])
+        else:
+            # Flash failed authentication message and redirect to login page
+            flash("Invalid username or password")
+            return redirect(url_for('trylogin'))
+
+#---------- Routes for the homepage and user actions----------
+       
+# Route for the homepage, logged in users only.
+@app.route("/homepage")
+def homepage():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
+    # Serve homepage
+    return "<h2>This is the under-construction homepage</h2><a href=\"/logout\">Logout</a>"
 
 # This route renders a page for creating a random test with various options.
 @app.route('/random_test_creation')
@@ -124,6 +251,7 @@ def handle_get_questions():
         logging.debug(f"Response: {response.get_data(as_text=True)}")
         return response
 
+    # Error handling
     except ValueError as ve:
         logging.error(f"ValueError: {ve}")
         return jsonify({'error': str(ve), 'selected_questions': []}), 400
@@ -133,25 +261,16 @@ def handle_get_questions():
     except Exception as e:
         logging.error(f"Unhandled exception: {e}", exc_info=True)
         return jsonify({'error': "An error occurred while preparing the test creation page."}), 500
+    
+@app.route('/datahierarchy')
+def data():
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
 
-# Logouts user and redirects to login
-@app.route('/logout')
-def logout():
-    session.pop('user', None)
-    return redirect(url_for('trylogin'))
+    return render_template('datahierarchy.html')
 
-# Route for the login page
-@app.route("/trylogin")
-def trylogin():
-    # Check if user session is already active
-    if 'user' in session and session['user'].get('is_authenticated', False):
-        return redirect(url_for('homepage'))
-
-    # Check for any failed login or access denied messages
-    messages = get_flashed_messages()
-
-    # Serve login page
-    return render_template("login.html", messages=messages)
+#----------Routes for registration and verification----------
 
 # Route for the registration page, admin only.
 @app.route("/tryregister")
@@ -172,177 +291,6 @@ def tryregister():
 
     # Serve login page
     return render_template("register.html", messages=messages)
-
-# Route for the homepage, logged in users only.
-@app.route("/homepage")
-def homepage():
-    # Check if user session is inactive
-    if 'user' not in session or not session['user'].get('is_authenticated', False):
-        flash("Access denied, please login.")
-        return redirect(url_for('trylogin'))
-
-    # Serve homepage
-    return "<h2>This is the under-construction homepage</h2><a href=\"/logout\">Logout</a>"
-
-
-@app.route('/datahierarchy')
-def data():
-    if 'user' not in session or not session['user'].get('is_authenticated', False):
-        flash("Access denied, please login.")
-        return redirect(url_for('trylogin'))
-
-    return render_template('datahierarchy.html')
-
-
-# Processes login attempt
-@app.route("/login", methods=["POST"])
-def login():
-    if request.method == "POST":
-
-        # Load form variables
-        input_username = request.form.get("username")
-        input_password = request.form.get("password")
-
-        # Query hashed password by username
-        query = text("SELECT * FROM user WHERE username = :username")
-        result = db.engine.execute(query, username=input_username)
-
-        row = result.fetchone()
-
-        # Check if a row was found
-        if row:
-            # Extract the hashed password from the 'password' column
-            hashed_password = row['password']
-        else:
-            flash("Invalid username or password")
-            return redirect(url_for('trylogin'))
-
-        user = {'username': row['username'], 'email': row['email'],
-                'name': row['name'], 'is_verified': row['is_verified'],
-                'is_admin': row['is_admin'], 'is_authenticated': False}
-
-        # Check if entered password matches hashed_password
-        if bcrypt.check_password_hash(hashed_password, input_password):
-            # Check if account is verified
-            if user['is_verified'] == 0:
-
-                # Flash failed authentication message and redirect to login page
-                flash("Account not verified, please check your email")
-                return redirect(url_for('trylogin'))
-
-            # Create otp
-            session[f'email_{input_username}'] = user['email']
-            otp_created_time = datetime.now(timezone.utc)
-            otp = generate_otp(user['email'], otp_created_time)
-
-            # Send email to user using SMTP - Simple Mail Transfer Protocol
-            # Create URL link
-            full_url = request.url + 'code'
-            token = generate_token(user['email'])
-            confirm_url = f"{full_url}?token={token}"
-            msg = Message('Training Test Program Verification.', sender=app.config['MAIL_USERNAME'],
-                          recipients=[user['email']])
-            msg.body = ('Dear ' + user['name'] +
-                        '\n\nWe received a request to access your account ' + user['username'] + '.' +
-                        '\nPlease insert verification code.\nVerification code: ' + str(otp) +
-                        '\nURL: ' + confirm_url)
-            mail.send(msg)
-
-            # Set up user session cookie
-            session['user'] = user
-
-            # Move to verification page
-            return render_template('verification.html', password=input_password, time=otp_created_time, user_email=user['email'])
-        else:
-            # Flash failed authentication message and redirect to login page
-            flash("Invalid username or password")
-            return redirect(url_for('trylogin'))
-
-
-# Generate a verification otp
-def generate_otp(email, time):
-    otp = str(randint(100000, 999999))
-    session[f'otp_{email}'] = otp
-    session[f'time_{email}'] = time
-    return otp
-
-
-# Action when the given link is clicked
-@app.route('/logincode')
-def verify_token():
-    token = request.args.get('token')
-    if 'user' not in session:
-        return redirect(url_for('trylogin'))
-
-    if session['user']['is_authenticated']:
-        return redirect(url_for('homepage'))
-
-    tokenized_email = confirm_token(token)
-    user = session['user']
-    email = user['email']
-    username = user['username']
-    password = session.get(f'password{username}')
-    time = session.get(f'time{email}')
-    if tokenized_email == email:
-        return render_template('verification.html', password=password, time=time, user_email=email)
-
-    # Handle invalid link
-    error_message = {'category': 'error', 'message': 'Invalid or expired verification link.<br>Please make sure you are using the correct link provided in your email.'}
-    return render_template("error_page.html", error_message=error_message)
-
-
-def generate_token(email):
-    serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
-    return serializer.dumps(email, salt=app.config['SECURITY_PASSWORD_SALT'])
-
-
-def confirm_token(token, expiration=300):
-    serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
-    try:
-        email = serializer.loads(
-            token, salt=app.config['SECURITY_PASSWORD_SALT'], max_age=expiration
-        )
-        return email
-    except Exception:
-        return False
-
-# Action when submit button is clicked on verification page
-@app.route('/verification', methods=['POST'])
-def verify_otp():
-    otp = request.form['otp']
-    session_email = request.form['user_email']
-
-    session_otp = session.get(f'otp_{session_email}')
-    session_time = session.get(f'time_{session_email}')
-
-    # When otp and time is not stored in session
-    if not session_otp or not session_time:
-        verification_result = {'category': 'error', 'message': 'Invalid OTP. Please try again.'}
-        return render_template('verification.html',verification_result=verification_result, user_email=session_email)
-
-    # When session is over
-    current_time = datetime.now(timezone.utc)
-    if current_time > session_time + timedelta(minutes=5):
-        # Delete otp and time in session
-        session.pop(f'otp_{session_email}')
-        session.pop(f'time_{session_email}')
-        verification_result = {'category': 'error', 'message': 'OTP verification is expired. Please try again.'}
-        return render_template('verification.html', verification_result=verification_result, user_email=session_email)
-
-    if otp == session_otp:  # Success in verification
-        session.pop(f'otp_{session_email}')
-        session.pop(f'time_{session_email}')
-        
-        # If user is unverified, set to verified
-        query = f"UPDATE user SET is_verified = 1 WHERE username = '" + session['user']['username'] + "'"
-        db.engine.execute(query)
-        # Update session as authenticated
-        session['user']['is_authenticated'] = True
-        return redirect(url_for('homepage'))
-
-    elif otp != session_otp:
-        verification_result = {'category': 'error', 'message': 'Invalid OTP. Please try again.'}
-        return render_template('verification.html', verification_result=verification_result, user_email=session_email)
 
 @app.route("/register", methods=["POST"])
 def register():
@@ -379,7 +327,6 @@ def register():
             else:
                 flash("Email " + input_email + " already exists")
                 return redirect(url_for('tryregister'))
-
 
         else:
             # Insert the user into the database
@@ -431,6 +378,67 @@ def register():
             # Return to homepage
             return redirect(url_for("trylogin"))
 
+# Action when the given link is clicked
+@app.route('/logincode')
+def verify_token():
+    token = request.args.get('token')
+    if 'user' not in session:
+        return redirect(url_for('trylogin'))
+
+    if session['user']['is_authenticated']:
+        return redirect(url_for('homepage'))
+
+    tokenized_email = confirm_token(token)
+    user = session['user']
+    email = user['email']
+    username = user['username']
+    password = session.get(f'password{username}')
+    time = session.get(f'time{email}')
+    if tokenized_email == email:
+        return render_template('verification.html', password=password, time=time, user_email=email)
+
+    # Handle invalid link
+    error_message = {'category': 'error', 'message': 'Invalid or expired verification link.<br>Please make sure you are using the correct link provided in your email.'}
+    return render_template("error_page.html", error_message=error_message)
+
+# Action when submit button is clicked on verification page
+@app.route('/verification', methods=['POST'])
+def verify_otp():
+    otp = request.form['otp']
+    session_email = request.form['user_email']
+
+    session_otp = session.get(f'otp_{session_email}')
+    session_time = session.get(f'time_{session_email}')
+
+    # When otp and time is not stored in session
+    if not session_otp or not session_time:
+        verification_result = {'category': 'error', 'message': 'Invalid OTP. Please try again.'}
+        return render_template('verification.html',verification_result=verification_result, user_email=session_email)
+
+    # When session is over
+    current_time = datetime.now(timezone.utc)
+    if current_time > session_time + timedelta(minutes=5):
+        # Delete otp and time in session
+        session.pop(f'otp_{session_email}')
+        session.pop(f'time_{session_email}')
+        verification_result = {'category': 'error', 'message': 'OTP verification is expired. Please try again.'}
+        return render_template('verification.html', verification_result=verification_result, user_email=session_email)
+
+    if otp == session_otp:  # Success in verification
+        session.pop(f'otp_{session_email}')
+        session.pop(f'time_{session_email}')
+        
+        # If user is unverified, set to verified
+        query = f"UPDATE user SET is_verified = 1 WHERE username = '" + session['user']['username'] + "'"
+        db.engine.execute(query)
+        # Update session as authenticated
+        session['user']['is_authenticated'] = True
+        return redirect(url_for('homepage'))
+
+    elif otp != session_otp:
+        verification_result = {'category': 'error', 'message': 'Invalid OTP. Please try again.'}
+        return render_template('verification.html', verification_result=verification_result, user_email=session_email)
+
 @app.route("/password_reset", methods=["GET", "POST"])
 def password_reset():
     if request.method == "POST":
@@ -464,7 +472,6 @@ def password_reset():
         # Render the password reset form
         return render_template("password_reset.html")
 
-
 @app.route('/reset_otp', methods=['GET', 'POST'])
 def reset_otp():
 
@@ -496,7 +503,6 @@ def reset_otp():
         verification_result = {'category': 'error', 'message': 'Invalid OTP. Please try again.'}
         return render_template('reset_otp.html', verification_result=verification_result, user_email=session_email)
 
-
 @app.route("/update_password", methods=["POST"])
 def update_password():
     if request.method == "POST":
@@ -523,14 +529,12 @@ def update_password():
             update_query = text("UPDATE user SET password = :hashed_password WHERE email = :email")
             db.engine.execute(update_query, hashed_password=hashed_password, email=session_email)
 
-            
             # Check if the password was successfully updated in the database
             user_query = text("SELECT * FROM user WHERE email = :email")
             result = db.engine.execute(user_query, email=session_email)
             row = result.fetchone()
             newly_hashed_password = row['password']
-
-
+            
             if bcrypt.check_password_hash(newly_hashed_password, new_password):
                 # Password update was successful
                 flash('Password updated successfully!', 'success')
@@ -543,6 +547,8 @@ def update_password():
         except Exception as e:
             flash('Failed to update password. Please try again later.', 'error')
             return redirect(url_for('reset_otp'))  # Redirect back to password reset form
+
+#----------Server Configuration and Startup----------
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
