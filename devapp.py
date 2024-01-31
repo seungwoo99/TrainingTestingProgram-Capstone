@@ -208,7 +208,7 @@ def login():
             return redirect(url_for('trylogin'))
 
         user = {'username': row['username'], 'email': row['email'],
-                'authenticated': True, 'name': row['name'], 'is_verified': row['is_verified'],
+                'name': row['name'], 'is_verified': row['is_verified'],
                 'is_admin': row['is_admin'], 'is_authenticated': False}
 
         # Check if entered password matches hashed_password
@@ -322,7 +322,10 @@ def verify_otp():
     if otp == session_otp:  # Success in verification
         session.pop(f'otp_{session_email}')
         session.pop(f'time_{session_email}')
-
+        
+        # If user is unverified, set to verified
+        query = f"UPDATE user SET is_verified = 1 WHERE username = '" + session['user']['username'] + "'"
+        db.engine.execute(query)
         # Update session as authenticated
         session['user']['is_authenticated'] = True
         return redirect(url_for('homepage'))
@@ -388,8 +391,35 @@ def register():
                               password=hashed_password, name=f"{input_first_name} {input_last_name}",
                               is_admin=is_admin, is_verified=0)
 
+            user = {'username': input_username, 'email': input_email,
+                    'name': input_first_name + " " + input_last_name, 'is_verified': 0,
+                    'is_admin': is_admin, 'is_authenticated': False}
+
+            # Set up user session cookie
+            session['user'] = user
+
+            # Send Verification email:
+            # Create otp
+            session[f'email_{input_username}'] = user['email']
+            otp_created_time = datetime.now(timezone.utc)
+            otp = generate_otp(user['email'], otp_created_time)
+
+            # Send email to user using SMTP - Simple Mail Transfer Protocol
+            # Create URL link
+            full_url = request.url + 'code'
+            token = generate_token(user['email'])
+            confirm_url = f"{full_url}?token={token}"
+            confirm_url = confirm_url.replace("register", "login")
+            msg = Message('Training Test Program Verification.', sender=app.config['MAIL_USERNAME'],
+                          recipients=[user['email']])
+            msg.body = ('Dear ' + user['name'] +
+                        '\n\nWe received a request to verify your new account ' + user['username'] + '. Please disregard this email if you did not register an account.' +
+                        '\nPlease insert verification code.\nVerification code: ' + str(otp) +
+                        '\nURL: ' + confirm_url)
+            mail.send(msg)
+
             # Return to homepage
-            return redirect(url_for("homepage"))
+            return redirect(url_for("trylogin"))
 
 @app.route("/password_reset", methods=["GET", "POST"])
 def password_reset():
@@ -423,6 +453,8 @@ def password_reset():
     else:
         # Render the password reset form
         return render_template("password_reset.html")
+
+
 @app.route('/reset_otp', methods=['GET', 'POST'])
 def reset_otp():
 
