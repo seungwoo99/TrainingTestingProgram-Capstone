@@ -193,6 +193,13 @@ def data():
 
     return render_template('datahierarchy.html')
 
+@app.route('/scoring_metrics')
+def scoring():
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+    
+    return render_template('scoring_metrics.html')
 
 # Processes login attempt
 @app.route("/login", methods=["POST"])
