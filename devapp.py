@@ -14,6 +14,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine, text
 from sqlalchemy.sql import func
 from sqlalchemy.exc import SQLAlchemyError
+from itsdangerous import URLSafeTimedSerializer
 
 # Local application/library specific imports
 from config import MailConfig
@@ -30,6 +31,8 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 # Configure Flask app to use Mail system
 app.config.from_object(MailConfig)
+# Configure Flask app to use Token system
+app.config["SECURITY_PASSWORD_SALT"] = os.getenv("SECRET_KEY")
 
 # Initialize SQLAlchemy
 db.init_app(app)
@@ -223,12 +226,16 @@ def login():
             otp = generate_otp(user['email'], otp_created_time)
 
             # Send email to user using SMTP - Simple Mail Transfer Protocol
-            # Send email to user using SMTP - Simple Mail Transfer Protocol
+            # Create URL link
+            full_url = request.url + 'code'
+            token = generate_token(user['email'])
+            confirm_url = f"{full_url}?token={token}"
             msg = Message('Training Test Program Verification.', sender=app.config['MAIL_USERNAME'],
                           recipients=[user['email']])
             msg.body = ('Dear ' + user['name'] +
                         '\n\nWe received a request to access your account ' + user['username'] + '.' +
-                        '\nPlease insert verification code.\nVerification code: ' + str(otp))
+                        '\nPlease insert verification code.\nVerification code: ' + str(otp) +
+                        '\nURL: ' + confirm_url)
             mail.send(msg)
 
             # Set up user session cookie
@@ -241,12 +248,53 @@ def login():
             flash("Invalid username or password")
             return redirect(url_for('trylogin'))
 
+
 # Generate a verification otp
 def generate_otp(email, time):
     otp = str(randint(100000, 999999))
     session[f'otp_{email}'] = otp
     session[f'time_{email}'] = time
     return otp
+
+
+# Action when the given link is clicked
+@app.route('/logincode')
+def verify_token():
+    token = request.args.get('token')
+    if 'user' not in session:
+        return redirect(url_for('trylogin'))
+
+    if session['user']['is_authenticated']:
+        return redirect(url_for('homepage'))
+
+    tokenized_email = confirm_token(token)
+    user = session['user']
+    email = user['email']
+    username = user['username']
+    password = session.get(f'password{username}')
+    time = session.get(f'time{email}')
+    if tokenized_email == email:
+        return render_template('verification.html', password=password, time=time, user_email=email)
+
+    # Handle invalid link
+    error_message = {'category': 'error', 'message': 'Invalid or expired verification link.<br>Please make sure you are using the correct link provided in your email.'}
+    return render_template("error_page.html", error_message=error_message)
+
+
+def generate_token(email):
+    serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+    return serializer.dumps(email, salt=app.config['SECURITY_PASSWORD_SALT'])
+
+
+def confirm_token(token, expiration=300):
+    serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+    try:
+        email = serializer.loads(
+            token, salt=app.config['SECURITY_PASSWORD_SALT'], max_age=expiration
+        )
+        return email
+    except Exception:
+        return False
 
 # Action when submit button is clicked on verification page
 @app.route('/verification', methods=['POST'])
