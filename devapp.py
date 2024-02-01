@@ -174,9 +174,27 @@ def homepage():
         return redirect(url_for('trylogin'))
 
     # Serve homepage
-    return "<h2>This is the under-construction homepage</h2><a href=\"/logout\">Logout</a>"
+    #return "<h2>This is the under-construction homepage</h2><a href=\"/logout\">Logout</a>"
+    # Temporary redirect to a different page
+    return redirect(url_for('data'))
+  
+@app.route('/datahierarchy')
+def data():
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
 
-# This route renders a page for creating a random test with various options.
+    return render_template('datahierarchy.html')
+
+@app.route('/scoring_metrics')
+def scoring():
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+    
+    return render_template('scoring_metrics.html')
+
+# Route to render a page for creating a random test with various options.
 @app.route('/random_test_creation')
 def show_options():
     # Check if user session is inactive
@@ -201,7 +219,7 @@ def show_options():
         print("An error occurred in show_options:", str(e))
         return "An error occurred while preparing the test creation page."
 
-# This route handles the POST request to get random questions based on user selections.
+# Route to handle the POST request to get random questions based on user selections.
 @app.route('/get-questions', methods=['POST'])    
 def handle_get_questions():
     try:
@@ -261,14 +279,6 @@ def handle_get_questions():
     except Exception as e:
         logging.error(f"Unhandled exception: {e}", exc_info=True)
         return jsonify({'error': "An error occurred while preparing the test creation page."}), 500
-    
-@app.route('/datahierarchy')
-def data():
-    if 'user' not in session or not session['user'].get('is_authenticated', False):
-        flash("Access denied, please login.")
-        return redirect(url_for('trylogin'))
-
-    return render_template('datahierarchy.html')
 
 #----------Routes for registration and verification----------
 
@@ -294,7 +304,6 @@ def tryregister():
 
 @app.route("/register", methods=["POST"])
 def register():
-
     if request.method == "POST":
 
         # Load form variables

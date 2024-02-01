@@ -7,6 +7,17 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/random_test_creation.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
   </head>
+
+  <header class="navigation">
+    <ul class="nav-links">
+        <li class="center"><a href="{{url_for('tryregister')}}">Register</a></li>
+        <li class="center"><a href="/datahierarchy">Data Hierarchy</a></li>
+        <li class="center"><a href="/random_test_creation">Testing</a></li>
+        <li class="center"><a href="/scoring_metrics">Scoring Metrics</a></li>
+        <li class="center"><a href="{{ url_for('logout') }}">Logout/Login</a></li>
+    </ul>
+</header>
+
   <body>
     <div class="container">
       <form id="randomTestCreationForm"> 
