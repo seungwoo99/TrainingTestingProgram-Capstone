@@ -16,7 +16,8 @@ header.navigation{
 }
 
 ul.nav-links{
-  margin-left: 200px;
+  width: 1242px;
+  margin-left: 17.5%;
   align-items: center;
   justify-content: center;
 }
