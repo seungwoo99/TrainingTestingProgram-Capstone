@@ -12,7 +12,7 @@ from db_config import db
 # Set log level to DEBUG and specify log message format.
 logging.basicConfig(level=logging.DEBUG, format='%(name)s - %(levelname)s - %(message)s')
 
-# This function fetches test creation options from the database.
+# Function to fetch test creation options from the database.
 def fetch_test_creation_options():
     try:
         # Connect to the database using db.engine.
@@ -39,44 +39,58 @@ def fetch_test_creation_options():
         logging.error("An error occurred while fetching test creation options:", exc_info=True)
         raise
 
+# Function to query the database for questions that match user inputs to create a pool of questions
 def get_questions(blooms_levels, subjects, topics, question_types, question_difficulties):
     try:
+        # Log that we are connecting to the database.
         logging.info("Connecting to the database.")
-        with db.engine.connect() as connection:
-            where_clauses = []
-            params = {}
 
+        # Use a context manager to safely interact with the database.
+        with db.engine.connect() as connection:
+            where_clauses = []  # List to store WHERE clauses.
+            params = {}  # Dictionary to store parameters for the SQL query.
+
+            # Check if blooms_levels filter is provided.
             if blooms_levels:
+                # Generate placeholders for the IN clause.
                 placeholders = ', '.join([f':blooms_level_{i}' for i in range(len(blooms_levels))])
                 clause = f'b.name IN ({placeholders})'
-                where_clauses.append(clause)
+                where_clauses.append(clause)  # Add the clause to the list.
+                # Update the params dictionary with parameter values.
                 params.update({f'blooms_level_{i}': level for i, level in enumerate(blooms_levels)})
 
+            # Check if subjects filter is provided.
             if subjects:
                 placeholders = ', '.join([f':subject_{i}' for i in range(len(subjects))])
                 clause = f's.name IN ({placeholders})'
                 where_clauses.append(clause)
                 params.update({f'subject_{i}': subject for i, subject in enumerate(subjects)})
 
+            # Check if topics filter is provided.
             if topics:
                 placeholders = ', '.join([f':topic_{i}' for i in range(len(topics))])
                 clause = f't.name IN ({placeholders})'
                 where_clauses.append(clause)
                 params.update({f'topic_{i}': topic for i, topic in enumerate(topics)})
 
+            # Check if question_types filter is provided.
             if question_types:
                 placeholders = ', '.join([f':question_type_{i}' for i in range(len(question_types))])
                 clause = f'q.question_type IN ({placeholders})'
                 where_clauses.append(clause)
                 params.update({f'question_type_{i}': q_type for i, q_type in enumerate(question_types)})
 
+            # Check if question_difficulties filter is provided.
             if question_difficulties:
                 placeholders = ', '.join([f':question_difficulty_{i}' for i in range(len(question_difficulties))])
                 clause = f'q.question_difficulty IN ({placeholders})'
                 where_clauses.append(clause)
                 params.update({f'question_difficulty_{i}': q_difficulty for i, q_difficulty in enumerate(question_difficulties)})
 
+            # Construct the WHERE statement based on the clauses or set to '1' if no filters are provided.
             where_statement = ' OR '.join(where_clauses) if where_clauses else '1'
+
+            # Define the SQL query with placeholders.
             sql = text(f"""
                 SELECT q.question_id, q.max_points
                 FROM questions q
@@ -87,17 +101,25 @@ def get_questions(blooms_levels, subjects, topics, question_types, question_diff
                 WHERE {where_statement}
             """)
 
-            # Pass parameters as a dictionary directly, without unpacking.
-            result = connection.execute(sql, params).fetchall()  
+            # Execute the SQL query with the provided parameters.
+            result = connection.execute(sql, params).fetchall()
+
+            # Log the generated SQL query and parameters.
             logging.debug(f"Generated SQL Query: {sql}")
             logging.debug(f"Parameters: {params}")
+
+            # Log a success message.
             logging.info("Query executed successfully.")
+
+            # Return the result of the SQL query.
             return result
 
     except Exception as e:
+        # Log an error message with exception details.
         logging.error(f"Error while getting questions: {e}", exc_info=True)
 
-# This function selects questions from a pool based on user preferences.
+
+# Function to select questions from a pool based on user preferences.
 def select_questions(questions_pool, num_questions, max_points):
     logging.info("Selecting questions from the pool.")
     if num_questions > len(questions_pool):
