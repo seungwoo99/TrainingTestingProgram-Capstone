@@ -1,15 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Montserrat', sans-serif;
+}
+
 /* HEADER NAV BAR CSS */
 header.navigation{
+    position: static;
   background: #fff;
   padding: 20px 15px;
   box-shadow: 0 5px 10px rgba(0,0,0,0.3);
-  position: static;
+}
+
+ul.nav-links{
+  margin-left: 200px;
+  align-items: center;
+  justify-content: center;
 }
 
 .nav-links {
+  width: 1242px;
   display: flex;
   align-items: center;
   justify-content: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .nav-links li {
@@ -54,8 +72,13 @@ body {
 }
 
 .container {
-    width: 80%;
+    top: 25%;
+    left: 25%;
+    width: 75%;
+    max-width: 1000px;
     margin: auto;
+    margin-top: 50px;
+    margin-bottom: 50px;
     padding: 10px;
     background: #fff;
     border-radius: 7px;
