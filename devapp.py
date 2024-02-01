@@ -182,7 +182,9 @@ def homepage():
         return redirect(url_for('trylogin'))
 
     # Serve homepage
-    return "<h2>This is the under-construction homepage</h2><a href=\"/logout\">Logout</a>"
+    #return "<h2>This is the under-construction homepage</h2><a href=\"/logout\">Logout</a>"
+    # Temporary redirect to a different page
+    return redirect(url_for('data'))
 
 
 @app.route('/datahierarchy')
@@ -193,6 +195,13 @@ def data():
 
     return render_template('datahierarchy.html')
 
+@app.route('/scoring_metrics')
+def scoring():
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+    
+    return render_template('scoring_metrics.html')
 
 # Processes login attempt
 @app.route("/login", methods=["POST"])
