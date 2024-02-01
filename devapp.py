@@ -182,7 +182,9 @@ def homepage():
         return redirect(url_for('trylogin'))
 
     # Serve homepage
-    return "<h2>This is the under-construction homepage</h2><a href=\"/logout\">Logout</a>"
+    #return "<h2>This is the under-construction homepage</h2><a href=\"/logout\">Logout</a>"
+    # Temporary redirect to a different page
+    return redirect(url_for('data'))
 
 
 @app.route('/datahierarchy')
