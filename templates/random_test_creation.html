@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/random_test_creation.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
   </head>
-
   <header class="navigation">
     <ul class="nav-links">
         <li class="center"><a href="{{url_for('tryregister')}}">Register</a></li>
@@ -16,14 +15,12 @@
         <li class="center"><a href="/scoring_metrics">Scoring Metrics</a></li>
         <li class="center"><a href="{{ url_for('logout') }}">Logout/Login</a></li>
     </ul>
-</header>
-
+  </header>
   <body>
     <div class="container">
       <form id="randomTestCreationForm"> 
         <h1>Select options to determine the pool of potential questions from the database:</h1>
         <div class="criteria-container">
-          
           <!-- Bloom's Taxonomy Section -->
           <div class="section">
             <div class="label-container">
@@ -39,7 +36,6 @@
             </div>
             <button type="button" class="selectCategory" data-category="blooms_levels">Select All Levels</button>
           </div>
-  
           <!-- Subject Section -->
           <div class="section">
             <div class="label-container">
@@ -55,7 +51,6 @@
             </div>
             <button type="button" class="selectCategory" data-category="subjects">Select All Subjects</button>
           </div>
-  
           <!-- Topic Section -->
           <div class="section">
             <div class="label-container">
@@ -71,7 +66,6 @@
             </div>
             <button type="button" class="selectCategory" data-category="topics">Select All Topics</button>
           </div>
-  
           <!-- Question Type Section -->
           <div class="section">
             <div class="label-container">
@@ -87,7 +81,6 @@
             </div>
             <button type="button" class="selectCategory" data-category="question_types">Select All Types</button>
           </div>
-          
           <!-- Question Difficulty Section--> 
           <div class="section">
             <div class="label-container">
@@ -104,7 +97,6 @@
             <button type="button" class="selectCategory" data-category="question_difficulties">Select All Difficulties</button>
           </div>
         </div>
-
         <div class="section">
           <div class="grid-container">
             <div class="grid-item">
@@ -125,7 +117,6 @@
             </div>
           </div>
         </div>
-
         <div class="section">
           <div class="grid-container">
             <div class="grid-item">
@@ -153,8 +144,6 @@
             </div>
           </div>
         </div>
-  
-        <!-- Form Footer for Submission -->
         <div class="section"> 
           <div class="centered-button-container">
             <button type="button" id="confirmSelection">Generate Test</button>
