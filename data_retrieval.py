@@ -39,6 +39,9 @@ def fetch_test_creation_options():
         logging.error("An error occurred while fetching test creation options:", exc_info=True)
         raise
 
+import logging
+from sqlalchemy import text
+
 # Function to query the database for questions that match user inputs to create a pool of questions
 def get_questions(blooms_levels, subjects, topics, question_types, question_difficulties):
     try:
@@ -52,11 +55,9 @@ def get_questions(blooms_levels, subjects, topics, question_types, question_diff
 
             # Check if blooms_levels filter is provided.
             if blooms_levels:
-                # Generate placeholders for the IN clause.
                 placeholders = ', '.join([f':blooms_level_{i}' for i in range(len(blooms_levels))])
                 clause = f'b.name IN ({placeholders})'
-                where_clauses.append(clause)  # Add the clause to the list.
-                # Update the params dictionary with parameter values.
+                where_clauses.append(clause)
                 params.update({f'blooms_level_{i}': level for i, level in enumerate(blooms_levels)})
 
             # Check if subjects filter is provided.
@@ -73,6 +74,10 @@ def get_questions(blooms_levels, subjects, topics, question_types, question_diff
                 where_clauses.append(clause)
                 params.update({f'topic_{i}': topic for i, topic in enumerate(topics)})
 
+            # Group the conditions for blooms_levels, subjects, and topics.
+            grouped_conditions = ' OR '.join(where_clauses) if where_clauses else '1'
+            where_clauses = [f"({grouped_conditions})"]
+
             # Check if question_types filter is provided.
             if question_types:
                 placeholders = ', '.join([f':question_type_{i}' for i in range(len(question_types))])
@@ -87,8 +92,8 @@ def get_questions(blooms_levels, subjects, topics, question_types, question_diff
                 where_clauses.append(clause)
                 params.update({f'question_difficulty_{i}': q_difficulty for i, q_difficulty in enumerate(question_difficulties)})
 
-            # Construct the WHERE statement based on the clauses or set to '1' if no filters are provided.
-            where_statement = ' OR '.join(where_clauses) if where_clauses else '1'
+            # Construct the WHERE statement based on the clauses.
+            where_statement = ' AND '.join(where_clauses)
 
             # Define the SQL query with placeholders.
             sql = text(f"""
@@ -117,7 +122,7 @@ def get_questions(blooms_levels, subjects, topics, question_types, question_diff
     except Exception as e:
         # Log an error message with exception details.
         logging.error(f"Error while getting questions: {e}", exc_info=True)
-
+        return None
 
 # Function to select questions from a pool based on user preferences.
 def select_questions(questions_pool, num_questions, max_points):

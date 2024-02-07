@@ -1,5 +1,18 @@
 // Wrap your JavaScript code in a DOMContentLoaded event listener to ensure it runs after the DOM is fully loaded.
 document.addEventListener('DOMContentLoaded', function () {
+  
+  // JavaScript to show the tooltip text on hover
+  var infoIcon = document.querySelector('.info-icon');
+  var tooltipText = document.querySelector('.tooltip-text');
+
+  infoIcon.addEventListener('mouseenter', function() {
+      tooltipText.style.visibility = 'visible';
+  });
+
+  infoIcon.addEventListener('mouseleave', function() {
+      tooltipText.style.visibility = 'hidden';
+  });
+  
   // Utility function to update the selected state of checkboxes and toggle buttons
   function updateSelection(category, isChecked) {
     document.querySelectorAll(`.toggle-btn input[data-category="${category}"]`).forEach(function (checkbox) {
