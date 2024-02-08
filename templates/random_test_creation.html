@@ -7,15 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/random_test_creation.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
   </head>
-  <header class="navigation">
-    <ul class="nav-links">
-        <li class="center"><a href="{{url_for('tryregister')}}">Register</a></li>
-        <li class="center"><a href="/datahierarchy">Data Hierarchy</a></li>
-        <li class="center"><a href="/random_test_creation">Testing</a></li>
-        <li class="center"><a href="/scoring_metrics">Scoring Metrics</a></li>
-        <li class="center"><a href="{{ url_for('logout') }}">Logout/Login</a></li>
-    </ul>
-  </header>
+  {% include 'navbar.html' %}
   <body>
     <div class="container">
       <form id="randomTestCreationForm"> 
@@ -110,10 +102,6 @@
             <div class="grid-item">
               <div class ="label-textboxsection-container">
                 <h2>Max Points</h2>
-                <div class="tooltip-container">
-                  <i class="info-icon">i</i>
-                  <span class="tooltip-text">Tooltip text goes here.</span>
-                </div>
               </div>
               <div class="textinput-container">
                 <input type="number" id="test_point_value" name="test_point_value">

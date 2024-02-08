@@ -11,15 +11,7 @@
             }
         </style>
     </head>
-    <header class="navigation">
-        <ul class="nav-links">
-            <li class="center"><a href="{{url_for('tryregister')}}">Register</a></li>
-            <li class="center"><a href="/datahierarchy">Data Hierarchy</a></li>
-            <li class="center"><a href="/random_test_creation">Testing</a></li>
-            <li class="center"><a href="/scoring_metrics">Scoring Metrics</a></li>
-            <li class="center"><a href="{{ url_for('logout') }}">Logout/Login</a></li>
-        </ul>
-    </header>
+    {% include 'navbar.html' %}
     <body>
         <div class="container">
             <h2>Data Hierarchy</h2>

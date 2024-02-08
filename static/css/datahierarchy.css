@@ -1,101 +1,45 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
-*{
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Montserrat', sans-serif;
-}
-
-/* HEADER NAV BAR CSS */
-header.navigation{
-  background: #fff;
-  padding: 20px 15px;
-  box-shadow: 0 5px 10px rgba(0,0,0,0.3);
-  position: static;
-}
-
-.nav-links {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.nav-links li {
-  list-style: none;
-  margin: 0 12px;
-}
-
-.nav-links li a {
-  position: relative;
-  color: #333;
-  font-size: 20px;
-  font-weight: 500;
-  padding: 6px 0;
-  text-decoration: none;
-}
-
-.nav-links li a:before {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  height: 3px;
-  width: 0%;
-  background: #0b80bd;
-  border-radius: 12px;
-  transition: all 0.4s ease;
-}
-
-.nav-links li a:hover:before {
-  width: 100%;
-}
-
-.nav-links li.center a:before {
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-
 /* DATA HIERARCHY TABLE CSS */
 table {
-    width: 50%;
-    border-collapse: collapse;
-    margin: 5% 25% 5% 25%;
-    text-align: center;
-
+  width: 50%;
+  border-collapse: collapse;
+  margin: 5% 25% 5% 25%;
+  text-align: center;
 }
 
 th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
 }
 
 th {
-    background-color: #f2f2f2;
-    text-align: center;
+  background-color: #f2f2f2;
+  text-align: center;
 }
 
 button {
-    margin-right: 1%;
-    background-color: #0b80bd;
-    border: none;
-    color: white;
-    cursor: pointer;
-    padding: 10px 22px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-family: 'Montserrat';
-    font-size: 16px;
+  margin-right: 1%;
+  background-color: #0b80bd;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 10px 22px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-family: 'Montserrat';
+  font-size: 16px;
 
 }
+
 button:hover{background-color: #0d688f}
 button:active {
   background-color: #040f16;
   box-shadow: 0 5px #726e60;
   transform: translateY(4px);
+
 }
+
 #navbar-primary.navbar-default {
   background: transparent;
   border: none;
@@ -108,22 +52,17 @@ button:active {
       > a {
         padding-left: 30px;
         padding-right: 30px;
-        }
+      }
     }
   }
 }
 
 /* Rest of page */
-body{
-  min-height: 100vh;
-  width: 100%;
-  background: #0b80bd;
-}
-h2{
+h2 {
   margin-top: 2%;
 }
 
-.container{
+.container {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -136,6 +75,6 @@ h2{
   text-align: center;
 }
 
-button{
+button {
   margin-bottom: 4%;
 }
