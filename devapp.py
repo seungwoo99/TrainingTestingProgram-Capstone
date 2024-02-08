@@ -280,6 +280,11 @@ def handle_get_questions():
         logging.error(f"Unhandled exception: {e}", exc_info=True)
         return jsonify({'error': "An error occurred while preparing the test creation page."}), 500
 
+# Route to render a page for creating a test by manual selection   
+@app.route('/manual_test_creation')
+def manual_test_creation():
+    return render_template('manual_test_creation.html')
+
 #----------Routes for registration and verification----------
 
 # Route for the registration page, admin only.

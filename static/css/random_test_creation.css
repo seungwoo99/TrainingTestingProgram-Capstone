@@ -1,15 +1,19 @@
 .container {
-    width: 80%;
+    position: absolute;
+    top: calc(50px + 2.5%);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-height: calc(100% - 100px - 2.5% - 20px);
+    overflow: auto;
+    width: 85%;
     margin: auto;
-    padding: 10px;
+    padding-top: 20px; 
+    padding-left: 10px;
+    padding-right: 10px;
     background: #fff;
     border-radius: 7px;
     box-shadow: 0 5px 10px rgba(0,0,0,0.3);
-
-    position: absolute;
-    top: 145%;
-    left: 50%;
-    transform: translate(-50%,-50%);
 }
 
 h1 {
@@ -44,8 +48,9 @@ h2 {
 /* Elements that style the text input sections */
 .grid-container {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Two columns of equal width */
+    grid-template-columns: 1fr 1fr;
     gap: 10px; 
+    padding-left: 30px;
 }
 
 .grid-item {
