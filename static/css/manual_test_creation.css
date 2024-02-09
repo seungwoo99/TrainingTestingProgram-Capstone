@@ -1,17 +1,165 @@
+/* Main container styles */
 .container {
-    position: absolute;
-    top: calc(50px + 2.5%);
-    left: 0;
-    right: 0;
-    bottom: 0;
-    max-height: calc(100% - 100px - 2.5% - 20px);
-    overflow: auto;
-    width: 85%;
-    margin: auto;
-    padding-top: 20px; 
-    padding-left: 10px;
-    padding-right: 10px;
-    background: #fff;
-    border-radius: 7px;
-    box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+  position: absolute;
+  top: calc(50px + 2.5%);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: calc(100% - 100px - 2.5% - 20px);
+  overflow: auto;
+  width: 85%;
+  margin: auto;
+  padding: 30px;
+  background: #fff;
+  border-radius: 7px;
+  box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+  overflow-x: hidden;
+}
+
+/* Elements to style table */ 
+.table {
+  width: 100%; /* Make the table span the full width of its container */
+  table-layout: fixed; /* Use fixed table layout to allow for equal column widths */
+  border-collapse: collapse; /* Collapse borders for a cleaner look */
+  font-family: 'Code Next', sans-serif;
+}
+
+th, td {
+  text-align: left; /* Align text to the left */
+}
+
+th {
+  padding: 8px;
+}
+
+td {
+  padding-left: 8px;
+  padding-bottom: 4px;
+}
+
+/* Elements that style the text inputs */
+input[type="text"], input[type="number"] {
+  width: 75%;
+  padding: 10px;
+  margin-top: 5px;
+  font-size: 18px;
+  cursor: pointer;
+  font-family: 'Code Next', sans-serif;
+}
+
+input[type="text"]:hover, 
+input[type="number"]:hover {
+  box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+  border: 2px solid black;
+}
+
+/* Element that style the dropdown input */
+.dropdownInput {
+  width: 75%;
+  padding: 10px;
+  margin-top: 5px;
+  font-size: 18px;
+  cursor: pointer;
+  font-family: 'Code Next', sans-serif;
+}
+
+.dropdownInput:hover {
+  box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+  border: 2px solid black;
+}
+
+.dropdownInput option {
+  padding: 10px;
+}
+
+.dropdownInput option:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+/* Elements to style side bar */
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Sidebar styles */
+.side-panel {
+  position: absolute;
+  top: 0;
+  right: -200px;
+  width: 200px;
+  height: 100%;
+  padding: 20px;
+  color: #ffffff;
+  background: #726E60;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.35);
+  transition: right 0.3s ease-in-out;
+}
+
+/* Show the sidebar when 'side-panel-open' class is applied to the wrapper */
+.side-panel-open .side-panel {
+  right: 0;
+}
+
+/* Adjust the wrapper styles when sidebar is open */
+.wrapper.side-panel-open {
+  flex-direction: row;
+}
+
+/* Adjust the sidebar styles when open */
+.wrapper.side-panel-open .side-panel {
+  right: 0;
+}
+
+/* Toggle button styles */
+.side-panel-toggle {
+  position: absolute;
+  top: 20px;
+  right: -5px;
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  background: #726E60;
+  border: none;
+  border-radius: 5px 0 0 5px;
+  outline: none;
+  cursor: pointer;
+}
+
+.side-panel-toggle:hover {
+  background: #708B75;
+}
+
+/* Toggle icon display */
+.side-panel-toggle .material-icons:first-child,
+.side-panel-open .side-panel-toggle .material-icons:last-child {
+  display: none;
+}
+
+.side-panel-open .side-panel-toggle .material-icons:first-child,
+.side-panel-toggle .material-icons:last-child {
+  display: block;
+}
+
+/* Show the sidebar when 'side-panel-open' class is applied to the wrapper */
+.side-panel-open .side-panel {
+  right: 0;
+}
+
+/* Position the toggle button on the edge of the sidebar when it's open */
+.side-panel-open .side-panel-toggle {
+  right: 200px;
+  border-radius: 5px 0 0 5px;
+  background: #44423A;
+  transition: right 0.3s ease-in-out;
+}
+
+/* Adjust the wrapper styles when sidebar is open */
+.wrapper.side-panel-open {
+  flex-direction: row;
 }

@@ -59,6 +59,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       var numQuestionsValue = document.getElementById('number_of_questions').value;
       var maxPointsValue = document.getElementById('test_point_value').value;
+      var trainingLevelValue = document.getElementById('trainingLevelDropdown').value;
 
       fetch('/get-questions', {
         method: 'POST',
@@ -72,7 +73,8 @@ document.addEventListener('DOMContentLoaded', function () {
           question_types: selectedData.question_types,
           question_difficulties: selectedData.question_difficulties,
           num_questions: numQuestionsValue,
-          max_points: maxPointsValue
+          max_points: maxPointsValue,
+          training_level: trainingLevelValue
         })
       })
         .then(response => {

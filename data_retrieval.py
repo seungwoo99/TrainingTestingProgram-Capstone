@@ -39,11 +39,8 @@ def fetch_test_creation_options():
         logging.error("An error occurred while fetching test creation options:", exc_info=True)
         raise
 
-import logging
-from sqlalchemy import text
-
 # Function to query the database for questions that match user inputs to create a pool of questions
-def get_questions(blooms_levels, subjects, topics, question_types, question_difficulties):
+def get_questions(blooms_levels, subjects, topics, question_types, question_difficulties, training_level_conditions):
     try:
         # Log that we are connecting to the database.
         logging.info("Connecting to the database.")
@@ -92,6 +89,11 @@ def get_questions(blooms_levels, subjects, topics, question_types, question_diff
                 where_clauses.append(clause)
                 params.update({f'question_difficulty_{i}': q_difficulty for i, q_difficulty in enumerate(question_difficulties)})
 
+            # Add the training level conditions to the WHERE clause
+            for column, value in training_level_conditions.items():
+                where_clauses.append(f"lo.{column} = :{column}")
+                params[column] = value
+            
             # Construct the WHERE statement based on the clauses.
             where_statement = ' AND '.join(where_clauses)
 

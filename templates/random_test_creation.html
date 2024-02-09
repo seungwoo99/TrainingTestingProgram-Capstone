@@ -6,8 +6,13 @@
     <title>Test Creation Form</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/random_test_creation.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
+    <style>
+      .error {
+        color: red;
+      }
+    </style>
+    {% include 'navbar.html' %}
   </head>
-  {% include 'navbar.html' %}
   <body>
     <div class="container">
       <form id="randomTestCreationForm"> 
@@ -116,13 +121,13 @@
                 <h2>Training Level</h2>
               </div>
               <div class="textinput-container">
-                <select id="dropdownInput" name="dropdownInput">
-                  <option value="">Applicant</option>
-                  <option value="">Apprentice</option>
-                  <option value="">Joureyman</option>
-                  <option value="">Senior</option>
-                  <option value="">Chief</option>
-                  <option value="">Coordinator</option>
+                <select id="trainingLevelDropdown" name="trainingLevel" class="dropdownInput">
+                  <option value="applicant">Applicant</option>
+                  <option value="apprentice">Apprentice</option>
+                  <option value="journeyman">Journeyman</option>
+                  <option value="senior">Senior</option>
+                  <option value="chief">Chief</option>
+                  <option value="coordinator">Coordinator</option>
                 </select>
               </div>
             </div>

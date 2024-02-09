@@ -75,6 +75,7 @@ h2 {
     margin-top: 5px;
     font-size: 18px;
     cursor: pointer;
+    font-family: 'Code Next', sans-serif;
 }
 
 .section input[type="text"]:hover, 
@@ -110,7 +111,7 @@ button:hover {
 }
 
 /* Element that style the dropdown input */
-#dropdownInput {
+.dropdownInput {
     width: 50%;
     padding: 10px;
     margin-top: 5px;
@@ -119,16 +120,16 @@ button:hover {
     font-family: 'Code Next', sans-serif;
 }
 
-#dropdownInput:hover {
+.dropdownInput:hover {
     box-shadow: 0 5px 10px rgba(0,0,0,0.3);
     border: 2px solid black;
 }
 
-#dropdownInput option {
+.dropdownInput option {
     padding: 10px;
 }
 
-#dropdownInput option:hover {
+.dropdownInput option:hover {
     background-color: #007bff;
     color: white;
 }

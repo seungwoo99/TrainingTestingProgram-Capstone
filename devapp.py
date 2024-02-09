@@ -195,8 +195,17 @@ def scoring():
     return render_template('scoring_metrics.html')
 
 # Route to render a page for creating a random test with various options.
+# Route for random test creation page.
 @app.route('/random_test_creation')
-def show_options():
+def random_test_creation():
+    return show_test_creation_page('random_test_creation.html')
+
+# Route for manual test creation page.
+@app.route('/manual_test_creation')
+def manual_test_creation():
+    return show_test_creation_page('manual_test_creation.html')
+
+def show_test_creation_page(template_name):
     # Check if user session is inactive
     if 'user' not in session or not session['user'].get('is_authenticated', False):
         flash("Access denied, please login.")
@@ -207,7 +216,7 @@ def show_options():
         options = fetch_test_creation_options()
         # Render the template 'random_test_creation.html' with the fetched options.
         return render_template(
-            'random_test_creation.html',
+            template_name,
             blooms_levels=options['blooms_levels'],
             subjects=options['subjects'],
             topics=options['topics'],
@@ -218,6 +227,16 @@ def show_options():
         # Handle any exceptions that may occur and provide an error message.
         print("An error occurred in show_options:", str(e))
         return "An error occurred while preparing the test creation page."
+
+# Define the mapping of training levels to database columns
+training_level_mapping = {
+    'applicant': 'is_applicant',
+    'apprentice': 'is_apprentice',
+    'journeyman': 'is_journeyman',
+    'senior': 'is_senior',
+    'chief': 'is_chief',
+    'coordinator': 'is_coordinator'
+}
 
 # Route to handle the POST request to get random questions based on user selections.
 @app.route('/get-questions', methods=['POST'])    
@@ -235,12 +254,26 @@ def handle_get_questions():
         question_difficulties = data.get('question_difficulties', [])
         num_questions = int(data.get('num_questions', 0))
         max_points = int(data.get('max_points', 0))
+        
+        # Extract the training level text from the JSON data and  
+        # determine the database column that corresponds to the selected training level.
+        training_level_text = data.get('training_level', '')
+        training_level_column = training_level_mapping.get(training_level_text)
+        
+        # If the training level text is invalid, set the filter to False for all levels.
+        if not training_level_column:
+            raise ValueError(f"Invalid training level: {training_level_text}")
+        
+        # Prepare conditions based on the selected training level
+        training_level_conditions = {
+            training_level_column: 1  # This sets the corresponding column to true
+        }
 
         logging.debug(f"Filter parameters: blooms_levels: {blooms_levels}, subjects: {subjects}, topics: {topics}, question_types: {question_types}, question_difficulties: {question_difficulties}")
         logging.debug(f"Test parameters: num_questions: {num_questions}, max_points: {max_points}")
 
         # Retrieve a pool of questions based on the user's filters.
-        questions_pool = get_questions(blooms_levels, subjects, topics, question_types, question_difficulties)
+        questions_pool = get_questions(blooms_levels, subjects, topics, question_types, question_difficulties, training_level_conditions)
         total_questions_in_pool = len(questions_pool)
         logging.debug(f"Total questions in pool: {total_questions_in_pool}")
 
@@ -279,11 +312,6 @@ def handle_get_questions():
     except Exception as e:
         logging.error(f"Unhandled exception: {e}", exc_info=True)
         return jsonify({'error': "An error occurred while preparing the test creation page."}), 500
-
-# Route to render a page for creating a test by manual selection   
-@app.route('/manual_test_creation')
-def manual_test_creation():
-    return render_template('manual_test_creation.html')
 
 #----------Routes for registration and verification----------
 

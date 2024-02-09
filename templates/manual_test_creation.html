@@ -5,10 +5,95 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{{url_for('static', filename='/css/manual_test_creation.css')}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+      .error {
+        color: red;
+      }
+    </style>
+    {% include 'navbar.html' %}
   </head>
-  {% include 'navbar.html' %}
   <body>
-    <div class="container">
+    <div class="wrapper">
+      <div class="container">
+        <table class="table">
+          <tr>
+              <th>Bloom's Taxonomy</th>
+              <th>Subject</th>
+              <th>Topic</th>
+              <th>Training Level</th>
+          </tr>
+          <tr>
+              <td>
+                <select id="bloomsLevelDropdown" name="bloomsLevel" class="dropdownInput">
+                  {% for level in blooms_levels %}
+                    <option value="{{ level }}">{{ level }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td>
+                <select id="subjectDropdown" name="subject" class="dropdownInput">
+                  {% for subject in subjects %}
+                    <option value="{{ subject }}">{{ subject }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td>
+                <select id="topicDropdown" name="topic" class="dropdownInput">
+                  {% for topic in topics %}
+                    <option value="{{ topic }}">{{ topic }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td>
+                <select id="trainingLevelDropdown" name="dropdownInput" class="dropdownInput">
+                  <option value="">Applicant</option>
+                  <option value="">Apprentice</option>
+                  <option value="">Joureyman</option>
+                  <option value="">Senior</option>
+                  <option value="">Chief</option>
+                  <option value="">Coordinator</option>
+                </select>
+              </td>
+          </tr>
+          <tr>
+            <th>Question Type</th>
+            <th>Question Difficulty</th>
+            <th>Question Point Max Value</th>
+            <th>Keyword Search</th>
+          </tr>
+          <tr>
+            <td>
+              <select id="questionTypeDropdown" name="questionType" class="dropdownInput">
+                  {% for q_type in question_types %}
+                    <option value="{{ q_type }}">{{ q_type }}</option>
+                  {% endfor %}
+              </select>
+            </td>
+            <td>
+              <select id="questionDifficultyDropdown" name="questionDifficulty" class="dropdownInput">
+                {% for q_difficulty in question_difficulty %}
+                  <option value="{{ q_difficulty }}">{{ q_difficulty }}</option>
+                {% endfor %}
+              </select>
+            </td>
+            <td>
+              <input type="number" id="maxPointsInput" name="maxPoints" min="1">
+            </td>
+            <td>
+              <input type="text" id="" name="">
+            </td>
+          </tr>
+        </table>
+        <button class="side-panel-toggle" type="button">
+          <span class="material-icons">keyboard_double_arrow_left</span>
+          <span class="material-icons">keyboard_double_arrow_right</span>
+        </button>
+        <div class="side-panel">
+          Selected Questions
+        </div>
+      </div>
     </div>
+    <script src="{{ url_for('static', filename='js/manual_test_creation.js') }}"></script>
   </body>
 </html>
