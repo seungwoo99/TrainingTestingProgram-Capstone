@@ -361,31 +361,26 @@ def register():
                     'name': input_first_name + " " + input_last_name, 'is_verified': 0,
                     'is_admin': is_admin, 'is_authenticated': False}
 
-            # Set up user session cookie
-            session['user'] = user
 
-            # Send Verification email:
-            # Create otp
-            session[f'email_{input_username}'] = user['email']
-            otp_created_time = datetime.now(timezone.utc)
-            otp = generate_otp(user['email'], otp_created_time)
+            # Hash username for verification
+            username_hash = bcrypt.generate_password_hash(input_username)
+
+            # Send Email Verification email:
 
             # Send email to user using SMTP - Simple Mail Transfer Protocol
             # Create URL link
-            full_url = request.url + 'code'
-            token = generate_token(user['email'])
-            confirm_url = f"{full_url}?token={token}"
-            confirm_url = confirm_url.replace("register", "login")
-            msg = Message('Training Test Program Verification.', sender=app.config['MAIL_USERNAME'],
+            url = request.url.replace('register', 'verify_email/' + input_username + '/' + str(username_hash))
+
+            msg = Message('Training Test Program Email Verification.', sender=app.config['MAIL_USERNAME'],
                           recipients=[user['email']])
             msg.body = ('Dear ' + user['name'] +
                         '\n\nWe received a request to verify your new account ' + user['username'] + '. Please disregard this email if you did not register an account.' +
-                        '\nPlease insert verification code.\nVerification code: ' + str(otp) +
-                        '\nURL: ' + confirm_url)
+                        '\nClick the following link to verify your account.' +
+                        '\nURL: ' + url)
             mail.send(msg)
 
             # Return to homepage
-            return redirect(url_for("trylogin"))
+            return redirect(url_for('homepage'))
 
 # Action when the given link is clicked
 @app.route('/logincode')
@@ -436,10 +431,7 @@ def verify_otp():
     if otp == session_otp:  # Success in verification
         session.pop(f'otp_{session_email}')
         session.pop(f'time_{session_email}')
-        
-        # If user is unverified, set to verified
-        query = f"UPDATE user SET is_verified = 1 WHERE username = '" + session['user']['username'] + "'"
-        db.engine.execute(query)
+
         # Update session as authenticated
         session['user']['is_authenticated'] = True
         return redirect(url_for('homepage'))
@@ -556,6 +548,28 @@ def update_password():
         except Exception as e:
             flash('Failed to update password. Please try again later.', 'error')
             return redirect(url_for('reset_otp'))  # Redirect back to password reset form
+
+
+@app.route('/verify_email/<string:username>/<string:user_hash>', methods=['GET'])
+def verify_email(username, user_hash):
+
+    print(user_hash)
+    user_hash = user_hash[2:-1]
+    print(user_hash)
+    if bcrypt.check_password_hash(user_hash, username):
+
+        # Flash success message and update user to verified in database
+        flash('Account verified, you may now login')
+        query = f"UPDATE user SET is_verified = 1 WHERE username = '" + username + "'"
+        db.engine.execute(query)
+    else:  # Shouldn't be reached unless attempting to verify without original link
+
+        # Flash failure message
+        flash('Verification failed, please try the original link in the verification email.')
+
+    # Pop any existing sessions and redirect to login page
+    session.pop('user', None)
+    return redirect(url_for('trylogin'))
 
 #----------Server Configuration and Startup----------
 
