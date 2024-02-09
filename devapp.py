@@ -553,15 +553,17 @@ def update_password():
 @app.route('/verify_email/<string:username>/<string:user_hash>', methods=['GET'])
 def verify_email(username, user_hash):
 
-    print(user_hash)
+    # Format passed user_hash
     user_hash = user_hash[2:-1]
-    print(user_hash)
+
+    # Check if hash matches username
     if bcrypt.check_password_hash(user_hash, username):
 
         # Flash success message and update user to verified in database
         flash('Account verified, you may now login')
         query = f"UPDATE user SET is_verified = 1 WHERE username = '" + username + "'"
         db.engine.execute(query)
+
     else:  # Shouldn't be reached unless attempting to verify without original link
 
         # Flash failure message
