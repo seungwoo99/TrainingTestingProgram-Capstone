@@ -186,14 +186,20 @@ def data():
 
     return render_template('datahierarchy.html')
 
+#------ Route for Scoring  Metrics---------
+
 @app.route('/scoring_metrics')
 def scoring():
     if 'user' not in session or not session['user'].get('is_authenticated', False):
         flash("Access denied, please login.")
         return redirect(url_for('trylogin'))
-    
-    return render_template('scoring_metrics.html')
+    query = text("SELECT * FROM tests")
+    result = db.engine.execute(query)
 
+    # Convert the result into a list of dictionaries
+    tests = [dict(row) for row in result.fetchall()]
+    return render_template('scoring_metrics.html', tests=tests)
+    
 # Route to render a page for creating a random test with various options.
 @app.route('/random_test_creation')
 def show_options():
