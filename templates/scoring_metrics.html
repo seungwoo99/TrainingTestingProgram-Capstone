@@ -28,16 +28,12 @@
         </tr>
     </thead>
     <tbody>
-        <tr>
-            <td>DOE - Mechanical Science</td>
-            <td>92%</td>
-        </tr>
-        <tr>
-            <td>DOE - Electrical Science</td>
-            <td>87%</td>
-        </tr>
-
-
+    {% for test in tests %}
+    <tr>
+        <td>{{ test.test_name }}</td>
+        <td>92%</td> <!-- Placeholder for metrics -->
+    </tr>
+    {% endfor %}
     </tbody>
 </table>
 
