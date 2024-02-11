@@ -3,6 +3,8 @@ from datetime import datetime, timezone, timedelta
 import os
 from random import randint
 import logging
+import urllib.parse
+from urllib.parse import unquote
 
 # Related third party imports
 from dotenv import load_dotenv, dotenv_values  # pip install python-dotenv
@@ -13,6 +15,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.sql import func
 from sqlalchemy.exc import SQLAlchemyError
 from itsdangerous import URLSafeTimedSerializer
+
 
 # Local application/library specific imports
 from config import MailConfig
@@ -365,11 +368,16 @@ def register():
             # Hash username for verification
             username_hash = bcrypt.generate_password_hash(input_username + os.getenv("SALT"))
 
+            print(username_hash)
+
+            # URL encode the hash string
+            encoded_hash = urllib.parse.quote(username_hash, safe='')
+
             # Send Email Verification email:
 
             # Send email to user using SMTP - Simple Mail Transfer Protocol
             # Create URL link
-            url = request.url.replace('register', 'verify_email/' + input_username + '/' + str(username_hash))
+            url = request.url.replace('register', 'verify_email/' + input_username + '/' + str(encoded_hash))
 
             msg = Message('Training Test Program Email Verification.', sender=app.config['MAIL_USERNAME'],
                           recipients=[user['email']])
@@ -550,11 +558,14 @@ def update_password():
             return redirect(url_for('reset_otp'))  # Redirect back to password reset form
 
 
+# Route to handle initial email verification link
 @app.route('/verify_email/<string:username>/<string:user_hash>', methods=['GET'])
 def verify_email(username, user_hash):
 
-    # Format passed user_hash
-    user_hash = user_hash[2:-1]
+    # Decode the encoded hash
+    user_hash = unquote(user_hash)
+
+    print(user_hash)
 
     # Check if hash matches username + salt
     if bcrypt.check_password_hash(user_hash, username + os.getenv("SALT")):
