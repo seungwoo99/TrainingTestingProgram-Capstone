@@ -363,7 +363,7 @@ def register():
 
 
             # Hash username for verification
-            username_hash = bcrypt.generate_password_hash(input_username)
+            username_hash = bcrypt.generate_password_hash(input_username + os.getenv("SALT"))
 
             # Send Email Verification email:
 
@@ -556,8 +556,8 @@ def verify_email(username, user_hash):
     # Format passed user_hash
     user_hash = user_hash[2:-1]
 
-    # Check if hash matches username
-    if bcrypt.check_password_hash(user_hash, username):
+    # Check if hash matches username + salt
+    if bcrypt.check_password_hash(user_hash, username + os.getenv("SALT")):
 
         # Flash success message and update user to verified in database
         flash('Account verified, you may now login')
@@ -572,6 +572,7 @@ def verify_email(username, user_hash):
     # Pop any existing sessions and redirect to login page
     session.pop('user', None)
     return redirect(url_for('trylogin'))
+
 
 #----------Server Configuration and Startup----------
 
