@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel = "stylesheet" href = "{{url_for('static', filename='/css/scoring.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='/css/scoring.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.3/jspdf.umd.min.js"></script>
 </head>
 
 <header class="navigation">
     <ul class="nav-links">
-        <li class="center"><a href="{{url_for('tryregister')}}">Register</a></li>
+        <li class="center"><a href="{{ url_for('tryregister') }}">Register</a></li>
         <li class="center"><a href="/datahierarchy">Data Hierarchy</a></li>
         <li class="center"><a href="/random_test_creation">Testing</a></li>
         <li class="center"><a href="/scoring_metrics">Scoring Metrics</a></li>
@@ -18,25 +19,57 @@
 
 <body>
 <div class="container">
-<h2>Scoring Metrics</h2>
+    <h2>Scoring Metrics</h2>
 
-<table id="datasTable">
-    <thead>
+    <table id="datasTable">
+        <thead>
         <tr>
             <th>Test</th>
-            <th>Average Score</th>
+
+            <th>Metrics Preview</th> <!-- Added preview column -->
         </tr>
-    </thead>
-    <tbody>
-    {% for test in tests %}
-    <tr>
-        <td>{{ test.test_name }}</td>
-        <td>92%</td> <!-- Placeholder for metrics -->
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+        {% for test in tests %}
+        <tr>
+            <td>{{ test.test_name }}</td>
+
+            <td><a href="#" onclick="previewPDF({{ test.test_id }})">Preview</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <div id="pdfPreview" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);">
+        <button onclick="togglePDFPreview()">Close</button>
+        <iframe id="pdfFrame" width="100%" height="100%" style="border: none;"></iframe>
+    </div>
 
 </div>
+
+<script>
+function previewPDF(testId) {
+    // Fetch PDF data dynamically
+    fetch("/generate_pdf/" + testId)
+        .then(response => response.blob())
+        .then(blob => {
+            // Convert blob to object URL
+            const url = URL.createObjectURL(blob);
+            // Display PDF in iframe
+            document.getElementById('pdfFrame').src = url;
+            document.getElementById('pdfPreview').style.display = 'block';
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+function togglePDFPreview() {
+    const previewDiv = document.getElementById('pdfPreview');
+    const iframe = document.getElementById('pdfFrame');
+
+    // Hide preview and clear iframe src
+    previewDiv.style.display = 'none';
+    iframe.src = '';
+}
+</script>
 </body>
 </html>
