@@ -16,73 +16,95 @@
   <body>
     <div class="wrapper">
       <div class="container">
-        <table class="table">
+        <table class="filter-table">
           <tr>
               <th>Bloom's Taxonomy</th>
               <th>Subject</th>
               <th>Topic</th>
-              <th>Training Level</th>
-          </tr>
-          <tr>
-              <td>
-                <select id="bloomsLevelDropdown" name="bloomsLevel" class="dropdownInput">
-                  {% for level in blooms_levels %}
-                    <option value="{{ level }}">{{ level }}</option>
-                  {% endfor %}
-                </select>
-              </td>
-              <td>
-                <select id="subjectDropdown" name="subject" class="dropdownInput">
-                  {% for subject in subjects %}
-                    <option value="{{ subject }}">{{ subject }}</option>
-                  {% endfor %}
-                </select>
-              </td>
-              <td>
-                <select id="topicDropdown" name="topic" class="dropdownInput">
-                  {% for topic in topics %}
-                    <option value="{{ topic }}">{{ topic }}</option>
-                  {% endfor %}
-                </select>
-              </td>
-              <td>
-                <select id="trainingLevelDropdown" name="dropdownInput" class="dropdownInput">
-                  <option value="">Applicant</option>
-                  <option value="">Apprentice</option>
-                  <option value="">Joureyman</option>
-                  <option value="">Senior</option>
-                  <option value="">Chief</option>
-                  <option value="">Coordinator</option>
-                </select>
-              </td>
-          </tr>
-          <tr>
-            <th>Question Type</th>
-            <th>Question Difficulty</th>
-            <th>Question Point Max Value</th>
-            <th>Keyword Search</th>
           </tr>
           <tr>
             <td>
+              <select id="bloomsLevelDropdown" name="bloomsLevel" class="dropdownInput">
+                {% for level in blooms_levels %}
+                  <option value="null">Select Bloom's Level</option>
+                  <option value="{{ level }}">{{ level }}</option>
+                {% endfor %}
+              </select>
+            </td>
+            <td>
+              <select id="subjectDropdown" name="subject" class="dropdownInput">
+                {% for subject in subjects %}
+                  <option value="null">Select subject</option>
+                  <option value="{{ subject }}">{{ subject }}</option>
+                {% endfor %}
+              </select>
+            </td>
+            <td>
+              <select id="topicDropdown" name="topic" class="dropdownInput">
+                {% for topic in topics %}
+                  <option value="null">Select topic</option>
+                  <option value="{{ topic }}">{{ topic }}</option>
+                {% endfor %}
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <th>Training Level</th>
+            <th>Question Type</th>
+            <th>Question Difficulty</th>
+          </tr>
+          <tr>
+            <td>
+              <select id="trainingLevelDropdown" name="dropdownInput" class="dropdownInput">
+                <option value="null">Select training level</option>
+                <option value="applicant">Applicant</option>
+                <option value="apprentice">Apprentice</option>
+                <option value="journeyman">Joureyman</option>
+                <option value="senior">Senior</option>
+                <option value="chief">Chief</option>
+                <option value="coordinator">Coordinator</option>
+              </select>
+            </td>
+            <td>
               <select id="questionTypeDropdown" name="questionType" class="dropdownInput">
                   {% for q_type in question_types %}
-                    <option value="{{ q_type }}">{{ q_type }}</option>
+                  <option value="null">Select type</option>
+                  <option value="{{ q_type }}">{{ q_type }}</option>
                   {% endfor %}
               </select>
             </td>
             <td>
               <select id="questionDifficultyDropdown" name="questionDifficulty" class="dropdownInput">
                 {% for q_difficulty in question_difficulty %}
-                  <option value="{{ q_difficulty }}">{{ q_difficulty }}</option>
+                <option value="null">Select difficulty</option>  
+                <option value="{{ q_difficulty }}">{{ q_difficulty }}</option>
                 {% endfor %}
               </select>
             </td>
+          </tr>
+          <tr>
+            <th>Question Point Max Value</th>
+            <th>Keyword Search</th>
+            <th></th>
+          </tr>
+          <tr>
             <td>
               <input type="number" id="maxPointsInput" name="maxPoints" min="1">
             </td>
             <td>
               <input type="text" id="" name="">
             </td>
+            <td>
+              <button class="searchButton" id="search">Search</button>
+            </td>
+          </tr>
+        </table>
+        <br><br>
+        <table class="results-table">
+          <tr>
+            <th>Question ID</th>
+            <th>Question Contents</th>
+            <th>Select</th>
           </tr>
         </table>
         <button class="side-panel-toggle" type="button">

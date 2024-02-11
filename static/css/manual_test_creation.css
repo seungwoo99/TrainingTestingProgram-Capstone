@@ -16,25 +16,65 @@
   overflow-x: hidden;
 }
 
-/* Elements to style table */ 
-.table {
-  width: 100%; /* Make the table span the full width of its container */
-  table-layout: fixed; /* Use fixed table layout to allow for equal column widths */
-  border-collapse: collapse; /* Collapse borders for a cleaner look */
+/* Elements to style filter table */ 
+.filter-table {
+  width: 100%; 
+  table-layout: fixed; 
+  border-collapse: collapse; 
   font-family: 'Code Next', sans-serif;
 }
 
-th, td {
-  text-align: left; /* Align text to the left */
+.filter-table th, td {
+  text-align: left;
 }
 
-th {
+.filter-table th {
   padding: 8px;
+  font-size: 150%;
 }
 
-td {
+.filter-table td {
   padding-left: 8px;
   padding-bottom: 4px;
+}
+
+/* Elements to style results table */ 
+.results-table {
+  width: 100%; 
+  table-layout: fixed; 
+  border-collapse: collapse; 
+  font-family: 'Code Next', sans-serif;
+}
+
+.results-table th, td {
+  text-align: center;
+}
+
+.results-table th {
+  padding: 8px;
+  font-size: 150%;
+  border: 2px solid blue;
+}
+
+.results-table td {
+  padding-left: 8px;
+  padding-bottom: 4px;
+  border: 1px solid #ddd
+}
+
+.results-table td:nth-child(1),
+.results-table th:nth-child(1) { 
+  width: 25%; 
+}
+
+.results-table td:nth-child(2),
+.results-table th:nth-child(2) { 
+  width: 50%; 
+}
+
+.results-table td:nth-child(3), 
+.results-table th:nth-child(3) { 
+  width: 25%; 
 }
 
 /* Elements that style the text inputs */
@@ -42,7 +82,7 @@ input[type="text"], input[type="number"] {
   width: 75%;
   padding: 10px;
   margin-top: 5px;
-  font-size: 18px;
+  font-size: 125%;
   cursor: pointer;
   font-family: 'Code Next', sans-serif;
 }
@@ -58,7 +98,7 @@ input[type="number"]:hover {
   width: 75%;
   padding: 10px;
   margin-top: 5px;
-  font-size: 18px;
+  font-size: 125%;
   cursor: pointer;
   font-family: 'Code Next', sans-serif;
 }
@@ -77,6 +117,24 @@ input[type="number"]:hover {
   color: white;
 }
 
+/* Elements to style search button */
+.searchButton {
+  padding: 10px 40px;
+  background-color: #0b80bd;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 150%;
+  font-family: 'Code Next', sans-serif;
+  font-weight: 200;
+}
+
+.searchButton:hover {
+  background-color: #0a679a;
+  box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+}
+
 /* Elements to style side bar */
 .wrapper {
   display: flex;
@@ -84,7 +142,6 @@ input[type="number"]:hover {
   height: 100vh;
 }
 
-/* Sidebar styles */
 .side-panel {
   position: absolute;
   top: 0;
@@ -98,22 +155,18 @@ input[type="number"]:hover {
   transition: right 0.3s ease-in-out;
 }
 
-/* Show the sidebar when 'side-panel-open' class is applied to the wrapper */
 .side-panel-open .side-panel {
   right: 0;
 }
 
-/* Adjust the wrapper styles when sidebar is open */
 .wrapper.side-panel-open {
   flex-direction: row;
 }
 
-/* Adjust the sidebar styles when open */
 .wrapper.side-panel-open .side-panel {
   right: 0;
 }
 
-/* Toggle button styles */
 .side-panel-toggle {
   position: absolute;
   top: 20px;
@@ -135,7 +188,6 @@ input[type="number"]:hover {
   background: #708B75;
 }
 
-/* Toggle icon display */
 .side-panel-toggle .material-icons:first-child,
 .side-panel-open .side-panel-toggle .material-icons:last-child {
   display: none;
@@ -146,12 +198,10 @@ input[type="number"]:hover {
   display: block;
 }
 
-/* Show the sidebar when 'side-panel-open' class is applied to the wrapper */
 .side-panel-open .side-panel {
   right: 0;
 }
 
-/* Position the toggle button on the edge of the sidebar when it's open */
 .side-panel-open .side-panel-toggle {
   right: 200px;
   border-radius: 5px 0 0 5px;
@@ -159,7 +209,6 @@ input[type="number"]:hover {
   transition: right 0.3s ease-in-out;
 }
 
-/* Adjust the wrapper styles when sidebar is open */
 .wrapper.side-panel-open {
   flex-direction: row;
 }
