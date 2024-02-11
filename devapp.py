@@ -3,10 +3,15 @@ from datetime import datetime, timezone, timedelta
 import os
 from random import randint
 import logging
-
+#Statistics related imports
+from io import BytesIO
+import matplotlib.pyplot as plt
+from PyPDF2 import PdfFileMerger
+from PIL import Image
+import numpy as np
 # Related third party imports
 from dotenv import load_dotenv, dotenv_values  # pip install python-dotenv
-from flask import Flask, render_template, request, url_for, redirect, session, flash, get_flashed_messages, jsonify
+from flask import Flask, render_template, request, url_for, redirect, session, flash, get_flashed_messages, jsonify, make_response
 from flask_bcrypt import Bcrypt
 from flask_mail import Message, Mail
 from sqlalchemy import create_engine, text
@@ -19,6 +24,7 @@ from config import MailConfig
 from db_config import db
 from data_retrieval import fetch_test_creation_options, get_questions, select_questions
 
+
 # Load environment variables from a .env file
 load_dotenv()
 
@@ -26,11 +32,11 @@ load_dotenv()
 app = Flask(__name__)
 
 # Configure Flask app to use SQLAlchemy for a local MySQL database
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:@localhost:3306/test_train_db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:password@localhost:3306/test_train_db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Configure Flask app with a secret key
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+app.config["SECRET_KEY"] = 'os.getenv("SECRET_KEY")'
 
 # Configure Flask app to use Mail system
 app.config.from_object(MailConfig)
@@ -188,6 +194,18 @@ def data():
 
 #------ Route for Scoring  Metrics---------
 
+# function to retrieve statistics for a test
+def get_test_statistics(test_id):
+
+    dummy_statistics = {
+        'test_id': test_id,
+        'test_name': "Sample Test",
+        'times_taken': 50,
+        'passed_count': 40,
+        'scores': [87,88,89,22,37,54,66,45,45,50,77,90,99],
+    }
+    return dummy_statistics
+
 @app.route('/scoring_metrics')
 def scoring():
     if 'user' not in session or not session['user'].get('is_authenticated', False):
@@ -199,7 +217,110 @@ def scoring():
     # Convert the result into a list of dictionaries
     tests = [dict(row) for row in result.fetchall()]
     return render_template('scoring_metrics.html', tests=tests)
-    
+
+
+#funcion to generate graphs
+def generate_graphs(statistics):
+    graph_images = []
+    # score distribution histgram
+    scores = statistics['scores']
+    # Create histogram
+    plt.hist(scores, bins=5, color='skyblue', edgecolor='black')
+
+    # Add labels and title
+    plt.xlabel('Score')
+    plt.ylabel('Frequency')
+    plt.title('Score Distribution')
+    plt.savefig('graph1.png')  # Save the graph as an image file
+    plt.close()
+    graph_images.append('graph1.png')
+    #Mean score boxplot
+    # Calculate mean score
+    mean_score = sum(statistics['scores']) / len(statistics['scores'])
+
+    # Create boxplot
+    plt.figure(figsize=(8, 2))
+    plt.boxplot(statistics['scores'], vert=False)
+    plt.axvline(mean_score, color='r', linestyle='--', label='Mean Score')  # Add mean score line
+    plt.xlabel('Scores')
+    plt.title('Boxplot of Scores with Mean Score')
+    plt.legend()
+    plt.savefig('graph2.png')  # Save the graph as an image file
+    plt.close()
+    graph_images.append('graph2.png')
+
+
+    # Return paths to graph images
+    return graph_images
+# Function to generate PDF from statistics data
+def generate_pdf_from_statistics(statistics, graph_images):
+    # Generate PDF using a library like reportlab or fpdf
+    # For demonstration purposes, let's assume we're creating a simple PDF
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.pagesizes import letter
+
+    buffer = BytesIO()
+    c = canvas.Canvas(buffer, pagesize=letter)
+    c.drawString(50, 750, "Test Statistics")
+    c.drawString(50, 730, f"Test Name: {statistics['test_name']}")
+    c.drawString(400, 730, f"Test ID: {statistics['test_id']}")
+    c.drawString(100, 680, f"-    Test taken {statistics['times_taken']} times.")
+    c.drawString(100, 660, f"-    {statistics['times_taken']} test takers have passed.")
+    # Add more statistics here as needed
+
+    # Embed graphs into the PDF
+    y_offset = 630
+    for image_path in graph_images:
+        #c.drawString(100, y_offset, "Graph:")
+        # Open the image file and retrieve its dimensions
+        img = Image.open(image_path)
+        img_width, img_height = img.size
+
+        # Set the width and height dynamically based on the image dimensions
+        c.drawImage(image_path, 100, y_offset - (img_height*0.45), width=(img_width*0.45), height=(img_height*0.45))
+        y_offset -= (img_height*0.45) + 50  # Adjust this value based on the spacing between graphs
+
+    #Mean
+    mean_score = np.mean(statistics['scores'])
+    mean_str = "{:.2f}".format(mean_score)
+    c.drawString(100, 250, f"Mean: {mean_str}")
+    # High Score
+    high_score = max(statistics['scores'])
+    c.drawString(250, 250, f"High: {high_score}")
+    # Upper Quartile
+    upper_quartile = np.percentile(statistics['scores'], 75)
+    upper_str = "{:.2f}".format(upper_quartile)
+    c.drawString(250, 230, f"Upper Quartile: {upper_str}")
+    # Low Score
+    low_score = min(statistics['scores'])
+    c.drawString(400, 250, f"Low: {low_score}")
+    # Lower Quartile
+    lower_quartile = np.percentile(statistics['scores'], 25)
+    lower_str = "{:.2f}".format(lower_quartile)
+    c.drawString(400, 230, f"Lower Quartile: {lower_str}")
+    # Median
+    median_score = np.median(statistics['scores'])
+    c.drawString(100, 230, f"Median: {median_score}")
+    c.save()
+    pdf_data = buffer.getvalue()
+    buffer.close()
+    return pdf_data
+# Route to generate PDF data for a specific test
+@app.route('/generate_pdf/<int:test_id>')
+def generate_pdf(test_id):
+    # Retrieve statistics for the specific test with test_id
+    statistics = get_test_statistics(test_id)
+    # Generate graphs
+    graph_images = generate_graphs(statistics)
+    # Generate PDF
+    pdf = generate_pdf_from_statistics(statistics,graph_images)
+
+    # Create a response with PDF data
+    response = make_response(pdf)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = 'inline; filename=statistics.pdf'
+
+    return response
 # Route to render a page for creating a random test with various options.
 @app.route('/random_test_creation')
 def show_options():
@@ -562,6 +683,9 @@ def update_password():
         except Exception as e:
             flash('Failed to update password. Please try again later.', 'error')
             return redirect(url_for('reset_otp'))  # Redirect back to password reset form
+
+
+
 
 #----------Server Configuration and Startup----------
 
