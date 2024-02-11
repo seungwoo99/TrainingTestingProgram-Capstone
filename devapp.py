@@ -368,8 +368,6 @@ def register():
             # Hash username for verification
             username_hash = bcrypt.generate_password_hash(input_username + os.getenv("SALT"))
 
-            print(username_hash)
-
             # URL encode the hash string
             encoded_hash = urllib.parse.quote(username_hash, safe='')
 
@@ -564,8 +562,6 @@ def verify_email(username, user_hash):
 
     # Decode the encoded hash
     user_hash = unquote(user_hash)
-
-    print(user_hash)
 
     # Check if hash matches username + salt
     if bcrypt.check_password_hash(user_hash, username + os.getenv("SALT")):
