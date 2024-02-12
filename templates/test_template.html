@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel = "stylesheet" href = "{{url_for('static', filename='/css/test_template.css')}}">
+    <title>Test Questions</title>
+</head>
+
+
+<body>
+    <header>
+    <div>
+        <h3 class="name">Name: _________________________</h3>
+        <h3 class="date">Date:&nbsp;&nbsp;&nbsp;________________</h3>
+        <h3 class="points">Points: _________ / {{ test_data['total_score'] }}</h3>
+        </div>
+        <h2 class="test-name">{{ test_data['test_name'] }}</h2>
+    </header>
+    <main>
+        <div>
+        {% for question_text in question_texts %}
+            {{ question_text|safe }}
+            <br>
+        {% endfor %}
+        </div>
+    </main>
+
+</body>
+</html>

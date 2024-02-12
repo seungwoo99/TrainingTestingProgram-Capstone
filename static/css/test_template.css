@@ -1,0 +1,46 @@
+@page {
+    size: 8.5in 11in; /* Set the page size to 8.5 inches by 11 inches */
+    margin: 0;
+}
+
+header{
+    position: relative;
+    padding: 0px 40px 30px 30px;
+}
+
+header div {
+    margin: 0;
+}
+
+header .points {
+    position: absolute;
+    top: 0;
+    right: 30px;
+    margin: 0;
+    display: inline-block;
+}
+
+
+header .line {
+    display: inline-block;
+    width: 30%;
+    border-top: 2px solid black;
+}
+
+.test-name {
+    text-align: center;
+}
+
+body {
+    margin: 0;
+    width: 8.5in;
+}
+
+main {
+    padding: 0 40px 30px 30px;
+}
+
+
+
+
+
