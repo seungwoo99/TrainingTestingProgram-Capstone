@@ -1,4 +1,5 @@
-.container {
+/* Main container styles */
+.main-container {
     position: absolute;
     top: calc(50px + 2.5%);
     left: 0;
@@ -16,6 +17,7 @@
     box-shadow: 0 5px 10px rgba(0,0,0,0.3);
 }
 
+/* Elements to style headings */
 h1 {
     display: block;
     margin-bottom: 5px;
@@ -69,7 +71,7 @@ h2 {
     padding-bottom: 10px;
 }
 
-.section input[type="text"], input[type="number"] {
+.section input[type="text"], .section input[type="number"] {
     width: 50%;
     padding: 10px;
     margin-top: 5px;
@@ -93,7 +95,7 @@ h2 {
     align-items: center;
 }
 
-button {
+#confirm-selection {
     padding: 20px 30px;
     background-color: #0b80bd;
     color: #FFFFFF;
@@ -105,13 +107,13 @@ button {
     font-weight: 200;
 }
 
-button:hover {
+#confirm-selection:hover {
     background-color: #0a679a;
     box-shadow: 0 5px 10px rgba(0,0,0,0.3);
 }
 
 /* Element that style the dropdown input */
-.dropdownInput {
+.dropdown-input {
     width: 50%;
     padding: 10px;
     margin-top: 5px;
@@ -120,16 +122,16 @@ button:hover {
     font-family: 'Code Next', sans-serif;
 }
 
-.dropdownInput:hover {
+.dropdown-input:hover {
     box-shadow: 0 5px 10px rgba(0,0,0,0.3);
     border: 2px solid black;
 }
 
-.dropdownInput option {
+.dropdown-input option {
     padding: 10px;
 }
 
-.dropdownInput option:hover {
+.dropdown-input option:hover {
     background-color: #007bff;
     color: white;
 }
@@ -174,10 +176,10 @@ button:hover {
     box-shadow: 0 5px 10px rgba(0,0,0,0.3);
 }
 
-.criteria-container .section .selectCategory {
+.criteria-container .section .select-category {
     padding: 15px;
     margin: 5px;
-    margin-right: 20px;
+    margin-right: 40px;
     border: none;
     cursor: pointer;
     display: inline-block;
@@ -191,7 +193,7 @@ button:hover {
     border: 2px solid #4e555b;
 }
 
-.criteria-container .section .selectCategory:hover {
+.criteria-container .section .select-category:hover {
     background-color: #8995a0;
     box-shadow: 0 5px 10px rgba(0,0,0,0.3);
     border: 2px solid #cad9e7;
@@ -207,8 +209,4 @@ button:hover {
     background: linear-gradient(to bottom, #00ACD4 -1.1%, #7AFAC4 100.7%);
     color: #fff;
     text-shadow: -1px -1px 0 #338879, 1px -1px 0 #338879, -1px 1px 0 #338879, 1px 1px 0 #338879;
-}
-  
-#confirmSelection {
-    margin-top: 20px;
 }

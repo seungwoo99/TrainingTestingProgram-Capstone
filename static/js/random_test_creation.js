@@ -1,7 +1,5 @@
-// Wrap your JavaScript code in a DOMContentLoaded event listener to ensure it runs after the DOM is fully loaded.
 document.addEventListener('DOMContentLoaded', function () {
   
-  // Utility function to update the selected state of checkboxes and toggle buttons
   function updateSelection(category, isChecked) {
     document.querySelectorAll(`.toggle-btn input[data-category="${category}"]`).forEach(function (checkbox) {
       checkbox.checked = isChecked;
@@ -11,7 +9,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // Event listener for individual toggle buttons
   var toggleDivs = document.querySelectorAll('.toggle-btn');
   toggleDivs.forEach(function (div) {
     div.addEventListener('click', function () {
@@ -22,8 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // Event listeners for 'Select All' buttons in each category
-  document.querySelectorAll('.selectCategory').forEach(function (button) {
+  document.querySelectorAll('.select-category').forEach(function (button) {
     button.addEventListener('click', function (event) {
       event.preventDefault();
       var category = button.getAttribute('data-category');
@@ -34,13 +30,12 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // Event listener for 'Confirm Selection' button
-  var confirmButton = document.getElementById('confirmSelection');
+  var confirmButton = document.getElementById('confirm-selection');
   if (confirmButton) {
     confirmButton.addEventListener('click', function () {
       console.log('Confirm button clicked');
       var selectedData = {
-        blooms_levels: [],
+        blooms_taxonomy: [],
         subjects: [],
         topics: [],
         question_types: [],
@@ -58,34 +53,37 @@ document.addEventListener('DOMContentLoaded', function () {
       });
 
       var numQuestionsValue = document.getElementById('number_of_questions').value;
-      var maxPointsValue = document.getElementById('test_point_value').value;
-      var trainingLevelValue = document.getElementById('trainingLevelDropdown').value;
+      var testMaxPointValue = parseInt(document.getElementById('test_point_value').value, 10);
+      var trainingLevelValue = document.getElementById('training_level_dropdown').value;
 
+      var formData = {
+        blooms_taxonomy: selectedData.blooms_taxonomy,
+        subjects: selectedData.subjects,
+        topics: selectedData.topics,
+        question_types: selectedData.question_types,
+        question_difficulties: selectedData.question_difficulties,
+        num_questions: numQuestionsValue,
+        test_max_points: testMaxPointValue,
+        training_level: trainingLevelValue,
+        test_type: "random" // Assuming this is for random test creation; change to "manual" where appropriate
+      };
+      
       fetch('/get-questions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          blooms_levels: selectedData.blooms_levels,
-          subjects: selectedData.subjects,
-          topics: selectedData.topics,
-          question_types: selectedData.question_types,
-          question_difficulties: selectedData.question_difficulties,
-          num_questions: numQuestionsValue,
-          max_points: maxPointsValue,
-          training_level: trainingLevelValue
-        })
+        body: JSON.stringify(formData)
       })
-        .then(response => {
-          if (response.ok) {
-            return response.json();
-          } else {
-            throw new Error('Server responded with an error!');
-          }
-        })
-        .then(data => {
-          console.log('Success:', data);
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error('Server responded with an error!');
+        }
+      })
+      .then(data => {
+        console.log('Success:', data);
           if (typeof data.total_questions_in_pool !== 'undefined' && typeof data.questions_chosen_for_test !== 'undefined') {
             if (data.total_questions_in_pool === 0) {
               alert(data.message || "No questions found that meet the selection criteria.");
@@ -96,11 +94,11 @@ document.addEventListener('DOMContentLoaded', function () {
             console.error('Error: Missing data from server response.');
             alert('An error occurred while processing your request. Please try again.');
           }
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          alert('An error occurred while fetching questions.');
-        });
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        alert('An error occurred while fetching questions.');
+      });
     });
   }
 });

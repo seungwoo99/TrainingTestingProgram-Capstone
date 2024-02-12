@@ -1,5 +1,5 @@
 /* Main container styles */
-.container {
+.main-container {
   position: absolute;
   top: calc(50px + 2.5%);
   left: 0;
@@ -16,7 +16,7 @@
   overflow-x: hidden;
 }
 
-/* Elements to style filter table */ 
+/* Elements to style filter table */
 .filter-table {
   width: 100%; 
   table-layout: fixed; 
@@ -24,7 +24,7 @@
   font-family: 'Code Next', sans-serif;
 }
 
-.filter-table th, td {
+.filter-table th, .filter-table td {
   text-align: left;
 }
 
@@ -38,48 +38,69 @@
   padding-bottom: 4px;
 }
 
-/* Elements to style results table */ 
+.filter-table td:nth-child(2),
+.filter-table th:nth-child(2),
+.filter-table td:nth-child(3),
+.filter-table th:nth-child(3) { 
+  width: 50%; 
+}
+
+.filter-table td:nth-child(1),
+.filter-table th:nth-child(1),
+.filter-table td:nth-child(4),
+.filter-table th:nth-child(4) { 
+  width: 25%;
+}
+
+/* Elements to style results table */
 .results-table {
   width: 100%; 
   table-layout: fixed; 
   border-collapse: collapse; 
   font-family: 'Code Next', sans-serif;
-}
-
-.results-table th, td {
-  text-align: center;
+  padding: 8px;
 }
 
 .results-table th {
-  padding: 8px;
   font-size: 150%;
-  border: 2px solid blue;
+  background-color: #f2f2f2;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+.results-table tbody{
+  font-size: 125%;
 }
 
 .results-table td {
-  padding-left: 8px;
-  padding-bottom: 4px;
-  border: 1px solid #ddd
+  border: 1px solid #ddd;
+  padding: 5px;
 }
 
 .results-table td:nth-child(1),
-.results-table th:nth-child(1) { 
-  width: 25%; 
+.results-table th:nth-child(1),
+.results-table td:nth-child(3), 
+.results-table th:nth-child(3)  { 
+  width: 15%; 
 }
 
 .results-table td:nth-child(2),
 .results-table th:nth-child(2) { 
-  width: 50%; 
+  width: 70%; 
 }
 
-.results-table td:nth-child(3), 
-.results-table th:nth-child(3) { 
-  width: 25%; 
+.results-table td:nth-child(1),
+.results-table td:nth-child(3) {
+  text-align: center;
+}
+
+.results-table td:nth-child(2){
+  text-align: left;
 }
 
 /* Elements that style the text inputs */
 input[type="text"], input[type="number"] {
-  width: 75%;
+  width: 90%;
   padding: 10px;
   margin-top: 5px;
   font-size: 125%;
@@ -94,8 +115,8 @@ input[type="number"]:hover {
 }
 
 /* Element that style the dropdown input */
-.dropdownInput {
-  width: 75%;
+.dropdown-input {
+  width: 90%;
   padding: 10px;
   margin-top: 5px;
   font-size: 125%;
@@ -103,22 +124,22 @@ input[type="number"]:hover {
   font-family: 'Code Next', sans-serif;
 }
 
-.dropdownInput:hover {
+.dropdown-input:hover {
   box-shadow: 0 5px 10px rgba(0,0,0,0.3);
   border: 2px solid black;
 }
 
-.dropdownInput option {
+.dropdown-input option {
   padding: 10px;
 }
 
-.dropdownInput option:hover {
+.dropdown-input option:hover {
   background-color: #007bff;
   color: white;
 }
 
 /* Elements to style search button */
-.searchButton {
+.search-button {
   padding: 10px 40px;
   background-color: #0b80bd;
   color: #FFFFFF;
@@ -130,7 +151,7 @@ input[type="number"]:hover {
   font-weight: 200;
 }
 
-.searchButton:hover {
+.search-button:hover {
   background-color: #0a679a;
   box-shadow: 0 5px 10px rgba(0,0,0,0.3);
 }
