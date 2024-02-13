@@ -154,3 +154,52 @@ def select_questions(questions_pool, num_questions, max_points):
 
     logging.debug(f"Finished question selection. Total selected questions: {len(selected_questions)}, Total points of selected questions: {current_points}")
     return selected_questions
+
+
+# Function that returns test list from the database
+def get_tests():
+    test_query = text("Select *, s.name AS subject_name, tp.name AS topic_name FROM tests t "
+                      + "LEFT JOIN subjects s ON t.subject_id = s.subject_id "
+                      + "LEFT JOIN topics tp ON t.topic_id = tp.topic_id ")
+    test_result = db.engine.execute(test_query)
+
+    # fetch all rows of the result
+    test_data = test_result.fetchall()
+    return test_data
+
+
+# Function that returns subject list from the database
+def get_subjects():
+    subject_query = text("SELECT subject_id, name FROM subjects")
+    subject_result = db.engine.execute(subject_query)
+    data = subject_result.fetchall()
+
+    return data
+
+
+# Function that returns topic list from the database
+def get_topics():
+    topic_query = text("SELECT topic_id, name FROM topics")
+    topic_result = db.engine.execute(topic_query)
+    data = topic_result.fetchall()
+
+    return data
+
+
+# Function that returns tester list from the database
+def get_tester_list(test_id):
+    tester_query = text(
+        "SELECT ts.test_id, max_id.max_score_id, ts.tester_id, te.testee_name, ts.attempt_date, ts.total_score, ts.pass_status "
+        + "FROM test_scores ts "
+        + "INNER JOIN( "
+        + "SELECT MAX(score_id) AS max_score_id, test_id, tester_id "
+        + "FROM test_scores "
+        + "WHERE test_id = :test_id "
+        + "GROUP BY tester_id "
+        + ")max_id ON ts.score_id = max_id.max_score_id AND ts.tester_id = max_id.tester_id "
+        + "LEFT JOIN testee te ON ts.tester_id = te.tester_id "
+        + "WHERE ts.test_id = :test_id ")
+    tester_result = db.engine.execute(tester_query, test_id=test_id)
+    data = tester_result.fetchall()
+
+    return data
