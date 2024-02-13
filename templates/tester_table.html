@@ -6,9 +6,9 @@
         <th>Score</th>
         <th>Pass Status</th>
     </tr>
-    </thead>
-    <tbody>
-        {% for row in tester_data %}
+</thead>
+<tbody>
+    {% for row in tester_data %}
         <tr data-score-id="{{ row.max_score_id }}" data-tester-id="{{ row.tester_id }}" data-test-id="{{ row.test_id }}">
             <td>{{ loop.index }}</td>
             <td>{{ row.testee_name }}</td>
@@ -19,10 +19,9 @@
                 {% endif %}
             </td>
         </tr>
-        {% endfor %}
-    </tbody>
+    {% endfor %}
+</tbody>
 <script>
-
     /* JS code for editing tester's score */
     document.addEventListener('DOMContentLoaded', function() {
     const table = document.querySelector('table');
@@ -101,5 +100,4 @@
         xhr.send();
     }
 });
-
 </script>

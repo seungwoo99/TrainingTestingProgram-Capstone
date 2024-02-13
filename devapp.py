@@ -1,37 +1,36 @@
 # Standard library imports
-from datetime import datetime, timezone, timedelta
 import os
-from random import randint
 import logging
+from datetime import datetime, timezone, timedelta
+from random import randint
 
-#Statistics related imports
+# Statistics related imports
 from io import BytesIO
-import matplotlib.pyplot as plt
-from PyPDF2 import PdfFileMerger
-from PIL import Image
-import numpy as np
-import base64
 from base64 import urlsafe_b64decode
+import base64
+import numpy as np
+from PIL import Image
+from PyPDF2 import PdfFileMerger
+import matplotlib.pyplot as plt
 
-# Related third party imports
+# Related third-party imports
 from dotenv import load_dotenv, dotenv_values  # pip install python-dotenv
-from flask import Flask, render_template, request, url_for, redirect, session, flash, get_flashed_messages, jsonify, \
-    make_response
-
+from flask import (Flask, render_template, request, url_for, redirect, session, flash,
+                   get_flashed_messages, jsonify, make_response)
 from flask_bcrypt import Bcrypt
 from flask_mail import Message, Mail
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
 from sqlalchemy import create_engine, text
 from sqlalchemy.sql import func
 from sqlalchemy.exc import SQLAlchemyError
 from itsdangerous import URLSafeTimedSerializer
 
-
 # Local application/library specific imports
 from config import MailConfig
 from db_config import db
-
-from data_retrieval import fetch_test_creation_options, get_questions, select_questions, get_user, get_test_questions, check_registered, get_test_data, get_tests_temp, get_tests, get_topics, get_subjects, get_tester_list
-
+from data_retrieval import (fetch_test_creation_options, get_questions, select_questions, get_user, get_test_questions, 
+                            check_registered, get_test_data, get_tests_temp, get_tests, get_topics, get_subjects, get_tester_list)
 
 # Load environment variables from a .env file
 load_dotenv()
@@ -216,7 +215,6 @@ def test_list():
 
     return render_template("test_list.html", data=test_data, subject_data=subject_data, topic_data=topic_data)
 
-
 # Route for showing filtered test list
 @app.route('/filter')
 def filter_data():
@@ -258,15 +256,12 @@ def filter_data():
     test_list_data = test_result.fetchall()
     return render_template("test_table.html", data=test_list_data)
 
-
-
 # Route for showing tester list of the clicked test
 @app.route('/test/<int:test_id>')
 def tester_list(test_id):
     tester_list_data = get_tester_list(test_id)
 
     return render_template("tester_list.html", tester_data=tester_list_data)
-
 
 # Route for updating tester's score
 @app.route('/update_score')
@@ -281,7 +276,6 @@ def update_score():
     tester_list_data = get_tester_list(test_id)
 
     return render_template("tester_table.html",tester_data=tester_list_data)
-
 
 #------ Route for Scoring  Metrics---------
 
@@ -310,8 +304,7 @@ def scoring():
     tests = [dict(row) for row in result.fetchall()]
     return render_template('scoring_metrics.html', tests=tests)
 
-
-#funcion to generate graphs
+# funcion to generate graphs
 def generate_graphs(statistics):
     graph_images = []
     # score distribution histgram
@@ -344,12 +337,11 @@ def generate_graphs(statistics):
 
     # Return paths to graph images
     return graph_images
+
 # Function to generate PDF from statistics data
 def generate_pdf_from_statistics(statistics, graph_images):
     # Generate PDF using a library like reportlab or fpdf
-    # For demonstration purposes, let's assume we're creating a simple PDF
-    from reportlab.pdfgen import canvas
-    from reportlab.lib.pagesizes import letter
+    # For demonstration purposes, let's assume we're creating a simple PD
 
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
@@ -372,7 +364,7 @@ def generate_pdf_from_statistics(statistics, graph_images):
         c.drawImage(image_path, 100, y_offset - (img_height*0.45), width=(img_width*0.45), height=(img_height*0.45))
         y_offset -= (img_height*0.45) + 50  # Adjust this value based on the spacing between graphs
 
-    #Mean
+    # Mean
     mean_score = np.mean(statistics['scores'])
     mean_str = "{:.2f}".format(mean_score)
     c.drawString(100, 250, f"Mean: {mean_str}")
@@ -397,6 +389,7 @@ def generate_pdf_from_statistics(statistics, graph_images):
     pdf_data = buffer.getvalue()
     buffer.close()
     return pdf_data
+
 # Route to generate PDF data for a specific test
 @app.route('/generate_pdf/<int:test_id>')
 def generate_pdf(test_id):
@@ -413,12 +406,10 @@ def generate_pdf(test_id):
     response.headers['Content-Disposition'] = 'inline; filename=statistics.pdf'
 
     return response
-# Route to render a page for creating a random test with various options.
-    
-    return render_template('scoring_metrics.html')
+
+#------ Route for Test Creation ---------
 
 # Route for random test creation page.
-
 @app.route('/random_test_creation')
 def random_test_creation():
     return show_test_creation_page('random_test_creation.html')
@@ -428,6 +419,7 @@ def random_test_creation():
 def manual_test_creation():
     return show_test_creation_page('manual_test_creation.html')
 
+# Route to render the appropriate test creation page with filters 
 def show_test_creation_page(template_name):
     # Check if user session is inactive
     if 'user' not in session or not session['user'].get('is_authenticated', False):
@@ -610,7 +602,6 @@ def delete_test():
 @app.route('/enter_scores', methods=['POST'])
 def enter_scores():
     return "Under Construction"
-
 
 #----------Routes for registration and verification----------
 
@@ -880,8 +871,6 @@ def update_password():
             flash('Failed to update password. Please try again later.', 'error')
             return redirect(url_for('reset_otp'))  # Redirect back to password reset form
 
-
-
 # Route to handle initial email verification link
 @app.route('/verify_email/<string:username>/<string:user_hash>', methods=['GET'])
 def verify_email(username, user_hash):
@@ -905,8 +894,6 @@ def verify_email(username, user_hash):
     # Pop any existing sessions and redirect to login page
     session.pop('user', None)
     return redirect(url_for('trylogin'))
-
-
 
 #----------Server Configuration and Startup----------
 

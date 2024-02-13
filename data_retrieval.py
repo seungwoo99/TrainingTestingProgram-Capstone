@@ -267,8 +267,6 @@ def get_test_data(test_id):
 
             return "Error fetching test information"
 
-
-
     except Exception as e:
         # Log an error message with exception details.
         logging.error(f"Error while getting questions: {e}", exc_info=True)
@@ -284,7 +282,6 @@ def get_tests():
     test_data = test_result.fetchall()
     return test_data
 
-
 # Function that returns subject list from the database
 def get_subjects():
     subject_query = text("SELECT subject_id, name FROM subjects")
@@ -293,7 +290,6 @@ def get_subjects():
 
     return data
 
-
 # Function that returns topic list from the database
 def get_topics():
     topic_query = text("SELECT topic_id, name FROM topics")
@@ -301,7 +297,6 @@ def get_topics():
     data = topic_result.fetchall()
 
     return data
-
 
 # Function that returns tester list from the database
 def get_tester_list(test_id):
