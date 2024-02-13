@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -73,4 +74,36 @@ function togglePDFPreview() {
 }
 </script>
 </body>
+</html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel = "stylesheet" href = "{{url_for('static', filename='/css/scoring.css')}}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
+        {% include 'navbar.html' %}
+    </head>
+    </header>
+    <body>
+        <div class="container">
+            <h2>Scoring Metrics</h2>
+            <table id="datasTable">
+                <thead>
+                    <tr>
+                        <th>Test</th>
+                        <th>Average Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>DOE - Mechanical Science</td>
+                        <td>92%</td>
+                    </tr>
+                    <tr>
+                        <td>DOE - Electrical Science</td>
+                        <td>87%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </body>
 </html>

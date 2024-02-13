@@ -1,72 +1,27 @@
-/* HEADER NAV BAR CSS */
-header.navigation{
-  background: #fff;
-  padding: 20px 15px;
-  box-shadow: 0 5px 10px rgba(0,0,0,0.3);
-  position: static;
-}
-
-.nav-links {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.nav-links li {
-  list-style: none;
-  margin: 0 12px;
-}
-
-.nav-links li a {
-  position: relative;
-  color: #333;
-  font-size: 20px;
-  font-weight: 500;
-  padding: 6px 0;
-  text-decoration: none;
-}
-
-.nav-links li a:before {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  height: 3px;
-  width: 0%;
-  background: #0b80bd;
-  border-radius: 12px;
-  transition: all 0.4s ease;
-}
-
-.nav-links li a:hover:before {
-  width: 100%;
-}
-
-.nav-links li.center a:before {
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-body {
-    min-height: 100vh;
-    width: 100%;
-    background: #0b80bd;
-}
-
-.container {
-    width: 80%;
+/* Main container styles */
+.main-container {
+    position: absolute;
+    top: calc(50px + 2.5%);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-height: calc(100% - 100px - 2.5% - 20px);
+    overflow: auto;
+    width: 85%;
     margin: auto;
-    padding: 10px;
+    padding-top: 20px; 
+    padding-left: 10px;
+    padding-right: 10px;
     background: #fff;
     border-radius: 7px;
     box-shadow: 0 5px 10px rgba(0,0,0,0.3);
 }
 
+/* Elements to style headings */
 h1 {
     display: block;
     margin-bottom: 5px;
     font-size: 225%;
-    font-family: 'Montserrat', sans-serif;
     font-weight: 700;
     color: #3B4856;
     text-align: center;
@@ -77,7 +32,6 @@ h2 {
     display: block;
     margin-bottom: 5px;
     font-size: 200%;
-    font-family: 'Montserrat', sans-serif;
     font-weight: 700;
     color: #3B4856; 
 }
@@ -96,8 +50,9 @@ h2 {
 /* Elements that style the text input sections */
 .grid-container {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Two columns of equal width */
+    grid-template-columns: 1fr 1fr;
     gap: 10px; 
+    padding-left: 30px;
 }
 
 .grid-item {
@@ -116,12 +71,13 @@ h2 {
     padding-bottom: 10px;
 }
 
-.section input[type="text"], input[type="number"] {
+.section input[type="text"], .section input[type="number"] {
     width: 50%;
     padding: 10px;
     margin-top: 5px;
     font-size: 18px;
     cursor: pointer;
+    font-family: 'Code Next', sans-serif;
 }
 
 .section input[type="text"]:hover, 
@@ -139,7 +95,7 @@ h2 {
     align-items: center;
 }
 
-button {
+#confirm-selection {
     padding: 20px 30px;
     background-color: #0b80bd;
     color: #FFFFFF;
@@ -151,13 +107,13 @@ button {
     font-weight: 200;
 }
 
-button:hover {
+#confirm-selection:hover {
     background-color: #0a679a;
     box-shadow: 0 5px 10px rgba(0,0,0,0.3);
 }
 
 /* Element that style the dropdown input */
-#dropdownInput {
+.dropdown-input {
     width: 50%;
     padding: 10px;
     margin-top: 5px;
@@ -166,16 +122,16 @@ button:hover {
     font-family: 'Code Next', sans-serif;
 }
 
-#dropdownInput:hover {
+.dropdown-input:hover {
     box-shadow: 0 5px 10px rgba(0,0,0,0.3);
     border: 2px solid black;
 }
 
-#dropdownInput option {
+.dropdown-input option {
     padding: 10px;
 }
 
-#dropdownInput option:hover {
+.dropdown-input option:hover {
     background-color: #007bff;
     color: white;
 }
@@ -220,9 +176,10 @@ button:hover {
     box-shadow: 0 5px 10px rgba(0,0,0,0.3);
 }
 
-.criteria-container .section .selectCategory {
+.criteria-container .section .select-category {
     padding: 15px;
     margin: 5px;
+    margin-right: 40px;
     border: none;
     cursor: pointer;
     display: inline-block;
@@ -236,7 +193,7 @@ button:hover {
     border: 2px solid #4e555b;
 }
 
-.criteria-container .section .selectCategory:hover {
+.criteria-container .section .select-category:hover {
     background-color: #8995a0;
     box-shadow: 0 5px 10px rgba(0,0,0,0.3);
     border: 2px solid #cad9e7;
@@ -253,9 +210,3 @@ button:hover {
     color: #fff;
     text-shadow: -1px -1px 0 #338879, 1px -1px 0 #338879, -1px 1px 0 #338879, 1px 1px 0 #338879;
 }
-  
-#confirmSelection {
-    margin-top: 20px;
-}
-  
-  
