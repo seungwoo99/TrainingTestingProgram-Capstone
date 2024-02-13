@@ -194,9 +194,17 @@ def scoring():
     
     return render_template('scoring_metrics.html')
 
-# Route to render a page for creating a random test with various options.
+# Route for random test creation page.
 @app.route('/random_test_creation')
-def show_options():
+def random_test_creation():
+    return show_test_creation_page('random_test_creation.html')
+
+# Route for manual test creation page.
+@app.route('/manual_test_creation')
+def manual_test_creation():
+    return show_test_creation_page('manual_test_creation.html')
+
+def show_test_creation_page(template_name):
     # Check if user session is inactive
     if 'user' not in session or not session['user'].get('is_authenticated', False):
         flash("Access denied, please login.")
@@ -207,8 +215,8 @@ def show_options():
         options = fetch_test_creation_options()
         # Render the template 'random_test_creation.html' with the fetched options.
         return render_template(
-            'random_test_creation.html',
-            blooms_levels=options['blooms_levels'],
+            template_name,
+            blooms_taxonomy=options['blooms_taxonomy'],
             subjects=options['subjects'],
             topics=options['topics'],
             question_types=options['question_types'],
@@ -219,55 +227,91 @@ def show_options():
         print("An error occurred in show_options:", str(e))
         return "An error occurred while preparing the test creation page."
 
+# Define the mapping of training levels to database columns
+training_level_mapping = {
+    'applicant': 'is_applicant',
+    'apprentice': 'is_apprentice',
+    'journeyman': 'is_journeyman',
+    'senior': 'is_senior',
+    'chief': 'is_chief',
+    'coordinator': 'is_coordinator'
+}
+
 # Route to handle the POST request to get random questions based on user selections.
 @app.route('/get-questions', methods=['POST'])    
 def handle_get_questions():
     try:
-        # Parse JSON data from the request.
         data = request.json
+        test_type = data.get('test_type', 'random')
         logging.debug(f"Received data: {data}")
 
-        # Extract various filters and parameters from the JSON data.
-        blooms_levels = data.get('blooms_levels', [])
+        blooms_taxonomy = data.get('blooms_taxonomy', [])
         subjects = data.get('subjects', [])
         topics = data.get('topics', [])
         question_types = data.get('question_types', [])
         question_difficulties = data.get('question_difficulties', [])
         num_questions = int(data.get('num_questions', 0))
-        max_points = int(data.get('max_points', 0))
+        
+        training_level_text = data.get('training_level', 'all')
+        
+        if training_level_text == 'all':
+            training_level_conditions = None
+        else:
+            training_level_column = training_level_mapping.get(training_level_text)
+            if not training_level_column:
+                raise ValueError(f"Invalid training level: {training_level_text}")
+            training_level_conditions = {training_level_column: 1}
 
-        logging.debug(f"Filter parameters: blooms_levels: {blooms_levels}, subjects: {subjects}, topics: {topics}, question_types: {question_types}, question_difficulties: {question_difficulties}")
-        logging.debug(f"Test parameters: num_questions: {num_questions}, max_points: {max_points}")
+        question_max_points = None
+        if test_type == 'manual':
+            question_max_points = int(data.get('question_max_points', 0))
+            logging.debug(f"Filter parameters: blooms_taxonomy: {blooms_taxonomy}, subjects: {subjects}, topics: {topics}, question_types: {question_types}, question_difficulties: {question_difficulties}, question_max_points: {question_max_points}")
+        else:
+            test_max_points = int(data.get('test_max_points', 0))
+            logging.debug(f"Filter parameters: blooms_taxonomy: {blooms_taxonomy}, subjects: {subjects}, topics: {topics}, question_types: {question_types}, question_difficulties: {question_difficulties}")
+            logging.debug(f"Test parameters: num_questions: {num_questions}, test_max_points: {test_max_points}")
 
-        # Retrieve a pool of questions based on the user's filters.
-        questions_pool = get_questions(blooms_levels, subjects, topics, question_types, question_difficulties)
+        questions_pool = get_questions(blooms_taxonomy, subjects, topics, question_types, question_difficulties, training_level_conditions, question_max_points)
         total_questions_in_pool = len(questions_pool)
         logging.debug(f"Total questions in pool: {total_questions_in_pool}")
 
-        # If no questions meet the selection criteria, return a message.
         if total_questions_in_pool == 0:
             logging.warning("No questions found that meet the selection criteria.")
             return jsonify({
-                'total_questions_in_pool': total_questions_in_pool,
-                'questions_chosen_for_test': 0,
-                'selected_questions': [],
                 'message': "No questions found that meet the selection criteria."
             })
 
-        # Select a subset of questions for the test based on user preferences.
-        selected_questions = select_questions(questions_pool, num_questions, max_points)
-        questions_chosen_for_test = len(selected_questions)
-        logging.debug(f"Questions chosen for test: {questions_chosen_for_test}")
+        if test_type == 'manual':
+            selected_questions = sorted(
+                [
+                    {
+                        'question_id': q['question_id'], 
+                        'question_text': q['question_text']
+                    } 
+                    for q in questions_pool
+                ],
+                key=lambda x: x['question_id']
+            )
+            questions_available_for_selection = len(selected_questions)
+            logging.debug(f"Questions available for manual selection: {questions_available_for_selection}")
 
-        # Return information about the selected questions and the test creation status.
-        response = jsonify({
-            'total_questions_in_pool': total_questions_in_pool,
-            'questions_chosen_for_test': questions_chosen_for_test,
-            'selected_questions': [question[0] for question in selected_questions],
-            'message': "Questions successfully retrieved and test created."
-        })
-        logging.debug(f"Response: {response.get_data(as_text=True)}")
-        return response
+            return jsonify({
+                'total_questions_in_pool': total_questions_in_pool,
+                'questions_available_for_selection': questions_available_for_selection,
+                'selected_questions': selected_questions, 
+                'message': "Questions successfully retrieved for manual selection."
+            })
+        else:
+            selected_questions = select_questions(questions_pool, num_questions, test_max_points)
+            questions_chosen_for_test = len(selected_questions)
+            logging.debug(f"Questions chosen for test: {questions_chosen_for_test}")
+
+            return jsonify({
+                'total_questions_in_pool': total_questions_in_pool,
+                'questions_chosen_for_test': questions_chosen_for_test,
+                'selected_questions': [question[0] for question in selected_questions],
+                'message': "Questions successfully retrieved and test created."
+            })
 
     # Error handling
     except ValueError as ve:
@@ -279,7 +323,7 @@ def handle_get_questions():
     except Exception as e:
         logging.error(f"Unhandled exception: {e}", exc_info=True)
         return jsonify({'error': "An error occurred while preparing the test creation page."}), 500
-
+    
 #----------Routes for registration and verification----------
 
 # Route for the registration page, admin only.

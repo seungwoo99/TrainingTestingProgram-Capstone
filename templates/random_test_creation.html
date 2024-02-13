@@ -6,40 +6,33 @@
     <title>Test Creation Form</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/random_test_creation.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
+    <style>
+      .error {
+        color: red;
+      }
+    </style>
+    {% include 'navbar.html' %}
   </head>
-
-  <header class="navigation">
-    <ul class="nav-links">
-        <li class="center"><a href="{{url_for('tryregister')}}">Register</a></li>
-        <li class="center"><a href="/datahierarchy">Data Hierarchy</a></li>
-        <li class="center"><a href="/random_test_creation">Testing</a></li>
-        <li class="center"><a href="/scoring_metrics">Scoring Metrics</a></li>
-        <li class="center"><a href="{{ url_for('logout') }}">Logout/Login</a></li>
-    </ul>
-</header>
-
   <body>
-    <div class="container">
-      <form id="randomTestCreationForm"> 
+    <div class="main-container">
+      <form id="random_test_creation_form">
         <h1>Select options to determine the pool of potential questions from the database:</h1>
         <div class="criteria-container">
-          
           <!-- Bloom's Taxonomy Section -->
           <div class="section">
             <div class="label-container">
               <h2>Bloom's Taxonomy</h2>
             </div>
             <div class="selection-container">
-              {% for level in blooms_levels %}
+              {% for category in blooms_taxonomy %}
                 <label class="toggle-btn" data-selected="false">
-                  <input type="checkbox" id="blooms_{{ level }}" name="blooms_taxonomy" value="{{ level }}" data-category="blooms_levels" style="display: none;">
-                  <span class="toggle-btn-label">{{ level }}</span>
+                  <input type="checkbox" id="blooms_{{ category }}" name="blooms_taxonomy" value="{{ category }}" data-category="blooms_taxonomy" style="display: none;">
+                  <span class="toggle-btn-label">{{ category }}</span>
                 </label>
               {% endfor %}         
             </div>
-            <button type="button" class="selectCategory" data-category="blooms_levels">Select All Levels</button>
+            <button type="button" class="select-category" data-category="blooms_taxonomy">Select All Categories</button>
           </div>
-  
           <!-- Subject Section -->
           <div class="section">
             <div class="label-container">
@@ -53,9 +46,8 @@
                 </label>
               {% endfor %}
             </div>
-            <button type="button" class="selectCategory" data-category="subjects">Select All Subjects</button>
+            <button type="button" class="select-category" data-category="subjects">Select All Subjects</button>
           </div>
-  
           <!-- Topic Section -->
           <div class="section">
             <div class="label-container">
@@ -69,9 +61,8 @@
                 </label>
               {% endfor %}
             </div>
-            <button type="button" class="selectCategory" data-category="topics">Select All Topics</button>
+            <button type="button" class="select-category" data-category="topics">Select All Topics</button>
           </div>
-  
           <!-- Question Type Section -->
           <div class="section">
             <div class="label-container">
@@ -85,9 +76,8 @@
                 </label>
               {% endfor %}
             </div>
-            <button type="button" class="selectCategory" data-category="question_types">Select All Types</button>
+            <button type="button" class="select-category" data-category="question_types">Select All Types</button>
           </div>
-          
           <!-- Question Difficulty Section--> 
           <div class="section">
             <div class="label-container">
@@ -95,16 +85,15 @@
             </div>
             <div class="selection-container">
               {% for q_difficulty in question_difficulty %}
-                <label class="toggle-btn" data-selected="false">
+                <label class="toggle-btn" data-selected="false">  
                   <input type="checkbox" id="question_difficulty_{{ q_difficulty }}" name="question_difficulty" value="{{ q_difficulty }}" data-category="question_difficulties" style="display: none;">
                   <span class="toggle-btn-label">{{ q_difficulty }}</span>
                 </label>
               {% endfor %}
             </div>
-            <button type="button" class="selectCategory" data-category="question_difficulties">Select All Difficulties</button>
+            <button type="button" class="select-category" data-category="question_difficulties">Select All Difficulties</button>
           </div>
         </div>
-
         <div class="section">
           <div class="grid-container">
             <div class="grid-item">
@@ -117,15 +106,14 @@
             </div>
             <div class="grid-item">
               <div class ="label-textboxsection-container">
-                <h2>Max Points</h2>
+                <h2>Test Max Points</h2>
               </div>
               <div class="textinput-container">
-                <input type="number" id="test_point_value" name="test_point_value">
+                <input type="number" id="test_point_value" name="test_point_value" min="1">
               </div>
             </div>
           </div>
         </div>
-
         <div class="section">
           <div class="grid-container">
             <div class="grid-item">
@@ -133,13 +121,15 @@
                 <h2>Training Level</h2>
               </div>
               <div class="textinput-container">
-                <select id="dropdownInput" name="dropdownInput">
-                  <option value="">Applicant</option>
-                  <option value="">Apprentice</option>
-                  <option value="">Joureyman</option>
-                  <option value="">Senior</option>
-                  <option value="">Chief</option>
-                  <option value="">Coordinator</option>
+                <select id="training_level_dropdown" name="training_level" class="dropdown-input">
+                  <option value="all">Select training level</option>
+                  <option value="applicant">Applicant</option>
+                  <option value="apprentice">Apprentice</option>
+                  <option value="journeyman">Journeyman</option>
+                  <option value="senior">Senior</option>
+                  <option value="chief">Chief</option>
+                  <option value="coordinator">Coordinator</option>
+                  <option value="all">Select all</option>
                 </select>
               </div>
             </div>
@@ -153,11 +143,9 @@
             </div>
           </div>
         </div>
-  
-        <!-- Form Footer for Submission -->
         <div class="section"> 
           <div class="centered-button-container">
-            <button type="button" id="confirmSelection">Generate Test</button>
+            <button type="button" id="confirm-selection">Generate Test</button>
           </div>
         </div>
       </form>
