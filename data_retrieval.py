@@ -155,7 +155,124 @@ def select_questions(questions_pool, num_questions, max_points):
     logging.debug(f"Finished question selection. Total selected questions: {len(selected_questions)}, Total points of selected questions: {current_points}")
     return selected_questions
 
+# Function to get user from database
+def get_user(input_user):
 
+    try:
+        # Connect to the database using db.engine.
+        with db.engine.connect() as connection:
+
+            # Query hashed password by username
+            query = text("SELECT * FROM user WHERE username = :username")
+            result = connection.execute(query, username=input_user)
+
+            row = result.fetchone()
+
+            return row
+
+    except Exception as e:
+        # Log an error message with exception details.
+        logging.error(f"Error while getting questions: {e}", exc_info=True)
+
+
+def check_registered(input_username, input_email):
+
+    try:
+        # Connect to the database using db.engine.
+        with db.engine.connect() as connection:
+
+            # Check if by username or email is already registered
+            query = text("SELECT * FROM user WHERE username = :username OR email = :email")
+            result = connection.execute(query, username=input_username, email=input_email)
+
+            row = result.fetchone()
+
+            return row
+
+    except Exception as e:
+        # Log an error message with exception details.
+        logging.error(f"Error while getting questions: {e}", exc_info=True)
+
+def get_test_questions(test_id):
+
+    try:
+        # Connect to the database using db.engine.
+        with db.engine.connect() as connection:
+
+            # Execute the SQL query to retrieve question texts for the selected test ID
+            sql_query = text("""
+                    SELECT question_text
+                    FROM tests t
+                    JOIN test_questions tq ON t.test_id = tq.test_id
+                    JOIN questions q ON tq.question_id = q.question_id
+                    WHERE t.test_id = :test_id
+                """)
+
+            result = connection.execute(sql_query, test_id=test_id)
+
+            # Extract question texts from the result
+            question_texts = [row['question_text'] for row in result]
+
+            return question_texts
+
+    except Exception as e:
+        # Log an error message with exception details.
+        logging.error(f"Error while getting questions: {e}", exc_info=True)
+
+
+def get_tests_temp():
+
+    try:
+        # Connect to the database using db.engine.
+        with db.engine.connect() as connection:
+
+            # Execute query to retrieve all tests
+            # Execute the SQL query to retrieve question texts
+            sql_query = text("""
+                        SELECT test_id, test_name
+                        FROM tests
+                    """)
+            result = db.engine.execute(sql_query)
+
+            # Extract tests from the result
+            test_list = [row for row in result]
+
+            return test_list
+
+    except Exception as e:
+        # Log an error message with exception details.
+        logging.error(f"Error while getting questions: {e}", exc_info=True)
+
+def get_test_data(test_id):
+
+    try:
+        # Connect to the database using db.engine.
+        with db.engine.connect() as connection:
+
+            # Execute query to retrieve all tests
+            # Execute the SQL query to retrieve question texts
+            sql_query = text("""
+                    SELECT * FROM tests
+                    WHERE test_id = :test_id
+            """)
+            result = connection.execute(sql_query, test_id=test_id)
+
+            # Fetch the test data
+            test_data = result.fetchone()
+
+            if test_data:
+                # Convert the row to a dictionary where column names are the keys
+                test_data_dict = dict(test_data)
+                return test_data_dict
+
+            return "Error fetching test information"
+
+
+
+    except Exception as e:
+        # Log an error message with exception details.
+        logging.error(f"Error while getting questions: {e}", exc_info=True)
+        
 # Function that returns test list from the database
 def get_tests():
     test_query = text("Select *, s.name AS subject_name, tp.name AS topic_name FROM tests t "

@@ -15,7 +15,9 @@ from base64 import urlsafe_b64decode
 
 # Related third party imports
 from dotenv import load_dotenv, dotenv_values  # pip install python-dotenv
-from flask import Flask, render_template, request, url_for, redirect, session, flash, get_flashed_messages, jsonify, make_response
+from flask import Flask, render_template, request, url_for, redirect, session, flash, get_flashed_messages, jsonify, \
+    make_response
+
 from flask_bcrypt import Bcrypt
 from flask_mail import Message, Mail
 from sqlalchemy import create_engine, text
@@ -27,7 +29,8 @@ from itsdangerous import URLSafeTimedSerializer
 # Local application/library specific imports
 from config import MailConfig
 from db_config import db
-from data_retrieval import fetch_test_creation_options, get_questions, select_questions, get_tests, get_topics, get_subjects, get_tester_list
+
+from data_retrieval import fetch_test_creation_options, get_questions, select_questions, get_user, get_test_questions, check_registered, get_test_data, get_tests_temp, get_tests, get_topics, get_subjects, get_tester_list
 
 
 # Load environment variables from a .env file
@@ -119,12 +122,7 @@ def login():
         input_username = request.form.get("username")
         input_password = request.form.get("password")
 
-        # Query hashed password by username
-        query = text("SELECT * FROM user WHERE username = :username")
-        result = db.engine.execute(query, username=input_username)
-
-        row = result.fetchone()
-
+        row = get_user(input_username)
         # Check if a row was found
         if row:
             # Extract the hashed password from the 'password' column
@@ -549,7 +547,71 @@ def handle_get_questions():
     except Exception as e:
         logging.error(f"Unhandled exception: {e}", exc_info=True)
         return jsonify({'error': "An error occurred while preparing the test creation page."}), 500
-    
+
+# Test route to create test questions
+@app.route('/create_questions')
+def create_questions():
+    return render_template('create_questions.html')
+
+# Test route to process questions created on /create_questions
+@app.route('/process_question', methods=['POST'])
+def process_question():
+    html_content = request.form['content']
+
+    obj_id = 1
+    question_type = 'multiple choice'
+
+    # SQL query with parameters
+    query = text("""
+        INSERT INTO questions (obj_id, question_text, question_answer, question_type, question_difficulty, answer_explaination, points_definition, max_points)
+        VALUES (:obj_id, :html_content, 'C) Nathan', :question_type, '1', 'None of the other members exist', 'all or nothing', '1')
+    """)
+
+    # Execute the query
+    db.engine.execute(query, obj_id=obj_id, html_content=html_content, question_type=question_type)
+
+    return redirect(url_for('generate_test'))
+
+# Route to render test questions as a pdf file for export
+@app.route('/generate_test', methods=['POST'])
+def generate_test():
+    # Get the selected test ID from the form submission
+    selected_test_id = request.form.get('test_id')
+
+    # Render page
+    return render_template('test_template.html', question_texts=get_test_questions(selected_test_id),
+                           test_data=get_test_data(selected_test_id))
+
+# Temporary Route to list tests and applicable actions
+@app.route('/tests')
+def tests():
+
+    # Execute query to retrieve all tests
+    # Execute the SQL query to retrieve question texts
+    sql_query = text("""
+            SELECT test_id, test_name
+            FROM tests
+        """)
+    result = db.engine.execute(sql_query)
+
+    # Extract tests from the result
+    test_list = get_tests_temp()
+    return render_template('tests.html', test_list=test_list)
+
+# Routes yet to be implemented
+@app.route('/modify_test', methods=['POST'])
+def modify_test():
+    return "Under Construction"
+
+@app.route('/delete_test', methods=['POST'])
+def delete_test():
+    return "Under Construction"
+
+@app.route('/enter_scores', methods=['POST'])
+def enter_scores():
+    return "Under Construction"
+
+
 #----------Routes for registration and verification----------
 
 # Route for the registration page, admin only.
@@ -591,11 +653,7 @@ def register():
             flash("Entered passwords do not match")
             return redirect(url_for('tryregister'))
 
-        # Check if by username or email is already registered
-        query = text("SELECT * FROM user WHERE username = :username OR email = :email")
-        result = db.engine.execute(query, username=input_username, email=input_email)
-
-        row = result.fetchone()
+        row = check_registered(input_username, input_email)
 
         # Check if a row was found
         if row:
