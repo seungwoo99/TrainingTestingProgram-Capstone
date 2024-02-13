@@ -212,7 +212,7 @@ def get_test_questions(test_id):
         logging.error(f"Error while getting questions: {e}", exc_info=True)
 
 
-def get_tests():
+def get_tests_temp():
 
     try:
         # Connect to the database using db.engine.

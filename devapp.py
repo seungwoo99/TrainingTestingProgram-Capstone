@@ -18,7 +18,7 @@ from itsdangerous import URLSafeTimedSerializer
 # Local application/library specific imports
 from config import MailConfig
 from db_config import db
-from data_retrieval import fetch_test_creation_options, get_questions, select_questions, get_user, get_test_questions, check_registered, get_test_data
+from data_retrieval import fetch_test_creation_options, get_questions, select_questions, get_user, get_test_questions, check_registered, get_test_data, get_tests_temp
 
 # Load environment variables from a .env file
 load_dotenv()
@@ -323,7 +323,7 @@ def tests():
     result = db.engine.execute(sql_query)
 
     # Extract tests from the result
-    test_list = [row for row in result]
+    test_list = get_tests_temp()
     return render_template('tests.html', test_list=test_list)
 
 # Routes yet to be implemented
