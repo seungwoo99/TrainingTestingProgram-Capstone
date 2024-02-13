@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{url_for('static', filename='/css/navbar.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
+  </head>
+  <header class="navigation">
+    <ul class="nav-links">
+        <li class="center"><a href="{{url_for('tryregister')}}">Register</a></li>
+        <li class="center"><a href="/datahierarchy">Data Hierarchy</a></li>
+        <li class="center dropdown">
+          <a href="javascript:void(0)">Testing</a> 
+          <div class="dropdown-content">
+              <a href="/random_test_creation">Random Test Creation</a>
+              <a href="/manual_test_creation">Manual Test Creation</a>
+          </div>
+      </li>
+        <li class="center"><a href="/test_list">Test List</a></li>
+        <li class="center"><a href="/scoring_metrics">Scoring Metrics</a></li>
+        <li class="center"><a href="{{ url_for('logout') }}">Logout/Login</a></li>
+    </ul>
+  </header>
+  <body>
+  </body>
+</html>

@@ -18,7 +18,7 @@ def fetch_test_creation_options():
         # Connect to the database using db.engine.
         with db.engine.connect() as connection:
             # Retrieve distinct values for various parameters.
-            blooms_levels = connection.execute(text("SELECT DISTINCT name FROM blooms_tax")).fetchall()
+            blooms_taxonomy = connection.execute(text("SELECT DISTINCT name FROM blooms_tax")).fetchall()
             subjects = connection.execute(text("SELECT DISTINCT name FROM subjects")).fetchall()
             topics = connection.execute(text("SELECT DISTINCT name FROM topics")).fetchall()
             question_types = connection.execute(text("SELECT DISTINCT question_type FROM questions")).fetchall()
@@ -26,7 +26,7 @@ def fetch_test_creation_options():
 
         # Clean and simplify the fetched data into a dictionary.
         options = {
-            'blooms_levels': [level[0].strip() for level in blooms_levels],
+            'blooms_taxonomy': [category[0].strip() for category in blooms_taxonomy],
             'subjects': [subject[0].strip() for subject in subjects],
             'topics': [topic[0].strip() for topic in topics],
             'question_types': [q_type[0].strip() for q_type in question_types],
@@ -40,7 +40,7 @@ def fetch_test_creation_options():
         raise
 
 # Function to query the database for questions that match user inputs to create a pool of questions
-def get_questions(blooms_levels, subjects, topics, question_types, question_difficulties):
+def get_questions(blooms_taxonomy, subjects, topics, question_types, question_difficulties, training_level_conditions, max_points=None):
     try:
         # Log that we are connecting to the database.
         logging.info("Connecting to the database.")
@@ -50,14 +50,12 @@ def get_questions(blooms_levels, subjects, topics, question_types, question_diff
             where_clauses = []  # List to store WHERE clauses.
             params = {}  # Dictionary to store parameters for the SQL query.
 
-            # Check if blooms_levels filter is provided.
-            if blooms_levels:
-                # Generate placeholders for the IN clause.
-                placeholders = ', '.join([f':blooms_level_{i}' for i in range(len(blooms_levels))])
+            # Check if blooms_taxonomy filter is provided.
+            if blooms_taxonomy:
+                placeholders = ', '.join([f':blooms_taxonomy{i}' for i in range(len(blooms_taxonomy))])
                 clause = f'b.name IN ({placeholders})'
-                where_clauses.append(clause)  # Add the clause to the list.
-                # Update the params dictionary with parameter values.
-                params.update({f'blooms_level_{i}': level for i, level in enumerate(blooms_levels)})
+                where_clauses.append(clause)
+                params.update({f'blooms_taxonomy{i}': category for i, category in enumerate(blooms_taxonomy)})
 
             # Check if subjects filter is provided.
             if subjects:
@@ -73,6 +71,10 @@ def get_questions(blooms_levels, subjects, topics, question_types, question_diff
                 where_clauses.append(clause)
                 params.update({f'topic_{i}': topic for i, topic in enumerate(topics)})
 
+            # Group the conditions for blooms_taxonomy, subjects, and topics.
+            grouped_conditions = ' OR '.join(where_clauses) if where_clauses else '1'
+            where_clauses = [f"({grouped_conditions})"]
+
             # Check if question_types filter is provided.
             if question_types:
                 placeholders = ', '.join([f':question_type_{i}' for i in range(len(question_types))])
@@ -87,12 +89,23 @@ def get_questions(blooms_levels, subjects, topics, question_types, question_diff
                 where_clauses.append(clause)
                 params.update({f'question_difficulty_{i}': q_difficulty for i, q_difficulty in enumerate(question_difficulties)})
 
-            # Construct the WHERE statement based on the clauses or set to '1' if no filters are provided.
-            where_statement = ' OR '.join(where_clauses) if where_clauses else '1'
+            # Check if a specified training level is provided.
+            if training_level_conditions:
+                for column, value in training_level_conditions.items():
+                    where_clauses.append(f"lo.{column} = :{column}")
+                    params[column] = value
+            
+            # Check if a specified question point value is provided.
+            if max_points is not None and max_points > 0:
+                where_clauses.append("q.max_points <= :max_points")
+                params['max_points'] = max_points
+
+            # Construct the WHERE statement based on the clauses.
+            where_statement = ' AND '.join(where_clauses)
 
             # Define the SQL query with placeholders.
             sql = text(f"""
-                SELECT q.question_id, q.max_points
+                SELECT q.question_id, q.question_text, q.max_points
                 FROM questions q
                 INNER JOIN learning_objectives lo ON q.obj_id = lo.obj_id
                 INNER JOIN blooms_tax b ON lo.blooms_id = b.blooms_id
@@ -117,35 +130,30 @@ def get_questions(blooms_levels, subjects, topics, question_types, question_diff
     except Exception as e:
         # Log an error message with exception details.
         logging.error(f"Error while getting questions: {e}", exc_info=True)
-
+        return None
 
 # Function to select questions from a pool based on user preferences.
 def select_questions(questions_pool, num_questions, max_points):
     logging.info("Selecting questions from the pool.")
-    if num_questions > len(questions_pool):
-        # Log a warning and raise an exception if there are not enough questions.
-        logging.warning("Requested more questions than are available in the pool.")
-        raise ValueError("Not enough questions in the pool to meet the requested number of questions.")
-    
-    # Shuffle the questions in the pool randomly.
+    logging.debug(f"Starting question selection. Total questions in pool: {len(questions_pool)}, Requested number of questions: {num_questions}, Max points allowed: {max_points}")
+
     random.shuffle(questions_pool)
-    
     selected_questions = []
     current_points = 0
-    
-    # Iterate through the shuffled questions and select them based on points.
-    for question in questions_pool:
-        if current_points + question[1] <= max_points:
-            selected_questions.append(question)
-            current_points += question[1]
-            
-            if len(selected_questions) == num_questions:
-                break
-    
-    # Log the selected questions and return them.
-    logging.debug(f"Selected Questions: {selected_questions}")
-    return selected_questions
 
+    for question in questions_pool:
+        question_points = int(question[2])
+        if current_points + question_points > max_points:
+            logging.debug(f"Skipping question ID: {question[0]} due to exceeding max points. Question points: {question_points}, Current total points: {current_points}, Max points: {max_points}")
+            continue
+        logging.debug(f"Selecting question ID: {question[0]}. Question points: {question_points}, Current total points before selection: {current_points}")
+        selected_questions.append(question)
+        current_points += question_points
+        if len(selected_questions) == num_questions:
+            break
+
+    logging.debug(f"Finished question selection. Total selected questions: {len(selected_questions)}, Total points of selected questions: {current_points}")
+    return selected_questions
 
 # Function to get user from database
 def get_user(input_user):
@@ -264,3 +272,51 @@ def get_test_data(test_id):
     except Exception as e:
         # Log an error message with exception details.
         logging.error(f"Error while getting questions: {e}", exc_info=True)
+        
+# Function that returns test list from the database
+def get_tests():
+    test_query = text("Select *, s.name AS subject_name, tp.name AS topic_name FROM tests t "
+                      + "LEFT JOIN subjects s ON t.subject_id = s.subject_id "
+                      + "LEFT JOIN topics tp ON t.topic_id = tp.topic_id ")
+    test_result = db.engine.execute(test_query)
+
+    # fetch all rows of the result
+    test_data = test_result.fetchall()
+    return test_data
+
+
+# Function that returns subject list from the database
+def get_subjects():
+    subject_query = text("SELECT subject_id, name FROM subjects")
+    subject_result = db.engine.execute(subject_query)
+    data = subject_result.fetchall()
+
+    return data
+
+
+# Function that returns topic list from the database
+def get_topics():
+    topic_query = text("SELECT topic_id, name FROM topics")
+    topic_result = db.engine.execute(topic_query)
+    data = topic_result.fetchall()
+
+    return data
+
+
+# Function that returns tester list from the database
+def get_tester_list(test_id):
+    tester_query = text(
+        "SELECT ts.test_id, max_id.max_score_id, ts.tester_id, te.testee_name, ts.attempt_date, ts.total_score, ts.pass_status "
+        + "FROM test_scores ts "
+        + "INNER JOIN( "
+        + "SELECT MAX(score_id) AS max_score_id, test_id, tester_id "
+        + "FROM test_scores "
+        + "WHERE test_id = :test_id "
+        + "GROUP BY tester_id "
+        + ")max_id ON ts.score_id = max_id.max_score_id AND ts.tester_id = max_id.tester_id "
+        + "LEFT JOIN testee te ON ts.tester_id = te.tester_id "
+        + "WHERE ts.test_id = :test_id ")
+    tester_result = db.engine.execute(tester_query, test_id=test_id)
+    data = tester_result.fetchall()
+
+    return data

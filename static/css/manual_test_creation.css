@@ -1,0 +1,235 @@
+/* Main container styles */
+.main-container {
+  position: absolute;
+  top: calc(50px + 2.5%);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: calc(100% - 100px - 2.5% - 20px);
+  overflow: auto;
+  width: 85%;
+  margin: auto;
+  padding: 30px;
+  background: #fff;
+  border-radius: 7px;
+  box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+  overflow-x: hidden;
+}
+
+/* Elements to style filter table */
+.filter-table {
+  width: 100%; 
+  table-layout: fixed; 
+  border-collapse: collapse; 
+  font-family: 'Code Next', sans-serif;
+}
+
+.filter-table th, .filter-table td {
+  text-align: left;
+}
+
+.filter-table th {
+  padding: 8px;
+  font-size: 150%;
+}
+
+.filter-table td {
+  padding-left: 8px;
+  padding-bottom: 4px;
+}
+
+.filter-table td:nth-child(2),
+.filter-table th:nth-child(2),
+.filter-table td:nth-child(3),
+.filter-table th:nth-child(3) { 
+  width: 50%; 
+}
+
+.filter-table td:nth-child(1),
+.filter-table th:nth-child(1),
+.filter-table td:nth-child(4),
+.filter-table th:nth-child(4) { 
+  width: 25%;
+}
+
+/* Elements to style results table */
+.results-table {
+  width: 100%; 
+  table-layout: fixed; 
+  border-collapse: collapse; 
+  font-family: 'Code Next', sans-serif;
+  padding: 8px;
+}
+
+.results-table th {
+  font-size: 150%;
+  background-color: #f2f2f2;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+.results-table tbody{
+  font-size: 125%;
+}
+
+.results-table td {
+  border: 1px solid #ddd;
+  padding: 5px;
+}
+
+.results-table td:nth-child(1),
+.results-table th:nth-child(1),
+.results-table td:nth-child(3), 
+.results-table th:nth-child(3)  { 
+  width: 15%; 
+}
+
+.results-table td:nth-child(2),
+.results-table th:nth-child(2) { 
+  width: 70%; 
+}
+
+.results-table td:nth-child(1),
+.results-table td:nth-child(3) {
+  text-align: center;
+}
+
+.results-table td:nth-child(2){
+  text-align: left;
+}
+
+/* Elements that style the text inputs */
+input[type="text"], input[type="number"] {
+  width: 90%;
+  padding: 10px;
+  margin-top: 5px;
+  font-size: 125%;
+  cursor: pointer;
+  font-family: 'Code Next', sans-serif;
+}
+
+input[type="text"]:hover, 
+input[type="number"]:hover {
+  box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+  border: 2px solid black;
+}
+
+/* Element that style the dropdown input */
+.dropdown-input {
+  width: 90%;
+  padding: 10px;
+  margin-top: 5px;
+  font-size: 125%;
+  cursor: pointer;
+  font-family: 'Code Next', sans-serif;
+}
+
+.dropdown-input:hover {
+  box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+  border: 2px solid black;
+}
+
+.dropdown-input option {
+  padding: 10px;
+}
+
+.dropdown-input option:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+/* Elements to style search button */
+.search-button {
+  padding: 10px 40px;
+  background-color: #0b80bd;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 150%;
+  font-family: 'Code Next', sans-serif;
+  font-weight: 200;
+}
+
+.search-button:hover {
+  background-color: #0a679a;
+  box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+}
+
+/* Elements to style side bar */
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.side-panel {
+  position: absolute;
+  top: 0;
+  right: -200px;
+  width: 200px;
+  height: 100%;
+  padding: 20px;
+  color: #ffffff;
+  background: #726E60;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.35);
+  transition: right 0.3s ease-in-out;
+}
+
+.side-panel-open .side-panel {
+  right: 0;
+}
+
+.wrapper.side-panel-open {
+  flex-direction: row;
+}
+
+.wrapper.side-panel-open .side-panel {
+  right: 0;
+}
+
+.side-panel-toggle {
+  position: absolute;
+  top: 20px;
+  right: -5px;
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  background: #726E60;
+  border: none;
+  border-radius: 5px 0 0 5px;
+  outline: none;
+  cursor: pointer;
+}
+
+.side-panel-toggle:hover {
+  background: #708B75;
+}
+
+.side-panel-toggle .material-icons:first-child,
+.side-panel-open .side-panel-toggle .material-icons:last-child {
+  display: none;
+}
+
+.side-panel-open .side-panel-toggle .material-icons:first-child,
+.side-panel-toggle .material-icons:last-child {
+  display: block;
+}
+
+.side-panel-open .side-panel {
+  right: 0;
+}
+
+.side-panel-open .side-panel-toggle {
+  right: 200px;
+  border-radius: 5px 0 0 5px;
+  background: #44423A;
+  transition: right 0.3s ease-in-out;
+}
+
+.wrapper.side-panel-open {
+  flex-direction: row;
+}

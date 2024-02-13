@@ -1,0 +1,105 @@
+<thead>
+    <tr>
+        <th>No.</th>
+        <th>Tester Name</th>
+        <th>Attempt Date</th>
+        <th>Score</th>
+        <th>Pass Status</th>
+    </tr>
+    </thead>
+    <tbody>
+        {% for row in tester_data %}
+        <tr data-score-id="{{ row.max_score_id }}" data-tester-id="{{ row.tester_id }}" data-test-id="{{ row.test_id }}">
+            <td>{{ loop.index }}</td>
+            <td>{{ row.testee_name }}</td>
+            <td>{{ row.attempt_date }}</td>
+            <td class="score-cell">{{ row.total_score }}</td>
+            <td>{% if row.pass_status == 1 %} PASS
+                {% else %} FAIL
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+<script>
+
+    /* JS code for editing tester's score */
+    document.addEventListener('DOMContentLoaded', function() {
+    const table = document.querySelector('table');
+
+    table.addEventListener('click', function(event) {
+        const target = event.target;
+        const scoreCell = target.closest('.score-cell');
+
+        if (!scoreCell) {
+            return; // Exit if the click is not on a grade cell
+        }
+
+        const isEditing = scoreCell.querySelector('input');
+
+        if (!isEditing) {
+            // If not already editing, enable editing
+            const inputField = document.createElement('input');
+            inputField.type = 'number';
+            inputField.value = scoreCell.textContent.trim();
+            scoreCell.textContent = '';
+            scoreCell.appendChild(inputField);
+            inputField.focus(); // Focus on the input field
+
+            // Show the edit button
+            const editBtn = document.createElement('button');
+            editBtn.textContent = 'Edit';
+            editBtn.addEventListener('click', function(){
+                updateScore(scoreCell);
+            });
+            scoreCell.appendChild(editBtn);
+
+            // Only allows numerical values
+            inputField.addEventListener('keypress', function(event) {
+                const keyCode = event.keyCode;
+                const isValidInput = (keyCode >= 48 && keyCode <= 57);
+                if (!isValidInput) {
+                    event.preventDefault();
+                }
+            });
+        }
+    });
+
+    //update score
+    function updateScore(scoreCell) {
+        const newGrade = scoreCell.querySelector('input').value;
+        scoreCell.textContent = newGrade;
+
+        // Remove input field
+        const inputField = scoreCell.querySelector('input');
+        if (inputField) {
+            inputField.remove();
+        }
+        // Remove edit button
+        const editBtn = scoreCell.querySelector('button');
+        if (editBtn) {
+            editBtn.remove();
+        }
+
+        //send data
+        sendData(scoreCell, newGrade);
+    }
+
+    //send new score to flask to update
+    function sendData(scoreCell, newGrade){
+        const row = scoreCell.closest('tr');
+        var scoreId = row.getAttribute('data-score-id');
+        var testerId = row.getAttribute('data-tester-id');
+        var testId  = row.getAttribute('data-test-id');
+        let xhr = new XMLHttpRequest();
+        xhr.open('GET', '/update_score?scoreId=' + scoreId +'&testerId=' + testerId + '&testId=' + testId + '&newGrade=' + newGrade,true);
+        xhr.onreadystatechange = function() {
+            if(xhr.readyState == 4 && xhr.status == 200){
+                document.getElementById('datasTable').innerHTML = xhr.responseText;
+            }
+        };
+        xhr.send();
+    }
+});
+
+</script>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel = "stylesheet" href = "{{url_for('static', filename='/css/test_list.css')}}">
+</head>
+
+<header class="navigation">
+    <ul class="nav-links">
+        <li class="center"><a href="{{url_for('tryregister')}}">Register</a></li>
+        <li class="center"><a href="/datahierarchy">Data Hierarchy</a></li>
+        <li class="center"><a href="/random_test_creation">Testing</a></li>
+        <li class="center"><a href="/test_list">Test List</a></li>
+        <li class="center"><a href="/scoring_metrics">Scoring Metrics</a></li>
+        <li class="center"><a href="{{ url_for('logout') }}">Logout/Login</a></li>
+    </ul>
+</header>
+
+<body>
+<div class="container">
+<h2>Test List</h2>
+
+<!-- Filtering option -->
+<div class="filter">
+    <!-- subject drop down -->
+    <div class="options">
+    <label class="subject_label">Subject</label>
+    <select id="subject-filter">
+        <option value="">Subjects</option>
+        {% for row in subject_data %}
+        <option value="{{ row.subject_id }}">{{ row.name }}</option>
+        {% endfor %}
+    </select>
+    </div>
+
+    <!-- topic drop down -->
+    <div class="options">
+    <label class="topic_label">Topic</label>
+    <select id="topic-filter">
+        <option value="">Topics</option>
+        {% for row in topic_data %}
+        <option value="{{ row.topic_id }}">{{ row.name }}</option>
+        {% endfor %}
+    </select>
+    </div>
+
+    <!-- Starting date input field -->
+    <div class="options">
+        <label class="from_label">From</label>
+        <input type="date" id="start_date">
+    </div>
+
+    <!-- Ending date input field -->
+    <div class="options">
+        <label class="to_label">To</label>
+        <input type="date" id="end_date">
+    </div>
+</div>
+
+
+<!-- Test Table View -->
+<table id="datasTable">
+{% include 'test_table.html' %}
+</table>
+</div>
+
+<!-- JS -->
+<script>
+    /* JS code for handling filtering options' data */
+    let subjectFilter = document.getElementById('subject-filter');
+    let topicFilter = document.getElementById('topic-filter');
+    let startDate = document.getElementById('start_date');
+    let endDate = document.getElementById('end_date');
+
+    subjectFilter.addEventListener('change', handleFilterChange);
+    topicFilter.addEventListener('change', handleFilterChange);
+    startDate.addEventListener('change', handleFilterChange);
+    endDate.addEventListener('change', handleFilterChange);
+
+    //Get Data when value is changed
+    function handleFilterChange(){
+        let selectedSubject = subjectFilter.value;
+        let selectedTopic = topicFilter.value;
+        let start_date = startDate.value;
+        let end_date = endDate.value;
+
+        filterTable(selectedSubject, selectedTopic, start_date, end_date);
+    }
+
+    //Send filtered options data to flask
+    function filterTable(subject, topic, start, end){
+        let xhr = new XMLHttpRequest();
+        xhr.open('GET', '/filter?subject=' + subject +'&topic=' + topic + '&start=' + start + '&end=' + end, true);
+        xhr.onreadystatechange = function() {
+            if(xhr.readyState == 4 && xhr.status == 200){
+                document.getElementById('datasTable').innerHTML = xhr.responseText;
+            }
+        };
+        xhr.send();
+    }
+</script>
+</div>
+</body>
+</html>
