@@ -3,8 +3,6 @@ from datetime import datetime, timezone, timedelta
 import os
 from random import randint
 import logging
-import urllib.parse
-from urllib.parse import unquote
 import base64
 from base64 import urlsafe_b64decode
 
