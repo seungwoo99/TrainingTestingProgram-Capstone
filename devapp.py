@@ -3,8 +3,8 @@ from datetime import datetime, timezone, timedelta
 import os
 from random import randint
 import logging
-import urllib.parse
-from urllib.parse import unquote
+import base64
+from base64 import urlsafe_b64decode
 
 # Related third party imports
 from dotenv import load_dotenv, dotenv_values  # pip install python-dotenv
@@ -412,8 +412,8 @@ def register():
             # Hash username for verification
             username_hash = bcrypt.generate_password_hash(input_username + os.getenv("SALT"))
 
-            # URL encode the hash string
-            encoded_hash = urllib.parse.quote(username_hash, safe='')
+            # Encode the hash using base64
+            encoded_hash = base64.urlsafe_b64encode(username_hash).decode('utf-8')
 
             # Send Email Verification email:
 
@@ -605,7 +605,7 @@ def update_password():
 def verify_email(username, user_hash):
 
     # Decode the encoded hash
-    user_hash = unquote(user_hash)
+    user_hash = urlsafe_b64decode(user_hash).decode('utf-8')
 
     # Check if hash matches username + salt
     if bcrypt.check_password_hash(user_hash, username + os.getenv("SALT")):
