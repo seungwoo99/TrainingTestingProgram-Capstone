@@ -31,7 +31,7 @@ from itsdangerous import URLSafeTimedSerializer
 from config import MailConfig
 from db_config import db
 from data_retrieval import (fetch_test_creation_options, get_questions, select_questions, get_user, get_test_questions, 
-                            check_registered, get_test_data, get_tests_temp, get_tests, get_topics, get_subjects, get_tester_list)
+                            check_registered, get_test_data, get_tests_temp, get_tests, get_topics, get_subjects, get_tester_list, selectSubjectNames, selectSubjectDescriptions)
 
 # Load environment variables from a .env file
 load_dotenv()
@@ -42,7 +42,7 @@ load_dotenv()
 app = Flask(__name__)
 
 # Configure Flask app to use SQLAlchemy for a local MySQL database
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:@localhost:3306/test_train_db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:@localhost:3307/test_train_db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Configure logging to write to a file
@@ -201,7 +201,9 @@ def data():
         flash("Access denied, please login.")
         return redirect(url_for('trylogin'))
 
-    return render_template('datahierarchy.html')
+    subjectNames = selectSubjectNames()
+    subjectDescriptions = selectSubjectDescriptions()
+    return render_template('datahierarchy.html', subjectNames=subjectNames, subjectDescriptions=subjectDescriptions)
 
 
 #---------- Routes for the test list page and tester list page ----------

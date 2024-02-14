@@ -15,6 +15,8 @@
     <body>
         <div class="container">
             <h2>Data Hierarchy</h2>
+            <div id="subjectNames" hidden>{{ subjectNames }}</div>
+            <div id="subjectDescriptions" hidden>{{ subjectDescriptions }}</div>
             <table id="datasTable">
                 <thead>
                     <tr>
@@ -53,6 +55,7 @@
             <!-- JS -->
             <script>
                 // Sample data for demonstration
+                /*
                 let data = [
                     { data: 'DOE - Mechanical Science', description: 'Description here' },
                     {data: 'DOE - Electrical Science', description: 'Description here' },
@@ -61,7 +64,40 @@
                     { data: 'Subject', description: 'Description here' },
                     { data: 'Subject', description: 'Description here' },
                 ];
+                */
+                let data = [];
 
+                let sNames = document.getElementById("subjectNames").innerHTML;
+                let sDescriptions = document.getElementById("subjectDescriptions").innerHTML;
+
+                sNames = filterFlask(sNames);
+                sDescriptions = filterFlask(sDescriptions);
+
+                for(let i=0;i<sNames.length;i++)
+                {
+                    let tempData = {data:sNames[i],description:sDescriptions[i]};
+                    data.push(tempData);
+                }
+
+                viewAllDatas();
+
+                //function takes all the junk that gets inserted into the data from flask, probably breaks under
+                //specific character sequences, also it removes all apostrophes and single quotes
+                function filterFlask(str)
+                {
+                    str = str.replaceAll("[","");
+                    str = str.replaceAll("]","");
+                    str = str.split(",),");
+                    str[0] = " "+str[0];
+                    for(let i=0;i<str.length;i++)
+                    {
+                        str[i] = str[i].replace(" (","");
+                        str[i] = str[i].replaceAll("\'","");
+                    }
+                    str[str.length-1] = str[str.length-1].replace(",)","");
+
+                    return str;
+                }
 
                 // Function to view topics that are part of the data theme *work in progress
                 function viewAllDatas() {

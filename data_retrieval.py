@@ -316,3 +316,17 @@ def get_tester_list(test_id):
     data = tester_result.fetchall()
 
     return data
+
+def selectSubjectNames():
+    with db.engine.connect() as connection:
+        query = text("SELECT name FROM subjects")
+        result = connection.execute(query).fetchall()
+
+    return result
+
+def selectSubjectDescriptions():
+    with db.engine.connect() as connection:
+        query = text("SELECT description FROM subjects")
+        result = connection.execute(query).fetchall()
+
+    return result

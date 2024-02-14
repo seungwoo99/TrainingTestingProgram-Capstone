@@ -11,3 +11,18 @@ Traceback (most recent call last):
   File "C:\Users\nmill\PycharmProjects\testingtraining1\devapp.py", line 103, in index
     1/0
 ZeroDivisionError: division by zero
+Exception on /datahierarchy [GET]
+Traceback (most recent call last):
+  File "C:\Users\Cylon\Desktop\School\Winter 2024\Capstone\TrainingTestingProgram-Capstone\.venv\lib\site-packages\flask\app.py", line 1463, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\Cylon\Desktop\School\Winter 2024\Capstone\TrainingTestingProgram-Capstone\.venv\lib\site-packages\flask\app.py", line 872, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\Cylon\Desktop\School\Winter 2024\Capstone\TrainingTestingProgram-Capstone\.venv\lib\site-packages\flask\app.py", line 870, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\Cylon\Desktop\School\Winter 2024\Capstone\TrainingTestingProgram-Capstone\.venv\lib\site-packages\flask\app.py", line 855, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "C:\Users\Cylon\Desktop\School\Winter 2024\Capstone\TrainingTestingProgram-Capstone\devapp.py", line 204, in data
+    subjects = get_subjects()
+  File "C:\Users\Cylon\Desktop\School\Winter 2024\Capstone\TrainingTestingProgram-Capstone\data_retrieval.py", line 289, in get_subjects
+    subject_result = db.engine.execute(subject_query)
+AttributeError: 'Engine' object has no attribute 'execute'
