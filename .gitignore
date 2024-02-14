@@ -50,3 +50,4 @@ wheels/
 .installed.cfg
 *.egg
 env
+app_errors.log
