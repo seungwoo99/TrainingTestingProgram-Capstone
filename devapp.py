@@ -1,6 +1,7 @@
 # Standard library imports
 import os
 import logging
+from logging.handlers import RotatingFileHandler
 from datetime import datetime, timezone, timedelta
 from random import randint
 
@@ -35,12 +36,20 @@ from data_retrieval import (fetch_test_creation_options, get_questions, select_q
 # Load environment variables from a .env file
 load_dotenv()
 
+
+
 #Initialize Flask App
 app = Flask(__name__)
 
 # Configure Flask app to use SQLAlchemy for a local MySQL database
 app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:@localhost:3306/test_train_db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# Configure logging to write to a file
+handler = RotatingFileHandler('app_errors.log', maxBytes=10000, backupCount=1)
+handler.setLevel(logging.ERROR)
+app.logger.addHandler(handler)
+
 
 # Configure Flask app with a secret key
 app.config["SECRET_KEY"] = 'os.getenv("SECRET_KEY")'
@@ -913,5 +922,7 @@ def verify_email(username, user_hash):
 
 #----------Server Configuration and Startup----------
 
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
+
