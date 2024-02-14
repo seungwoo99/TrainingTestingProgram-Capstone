@@ -22,6 +22,8 @@
   table-layout: fixed; 
   border-collapse: collapse; 
   font-family: 'Code Next', sans-serif;
+  box-sizing: border-box;
+  margin-bottom: 30px;
 }
 
 .filter-table th, .filter-table td {
@@ -59,6 +61,7 @@
   border-collapse: collapse; 
   font-family: 'Code Next', sans-serif;
   padding: 8px;
+  box-sizing: border-box;
 }
 
 .results-table th {
@@ -75,6 +78,10 @@
 .results-table td {
   border: 1px solid #ddd;
   padding: 5px;
+}
+
+.results-table tfoot {
+  border: none;
 }
 
 .results-table td:nth-child(1),
@@ -94,7 +101,84 @@
   text-align: center;
 }
 
-.results-table td:nth-child(2){
+.results-table td:nth-child(2) {
+  text-align: left;
+}
+
+.results-table tfoot tr:last-child td,
+.results-table tfoot tr:last-child th {
+  border: none;
+}
+
+/* Elements to style selected table */
+.selected-table {
+  width: 100%; 
+  table-layout: fixed; 
+  border-collapse: collapse; 
+  font-family: 'Code Next', sans-serif;
+  padding: 8px;
+  color: black;
+  margin-bottom: 30px;
+}
+
+.selected-table, .selected-table th, .selected-table td {
+  box-sizing: border-box;
+}
+
+.selected-table th {
+  font-size: 150%;
+  background-color: #f2f2f2;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+.selected-table td {
+  border: 1px solid #ddd;
+  padding: 5px;
+  font-size: 125%;
+}
+
+.selected-table tbody {
+  background-color: #9c9a90;
+}
+
+.selected-table td:nth-child(1),
+.selected-table th:nth-child(1) { 
+  width: 35%; 
+}
+
+.selected-table td:nth-child(2),
+.selected-table th:nth-child(2) { 
+  width: 65%; 
+}
+
+/* Elements to style selected table */
+.submit-table {
+  width: 100%; 
+  table-layout: fixed; 
+  border-collapse: collapse; 
+  font-family: 'Code Next', sans-serif;
+  padding: 8px;
+  color: black;
+  border: none;
+  background-color: transparent;
+  box-sizing: border-box;
+}
+
+.submit-table th {
+  font-size: 150%;
+  text-shadow: -1px -1px 0 #9c9a90, 1px -1px 0 #9c9a90, -1px 1px 0 #9c9a90, 1px 1px 0 #9c9a90;
+}
+
+.submit-table td:nth-child(1),
+.submit-table th:nth-child(1) { 
+  width: 70%;
+  text-align: center;
+}
+
+.submit-table td:nth-child(2),
+.submit-table th:nth-child(2) { 
+  width: 30%;
   text-align: left;
 }
 
@@ -108,8 +192,18 @@ input[type="text"], input[type="number"] {
   font-family: 'Code Next', sans-serif;
 }
 
+.submit-table input[type="text"] {
+  width: 75%;
+  padding: 10px;
+  margin-top: 5px;
+  font-size: 125%;
+  cursor: pointer;
+  font-family: 'Code Next', sans-serif;
+}
+
 input[type="text"]:hover, 
-input[type="number"]:hover {
+input[type="number"]:hover,
+.submit-table input[type="text"]:hover {
   box-shadow: 0 5px 10px rgba(0,0,0,0.3);
   border: 2px solid black;
 }
@@ -138,8 +232,8 @@ input[type="number"]:hover {
   color: white;
 }
 
-/* Elements to style search button */
-.search-button {
+/* Elements to style buttons */
+.select-button {
   padding: 10px 40px;
   background-color: #0b80bd;
   color: #FFFFFF;
@@ -151,12 +245,38 @@ input[type="number"]:hover {
   font-weight: 200;
 }
 
-.search-button:hover {
+.add-button, 
+.submit-button {
+  padding: 10px 40px;
+  background-color: #0b80bd;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 125%;
+  font-family: 'Code Next', sans-serif;
+  font-weight: 200;
+}
+
+.select-button:hover,
+.add-button:hover,
+.submit-button:hover {
   background-color: #0a679a;
   box-shadow: 0 5px 10px rgba(0,0,0,0.3);
 }
 
 /* Elements to style side bar */
+.text-container {
+  text-align: center;
+  width: 100%;
+  margin-top: 5px;
+  padding: 20px;
+  color: black;
+  font-size: 200%;
+  font-weight: bold;
+  text-shadow: -1px -1px 0 #9c9a90, 1px -1px 0 #9c9a90, -1px 1px 0 #9c9a90, 1px 1px 0 #9c9a90;
+}
+
 .wrapper {
   display: flex;
   flex-direction: column;
@@ -166,14 +286,15 @@ input[type="number"]:hover {
 .side-panel {
   position: absolute;
   top: 0;
-  right: -200px;
-  width: 200px;
+  right: -75%;
   height: 100%;
   padding: 20px;
   color: #ffffff;
   background: #726E60;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.35);
   transition: right 0.3s ease-in-out;
+  width: 75%;
+  overflow: auto;
 }
 
 .side-panel-open .side-panel {
@@ -205,7 +326,8 @@ input[type="number"]:hover {
   cursor: pointer;
 }
 
-.side-panel-toggle:hover {
+.side-panel-toggle:hover,
+.side-panel-open .side-panel-toggle:hover {
   background: #708B75;
 }
 
@@ -224,7 +346,7 @@ input[type="number"]:hover {
 }
 
 .side-panel-open .side-panel-toggle {
-  right: 200px;
+  right: 75%;
   border-radius: 5px 0 0 5px;
   background: #44423A;
   transition: right 0.3s ease-in-out;

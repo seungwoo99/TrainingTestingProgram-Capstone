@@ -120,12 +120,11 @@
                 <input type="text" id="keyword_search_input" name="keyword_search">
               </td>
               <td>
-                <button class="search-button" id="search">Search</button>
+                <button class="select-button" id="search">Search</button>
               </td>
             </tr>
           </table>
         </form>
-        <br><br> 
         <table class="results-table">
           <thead>
             <tr>
@@ -137,15 +136,49 @@
           <tbody>
             <!-- Dynamic rows will be inserted here -->
           </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="2"></td> 
+              <td>
+                <button class="add-button" id="add">Add</button>
+              </td>
+            </tr>
+          </tfoot>
         </table>
         <button class="side-panel-toggle" type="button">
           <span class="material-icons">keyboard_double_arrow_left</span>
           <span class="material-icons">keyboard_double_arrow_right</span>
         </button>
         <div class="side-panel">
-          Selected Questions
+          <div class="text-container">
+            Selected Questions
+          </div>
+          <table class="selected-table">
+            <thead>
+              <tr>
+                <th>Question ID</th>
+                <th>Question Contents</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+            </tbody>
+          </table>
+          <table class="submit-table">
+            <tr>
+              <th>Test Name</th>
+              <th></th>
+            </tr>
+            <tr>
+              <td>
+                <input type="text" id="test_name_input" name="test_name">
+              </td>
+              <td>
+                <button class="submit-button" id="submit">Create Test</button>
+              </td>
+            </tr>
+          </table>
         </div>
-      </div>
     </div>
     <script src="{{ url_for('static', filename='js/manual_test_creation.js') }}"></script>
   </body>

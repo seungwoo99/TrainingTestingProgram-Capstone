@@ -73,4 +73,27 @@ document.addEventListener('DOMContentLoaded', (event) => {
       })      
     });
   }
+
+  const addButton = document.getElementById('add');
+  const selectedTableBody = document.querySelector('.selected-table tbody');
+
+  if (addButton) {
+    addButton.addEventListener('click', function() {
+      const selectedCheckboxes = document.querySelectorAll('.results-table tbody input[type="checkbox"]:checked');
+
+      selectedCheckboxes.forEach(function(checkbox) {
+        const row = checkbox.closest('tr');
+        const newRow = selectedTableBody.insertRow();
+        const newCell1 = newRow.insertCell(0);
+        const newCell2 = newRow.insertCell(1);
+
+        newCell1.textContent = row.cells[0].textContent;
+        newCell2.textContent = row.cells[1].textContent;
+      });
+
+      selectedCheckboxes.forEach(function(checkbox) {
+        checkbox.checked = false;
+      });
+    });
+  }
 });
