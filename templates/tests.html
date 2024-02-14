@@ -10,13 +10,14 @@
     <div class="container">
       <div class="login form">
         <header>Test List</header>
-          <form id="form" method="post">
+          <form id="form" method="post" target="_blank">
               <select name="test_id" class="form-select" aria-label="Select Test">
                 {% for test in test_list %}
                   <option value="{{ test[0] }}">Test ID: {{ test[0] }} Test Name: {{ test[1] }}</option>
                 {% endfor %}
               </select>
-              <button type="submit" class="btn btn-primary mt-3" formaction="{{ url_for('generate_test') }}">Export</button>
+              <button type="submit" class="btn btn-primary mt-3" formaction="{{ url_for('generate_test') }}">Export Test</button>
+              <button type="submit" class="btn btn-primary mt-3" formaction="{{ url_for('generate_test_answers') }}">Export Answer Key</button>
               <button type="submit" class="btn btn-secondary mt-3" formaction="{{ url_for('modify_test') }}">Modify</button>
               <button type="submit" class="btn btn-secondary mt-3" formaction="{{ url_for('enter_scores') }}">Enter Scores</button>
               <button type="submit" class="btn btn-danger mt-3" formaction="{{ url_for('delete_test') }}">Delete</button>

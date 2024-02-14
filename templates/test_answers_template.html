@@ -9,9 +9,8 @@
     <body>
         <header>
         <div>
-            <h3 class="name">Name: _________________________</h3>
-            <h3 class="date">Date:&nbsp;&nbsp;&nbsp;________________</h3>
-            <h3 class="points">Points: _________ / {{ test_data['total_score'] }}</h3>
+            <h3 class="name">Answer Key</h3>
+            <h3 class="points">Total Points Possible: {{ test_data['total_score'] }}</h3>
         </div>
             <h2 class="test-name">{{ test_data['test_name'] }}</h2>
         </header>
@@ -19,10 +18,19 @@
 
             {% for question in test_questions %}
                 <div class="question-container">
-                <h3>Question {{ question['question_order'] }}:</h3>
-                <p>{{ question['question_text']|safe }}</p>
-                <p>Points earned: ______ / {{ question['max_points']}}</p>
-                <br>
+                    <h3>Question {{ question['question_order'] }}:</h3>
+                    <p>{{ question['question_text']|safe }}</p>
+                    <p>Max Points Possible:{{ question['max_points']}}</p>
+                </div>
+                <div class="question-container">
+                    <h3>Answer:</h3>
+                    <p>{{ question['question_answer']|safe }}</p>
+                    <h3>Answer explanation:</h3>
+                    <p>{{ question['answer_explaination'] }}</p>
+                    <h3>Points Rubric:</h3>
+                    <p>{{ question['points_definition'] }}</p>
+                    <p>Source: {{ question['source/other'] }}</p>
+                    <br>
                 </div>
             {% endfor %}
 

@@ -564,22 +564,38 @@ def process_question():
 
     return redirect(url_for('generate_test'))
 
-# Route to render test questions as a pdf file for export
+# Route to render tests as a html file for export
 @app.route('/generate_test', methods=['POST'])
 def generate_test():
+
     # Get the selected test ID from the form submission
     selected_test_id = request.form.get('test_id')
 
     # Render page
-    return render_template('test_template.html', question_texts=get_test_questions(selected_test_id),
+    return render_template('test_template.html', test_questions=get_test_questions(selected_test_id),
+                           test_data=get_test_data(selected_test_id))
+
+# Route to render test answers as a html file for export
+@app.route('/generate_test_answers', methods=['POST'])
+def generate_test_answers():
+
+    # Get the selected test ID from the form submission
+    selected_test_id = request.form.get('test_id')
+
+    # Render page
+    return render_template('test_answers_template.html', test_questions=get_test_questions(selected_test_id),
                            test_data=get_test_data(selected_test_id))
 
 # Temporary Route to list tests and applicable actions
 @app.route('/tests')
 def tests():
 
+    # Check if user is logged in
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+    
     # Execute query to retrieve all tests
-    # Execute the SQL query to retrieve question texts
     sql_query = text("""
             SELECT test_id, test_name
             FROM tests

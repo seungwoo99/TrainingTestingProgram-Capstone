@@ -199,21 +199,22 @@ def get_test_questions(test_id):
         # Connect to the database using db.engine.
         with db.engine.connect() as connection:
 
-            # Execute the SQL query to retrieve question texts for the selected test ID
+            # Execute the SQL query to retrieve question data for the selected test ID
             sql_query = text("""
-                    SELECT question_text
+                    SELECT *
                     FROM tests t
                     JOIN test_questions tq ON t.test_id = tq.test_id
                     JOIN questions q ON tq.question_id = q.question_id
                     WHERE t.test_id = :test_id
+                    ORDER BY question_order
                 """)
 
             result = connection.execute(sql_query, test_id=test_id)
 
             # Extract question texts from the result
-            question_texts = [row['question_text'] for row in result]
+            test_questions = [row for row in result]
 
-            return question_texts
+            return test_questions
 
     except Exception as e:
         # Log an error message with exception details.
@@ -227,7 +228,7 @@ def get_tests_temp():
         with db.engine.connect() as connection:
 
             # Execute query to retrieve all tests
-            # Execute the SQL query to retrieve question texts
+            # Execute the SQL query to retrieve all tests
             sql_query = text("""
                         SELECT test_id, test_name
                         FROM tests
@@ -241,7 +242,7 @@ def get_tests_temp():
 
     except Exception as e:
         # Log an error message with exception details.
-        logging.error(f"Error while getting questions: {e}", exc_info=True)
+        logging.error(f"Error while getting test list: {e}", exc_info=True)
 
 def get_test_data(test_id):
 
@@ -250,7 +251,7 @@ def get_test_data(test_id):
         with db.engine.connect() as connection:
 
             # Execute query to retrieve all tests
-            # Execute the SQL query to retrieve question texts
+            # Execute the SQL query to retrieve test data
             sql_query = text("""
                     SELECT * FROM tests
                     WHERE test_id = :test_id
@@ -269,7 +270,7 @@ def get_test_data(test_id):
 
     except Exception as e:
         # Log an error message with exception details.
-        logging.error(f"Error while getting questions: {e}", exc_info=True)
+        logging.error(f"Error while getting test data: {e}", exc_info=True)
         
 # Function that returns test list from the database
 def get_tests():
