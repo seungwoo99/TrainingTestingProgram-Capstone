@@ -11,7 +11,6 @@ from base64 import urlsafe_b64decode
 import base64
 import numpy as np
 from PIL import Image
-from PyPDF2 import PdfFileMerger
 import matplotlib.pyplot as plt
 
 # Related third-party imports
