@@ -6,18 +6,25 @@
     <link rel="stylesheet" href="{{url_for('static', filename='/css/home.css')}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
     {% include 'navbar.html' %}
+
+    <script>
+
+
+    </script>
   </head>
   <body>
     <div class="container">
       <input type="checkbox" id="check">
       <div class="login form">
         <header>Signup</header>
-        <form action="{{ url_for('register') }}" method="post">
+        <form name="signupForm" action="{{ url_for('register') }}" method="post" onsubmit="return validateForm()">
           <input type="text" name="first_name" placeholder="First name">
           <input type="text" name="last_name" placeholder="Last name">
           <input type="text" name="username" placeholder="Enter a username">
+          <p style="font-size: 70%;">Username must only contain alphanumeric characters</p>
           <input type="email" name="email" placeholder="Enter your email">
           <input type="password" name="password" placeholder="Create a password">
+          <p style="font-size: 70%;">Password must contain one uppercase and lowercase character, and a number or special character.</p>
           <input type="password" name="confirm_password" placeholder="Confirm your password">
           <label for="admin_account">Admin account?   </label>
           <input type="checkbox" id="admin_account" name="is_admin">
@@ -34,5 +41,6 @@
           {% endwith %}
       </div>
     </div>
+  <script src="{{ url_for('static', filename='js/validate_registration.js') }}"></script>
   </body>
 </html>
