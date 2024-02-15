@@ -51,3 +51,4 @@ wheels/
 *.egg
 env
 app_errors.log
+app_errors.log.1
