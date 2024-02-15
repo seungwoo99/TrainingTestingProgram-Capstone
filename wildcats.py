@@ -11,7 +11,6 @@ from base64 import urlsafe_b64decode
 import base64
 import numpy as np
 from PIL import Image
-from PyPDF2 import PdfFileMerger
 import matplotlib.pyplot as plt
 
 # Related third-party imports
@@ -36,11 +35,10 @@ from data_retrieval import (fetch_test_creation_options, get_questions, select_q
 # Load environment variables from a .env file
 load_dotenv()
 
+
+
 #Initialize Flask App
 app = Flask(__name__)
-
-# Configure logging to write to a text file
-logging.basicConfig(filename='flask_errors.log', level=logging.ERROR)
 
 # Configure Flask app to use SQLAlchemy for a local MySQL database
 app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:winter24capstone@127.0.0.1:3306/test_train_db"
@@ -104,7 +102,6 @@ def confirm_token(token, expiration=300):
 
 @app.route('/')
 def index():
-
     return redirect(url_for('trylogin'))
 
 
@@ -964,3 +961,4 @@ def verify_email(username, user_hash):
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
+
