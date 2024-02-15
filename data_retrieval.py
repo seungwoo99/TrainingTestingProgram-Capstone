@@ -330,3 +330,10 @@ def selectSubjectDescriptions():
         result = connection.execute(query).fetchall()
 
     return result
+
+def get_subjects():
+    with db.engine.connect() as connection:
+        query = text("SELECT * FROM subjects")
+        result = connection.execute(query).fetchall()
+
+    return result

@@ -15,8 +15,6 @@
     <body>
         <div class="container">
             <h2>Data Hierarchy</h2>
-            <div id="subjectNames" hidden>{{ subjectNames }}</div>
-            <div id="subjectDescriptions" hidden>{{ subjectDescriptions }}</div>
             <table id="datasTable">
                 <thead>
                     <tr>
@@ -25,26 +23,12 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>DOE - Mechanical Science</td>
-                        <td>Description here</td>
-                    </tr>
-                    <tr>
-                        <td>DOE - Electrical Science</td>
-                        <td>Description here</td>
-                    </tr>
-                    <tr>
-                        <td>Fish Ladders</td>
-                        <td>Covers fish ladders, fish flow theory, and operation of fish facilities</td>
-                    </tr>
-                    <tr>
-                        <td>Bulk Electric System</td>
-                        <td>Description here</td>
-                    </tr>
-                    <tr>
-                        <td>Subject</td>
-                        <td>Description here</td>
-                    </tr>
+                    {% for subject in subjects %}
+                        <tr>
+                        <td>{{ subject.name | string}}</td>
+                        <td>{{ subject.description | string}}</td>
+                        </tr>
+                    {% endfor %}
                 </tbody>
             </table>
             <!-- Buttons -->
@@ -142,7 +126,7 @@
                 // Function to delete data
                 function deleteData() {
                     const rowIndex = prompt('Enter the row index to delete:');
-                    
+
                     if (rowIndex !== null && rowIndex >= 0 && rowIndex < data.length) {
                         data.splice(rowIndex, 1);
                         viewAllDatas();

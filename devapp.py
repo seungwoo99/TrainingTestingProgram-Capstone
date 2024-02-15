@@ -70,8 +70,8 @@ bcrypt = Bcrypt(app)
 mail = Mail(app)
 
 # Hash the password before storing it in the database
-# hashed_password = bcrypt.generate_password_hash(password,12).decode('utf-8')
-# print("Password: ", hashed_password)
+hashed_password = bcrypt.generate_password_hash('capstone1!',12).decode('utf-8')
+print("Password: ", hashed_password)
 
 #----------Helper functions for OTP and token generation----------
 
@@ -203,7 +203,7 @@ def data():
 
     subjectNames = selectSubjectNames()
     subjectDescriptions = selectSubjectDescriptions()
-    return render_template('datahierarchy.html', subjectNames=subjectNames, subjectDescriptions=subjectDescriptions)
+    return render_template('datahierarchy.html', subjectNames=subjectNames, subjectDescriptions=subjectDescriptions, subjects=get_subjects())
 
 
 #---------- Routes for the test list page and tester list page ----------
