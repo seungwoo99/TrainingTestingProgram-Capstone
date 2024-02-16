@@ -1,0 +1,37 @@
+"obj_id";"topic_id";"description";"blooms_id";"is_applicant";"is_apprentice";"is_journeyman";"is_senior";"is_chief";"is_coordinator";"tags/metadata"
+1;1;"DEFINE the following diesel engine terms: a. Compression ratio b. Bore c. Stroke d. Combustion chamber";1;0;1;1;1;1;0;""
+2;1;"Given a drawing of a diesel engine, IDENTIFY the following: 
+a. Piston/rod 
+b. Cylinder 
+c. Blower 
+d. Crankshaft 
+e. Intake ports or valve(s) 
+f. Exhaust ports or valve(s) 
+g. Fuel injector";2;0;1;1;1;1;0;""
+3;1;"EXPLAIN how a diesel engine converts the chemical energy stored in the diesel fuel into mechanical energy";2;0;0;1;1;1;0;""
+4;1;"EXPLAIN how the ignition process occurs in a diesel engine.";2;0;0;1;1;1;0;""
+5;1;"EXPLAIN the operation of a 4-cycle diesel engine to include when the following events occur during a cycle: 
+a. Intake 
+b. Exhaust 
+c. Fuel injection 
+d. Compression e. Power";2;0;0;1;1;1;0;""
+6;1;"EXPLAIN the operation of a 2-cycle diesel engine, including when the following events occur during a cycle: 
+a. Intake 
+b. Exhaust 
+c. Fuel injection 
+d. Compression 
+e. Power";2;0;0;1;1;1;0;""
+7;1;"DESCRIBE how the mechanical-hydraulic governor on a diesel engine controls engine speed.";2;0;0;0;1;1;0;""
+8;1;"LIST five protective alarms usually found on mid-sized and larger diesel engines.";1;0;0;0;1;1;0;""
+9;2;"STATE the two types of heat exchanger construction.";1;0;1;1;1;1;0;""
+10;2;"Provided with a drawing of a heat exchanger, IDENTIFY the following internal parts:
+a. Tubes
+b. Tube sheet
+c. Shell
+d. Baffles";2;0;1;1;1;1;0;""
+11;2;"DESCRIBE hot and cold fluid flow in parallel flow, counter flow, and cross flow heat
+exchangers.";2;0;0;0;0;1;0;""
+12;2;"DIFFERENTIATE between the following types of heat exchangers:
+a. Single-pass versus multi-pass heat exchangers.
+b. Regenerative versus non-regenerative heat exchangers";4;0;0;0;0;1;0;""
+13;2;"LIST at least three applications of heat exchangers.";1;0;0;1;1;1;0;""

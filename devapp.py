@@ -4,6 +4,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 from datetime import datetime, timezone, timedelta
 from random import randint
+import re
 
 # Statistics related imports
 from io import BytesIO
@@ -679,12 +680,6 @@ def register():
         input_first_name = request.form.get("first_name")
         input_last_name = request.form.get("last_name")
         input_is_admin = request.form.get("is_admin")
-
-        # Check if passwords match
-        if input_password != input_confirm_password:
-            # Flash failed authentication message and redirect to register page
-            flash("Entered passwords do not match")
-            return redirect(url_for('tryregister'))
 
         row = check_registered(input_username, input_email)
 
