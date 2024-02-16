@@ -27,7 +27,7 @@
   <body>
   {% with messages = get_flashed_messages() %}
     {% if messages %}
-        <div class="flashes">
+        <div id="flashes" class="flashes">
             {% for message in messages %}
                 <div>
                     {{ message }}
@@ -36,5 +36,17 @@
         </div>
     {% endif %}
   {% endwith %}
+      <script>
+        // Function to fade out and remove the flashes div after 5 seconds
+        setTimeout(function() {
+            var flashesDiv = document.getElementById('flashes');
+            if (flashesDiv) {
+                flashesDiv.classList.add('hidden');
+                setTimeout(function() {
+                    flashesDiv.remove(); // Remove the flashes div after the transition
+                }, 500); // Wait for the transition to complete before removing
+            }
+        }, 5000);
+      </script>
   </body>
 </html>

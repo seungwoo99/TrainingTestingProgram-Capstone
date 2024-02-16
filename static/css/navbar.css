@@ -92,4 +92,9 @@ header.navigation {
     border-radius: 0.25rem;
     width: 30%;
     margin: 20px auto 1rem;
+    transition: opacity 0.5s ease;
+}
+
+.hidden {
+    opacity: 0;
 }
