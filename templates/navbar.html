@@ -2,8 +2,10 @@
 <html lang="en">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <link rel="stylesheet" href="{{url_for('static', filename='/css/navbar.css')}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
+
   </head>
   <header class="navigation">
     <ul class="nav-links">
@@ -23,5 +25,16 @@
     </ul>
   </header>
   <body>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div class="flashes">
+            {% for message in messages %}
+                <div>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+  {% endwith %}
   </body>
 </html>
