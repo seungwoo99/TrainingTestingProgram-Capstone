@@ -1,0 +1,369 @@
+"question_id";"obj_id";"question_desc";"question_text";"question_answer";"question_type";"question_difficulty";"answer_explanation";"points_definition";"max_points";"source/other"
+1;1;"";"<table><tbody><tr><td><table><tbody><tr><td><table><tbody><tr><td><p></p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________</p></td></tr></tbody></table></td></tr></tbody></table></td></tr></tbody></table>";"C) Nathan";"multiple choice";1;"None of the other members exist";"all or nothing";1;""
+2;1;"";"Define ""Bore"""""""""""""""" for diesel engines""""""""""""""";"";"Short answer";2;"";"";5;""
+3;1;"";"Define ""Stroke"""""""""""""""" for diesel engines""""""""""""""";"";"Short answer";3;"";"";5;""
+4;1;"";"Define ""Combustion chamber"""""""""""""""" for diesel engines""""""""""""""";"";"Short answer";4;"";"";5;""
+5;1;"";"Draw a line connecting the term to its definition";"";"Draw";5;"";"";5;""
+6;1;"";"Match the following terms to their definitions:
+Compression ratio
+Bore
+Stroke
+Combustion chamber
+A. The distance the piston travels up and down inside the cylinder
+B. The ratio of the cylinder's volume at its largest to its smallest size
+C. The space where the fuel-air mixture burns in a diesel engine
+D. The diameter of the cylinder";"";"Matching";1;"";"";8;""
+7;1;"";"Which of the following is NOT a factor that affects a diesel engine's compression ratio?
+A. The volume of the cylinder at its smallest size
+B. The volume of the combustion chamber
+C. The type of fuel used
+D. The length of the stroke";"";"Multiple Choice";2;"";"";2;""
+8;1;"";"What is the typical range of compression ratios for diesel engines?
+A. 8:1 to 12:1
+B. 14:1 to 22:1
+C. 25:1 to 30:1
+D. 35:1 and up";"";"Multiple Choice";3;"";"";2;""
+9;1;"";"Describe the difference between bore and stroke in a diesel engine.";"";"Short answer";4;"";"";5;""
+10;1;"";"What is the main function of the combustion chamber in a diesel engine?";"";"Short answer";5;"";"";5;""
+11;1;"";"Explain how the size of the bore and stroke can affect the power output of a diesel engine.";"";"Short answer";1;"";"";5;""
+12;2;"";"Match the following terms to their descriptions:
+A. Cylinder
+B. Crankshaft
+C. Fuel injector
+D. Piston/rod
+E. Exhaust valve
+F. Intake valve
+G. Blower
+Rotating shaft that converts reciprocating motion to rotational power.
+Component that sprays fuel into the combustion chamber.
+Chamber where air-fuel mixture burns and expands.
+Part that moves up and down inside the cylinder, connected to the crankshaft.
+Valve that allows exhaust gases to leave the cylinder.
+Valve that allows fresh air to enter the cylinder.
+Device that compresses intake air before it enters the cylinder (optional).";"";"Matching";2;"";"";14;""
+13;2;"";"Which component converts linear piston movement into rotational force?
+A. Cylinder
+B. Fuel injector
+C. Crankshaft
+D. Supercharger";"";"Multiple Choice";3;"";"";2;""
+14;2;"";"What component is responsible for delivering fuel at the proper timing for combustion?
+A. Intake valve
+B. Exhaust valve
+C. Piston/rod
+D. Fuel injector";"";"Multiple Choice";4;"";"";2;""
+15;2;"";"True or False: All diesel engines have a supercharger.";"";"True/False";5;"";"";2;""
+16;2;"";"True or False: The number of pistons in a diesel engine is always equal to the number of cylinders.";"";"True/False";1;"";"";2;""
+17;2;"";"Analyze the provided diagram of a diesel engine and label the following components: piston/rod, cylinder, crankshaft, intake and exhaust ports or valves, fuel injector. (Bonus points for correctly identifying a supercharger if present.)";"";"Diagram";2;"";"";10;""
+18;2;"";"Describe how the size and design of the intake and exhaust ports can affect engine performance.";"";"Short answer";3;"";"";5;""
+19;2;"";"Explain the potential consequences of a malfunctioning fuel injector in a diesel engine.";"";"Short answer";4;"";"";5;""
+20;3;"";"Match the following stages of the four-stroke cycle with their descriptions:
+A. Intake Stroke
+B. Compression Stroke
+C. Power Stroke
+D. Exhaust Stroke
+Air is drawn into the cylinder.
+Compressed air ignites the fuel, pushing the piston down.
+Hot exhaust gases are expelled from the cylinder.
+Piston compresses the air in the cylinder to a high pressure and temperature.";"";"Matching";5;"";"";5;""
+21;3;"";"What ignites the fuel in a diesel engine?
+A. Spark plug
+B. Glow plug (in some engines)
+C. Compression and heat
+D. Battery";"";"Multiple Choice";1;"";"";5;""
+22;3;"";"What happens during the power stroke of a diesel engine?
+A. Fuel is injected.
+B. Air is drawn in.
+C. Exhaust gases are expelled.
+D. Chemical energy is converted into mechanical energy.";"";"Multiple Choice";2;"";"";5;""
+23;3;"";"Explain the role of the high compression ratio in a diesel engine.";"";"Short answer";3;"";"";5;""
+24;3;"";"Describe the relationship between fuel injection timing and engine efficiency.";"";"Short answer";4;"";"";5;""
+25;3;"";"Compare and contrast the ignition process in a diesel engine to that of a gasoline engine.";"";"Short answer";5;"";"";5;""
+26;3;"";"Analyze a diagram of a diesel engine and label the components involved in each stage of the four-stroke cycle.";"";"Diagram";1;"";"";5;""
+27;3;"";"Explain the path of air, fuel, and exhaust gases through the engine during each stroke.";"";"Short answer";2;"";"";5;""
+28;3;"";"Explain the working principle of a two-stroke diesel engine (if applicable).";"";"Short answer";3;"";"";5;""
+29;4;"";"Match the following terms to their descriptions:
+A. Compression Stroke
+B. Fuel Injection
+C. Atomization
+D. Vaporization
+E. Self-Ignition
+F. Flame Propagation
+Rapid expansion of burning fuel mixture.
+Breaking fuel into tiny droplets.
+Converting liquid fuel into gas.
+Injecting fuel mist into hot air.
+Heating air to high temperature with piston movement.
+Spontaneous combustion due to heat and pressure.";"";"Matching";4;"";"";5;""
+30;4;"";"What ignites the fuel in a diesel engine?
+A. Spark plug
+B. Glow plug (in some engines)
+C. Compression and heat
+D. Battery";"";"Multiple Choice";5;"";"";5;""
+31;4;"";"What happens during the ignition delay period in a diesel engine?
+A. Combustion starts.
+B. Fuel injection occurs.
+C. Fuel vaporizes and mixes with air.
+D. All of the above.";"";"Multiple Choice";1;"";"";5;""
+32;4;"";"True or False: Diesel engines can operate even with malfunctioning spark plugs.";"";"True/False";2;"";"";5;""
+33;4;"";"Describe the relationship between fuel injection timing and the completeness of combustion.";"";"Short answer";3;"";"";5;""
+34;4;"";"Compare and contrast the factors influencing ignition in diesel and gasoline engines.";"";"Short answer";4;"";"";5;""
+35;4;"";"Discuss the potential consequences of incorrect fuel injection timing in a diesel engine.";"";"Short answer";5;"";"";5;""
+36;4;"";"Discuss the potential consequences of incorrect fuel injection timing in a diesel engine.";"";"Short answer";1;"";"";5;""
+37;5;"";"Match the following events to their description and the point in the cycle they occur:
+A. Intake (I)
+B. Compression (C)
+C. Power (P)
+D. Exhaust (E)
+Piston moves downward, drawing fresh air into the cylinder.
+Piston moves upward, squeezing the air to a high pressure and temperature.
+Fuel injector sprays a mist of fuel into the hot, compressed air, causing rapid combustion and pushing the piston downward.
+Piston moves upward, expelling burnt gases out of the cylinder through the exhaust valve.";"";"Matching";2;"";"";5;""
+38;5;"";"Arrange the following events in the correct order for a 4-cycle diesel engine:
+A. Intake valve opens.
+B. Fuel injection.
+C. Exhaust valve opens.
+D. Piston reaches top of compression stroke.
+E. Power stroke.
+F. Piston reaches bottom of intake stroke.
+G. Exhaust valve closes.
+H. Intake valve closes.";"";"Matching";3;"";"";5;""
+39;5;"";"During which stroke does the ignition and combustion of fuel occur in a diesel engine?
+A. Intake
+B. Compression
+C. Power
+D. Exhaust";"";"Multiple Choice";4;"";"";5;""
+40;5;"";"What event occurs immediately after the power stroke in a 4-cycle diesel engine?
+A. Fuel injection
+B. Intake stroke
+C. Compression stroke
+D. Exhaust stroke";"";"Multiple Choice";5;"";"";5;""
+41;5;"";"True or False: The intake and exhaust valves in a diesel engine are open at the same time during any part of the cycle.";"";"True/False";1;"";"";5;""
+42;6;"";"Match the following events to their description and the point in the cycle they occur:
+A. Intake (I)
+B. Compression (C)
+C. Power (P)
+D. Exhaust (E)
+As the piston rises, fresh air flows through bottom ports and pushes out exhaust gases through top ports.
+Compressed air ignites the injected fuel, driving the piston downward.
+Near the bottom of the stroke, fuel injector sprays fuel into the hot, compressed air.
+Exhaust gases remaining after intake scavenge are forced out through top ports as the piston rises further.";"";"Matching";2;"";"";6;""
+43;6;"";"Arrange the following events in the correct order for a 2-cycle diesel engine:
+A. Intake ports open.
+B. Piston reaches top of compression stroke.
+C. Fuel injection.
+D. Power stroke.
+E. Exhaust ports open.
+F. Top exhaust gases expelled.
+G. Intake ports close.
+H. Bottom exhaust gases expelled.";"";"Matching";3;"";"";6;""
+44;6;"";"How does the intake occur in a 2-cycle diesel engine compared to a 4-cycle engine?
+A. Separate intake and exhaust valves
+B. Ports in the cylinder wall
+C. Crankshaft-driven air pump
+D. No dedicated intake stroke";"";"Multiple Choice";4;"";"";6;""
+45;6;"";"In which stroke does combustion and power generation happen in a 2-cycle diesel engine?
+A. Combined compression/power stroke
+B. Separate power stroke after compression
+C. Same as intake stroke
+D. Only during exhaust stroke";"";"Multiple Choice";5;"";"";6;""
+46;6;"";"True or False: 2-cycle diesel engines generally achieve higher power output than 4-cycle engines for the same displacement.";"";"True/False";1;"";"";6;""
+47;6;"";"Explain the role of scavenging in a 2-cycle diesel engine.";"";"Short answer";2;"";"";6;""
+48;6;"";"Describe the challenges in achieving efficient combustion in a 2-cycle engine compared to a 4-cycle engine.";"";"Short answer";3;"";"";6;""
+49;6;"";"Compare and contrast the operation of a 2-cycle diesel engine with a 2-cycle gasoline engine.";"";"Short answer";4;"";"";6;""
+50;7;"";"Match the following terms to their function in the governor system:
+A. Flyweights
+B. Control valve
+C. Fuel control lever
+D. Spring
+Measures engine speed through centrifugal force.
+Regulates oil pressure based on flyweight position.
+Adjusts fuel supply based on oil pressure.
+Opposes flyweight movement for stability.";"";"Matching";5;"";"";6;""
+51;7;"";"What happens to the fuel supply when the engine speed increases in a governor-controlled system?
+A. Decreases
+B. Increases
+C. Remains constant
+D. Depends on load variation";"";"Multiple Choice";1;"";"";6;""
+52;7;"";"What component provides the feedback signal for the governor system?
+A. Fuel injector
+B. Crankshaft
+C. Flyweights
+D. Speedometer";"";"Multiple Choice";2;"";"";6;""
+53;7;"";"True or False: A malfunctioning governor can cause engine speed to fluctuate drastically.";"";"True/False";3;"";"";6;""
+54;7;"";"Explain the role of the spring in the governor system.";"";"Short answer";4;"";"";6;""
+55;7;"";"Describe the relationship between governor sensitivity and engine speed stability.";"";"Short answer";5;"";"";6;""
+56;7;"";"Discuss the potential consequences of a stuck control valve in the governor system.";"";"Short answer";1;"";"";6;""
+57;8;"";"Match the following alarm indicators to their potential consequences:
+A. Low oil pressure
+B. High coolant temperature
+C. Overspeed
+D. Low fuel level
+E. Exhaust gas temperature too high
+Engine seizure or bearing failure
+Overheating and potential engine damage
+Engine runaway leading to serious damage
+Fuel starvation and engine stalling
+Excessive exhaust system stress and environmental harm";"";"Matching";2;"";"";6;""
+58;8;"";"Which alarm should trigger the most immediate shutdown of the engine?
+A. Low oil pressure
+B. High coolant temperature
+C. Overspeed
+D. Low fuel level";"";"Multiple Choice";3;"";"";6;""
+59;8;"";"What potential environmental concern can a high exhaust gas temperature alarm indicate?
+A. Air pollution from incomplete combustion
+B. Increased greenhouse gas emissions
+C. Both A and B
+D. Neither A nor B";"";"Multiple Choice";4;"";"";6;""
+60;8;"";"True or False: All diesel engines, regardless of size, come equipped with the same set of protective alarms.";"";"True/False";5;"";"";6;""
+61;8;"";"Briefly explain the importance of monitoring oil pressure in a diesel engine.";"";"Short answer";1;"";"";6;""
+62;8;"";"Describe the potential damage caused by running an engine at high coolant temperatures.";"";"Short answer";2;"";"";6;""
+63;8;"";"Discuss the safety risks associated with an overspeeding engine.";"";"Short answer";3;"";"";6;""
+64;8;"";"Prioritize the five listed alarms from most critical to least critical in terms of immediate shutdown, explaining your reasoning.";"";"Short answer";4;"";"";6;""
+65;8;"";"Describe how proper maintenance and operating procedures can reduce the risk of triggering protective alarms.";"";"Short answer";5;"";"";6;""
+66;8;"";"Discuss the potential benefits and limitations of incorporating additional sensors and alarms on diesel engines.";"";"Short answer";1;"";"";6;""
+67;8;"";"Explain the role of data logging and fault diagnostics in analyzing and responding to diesel engine alarm events.";"";"Short answer";2;"";"";6;""
+68;9;"";"Match the following terms to their descriptions:
+A. Shell and tube
+B. Plate
+Consists of a bundle of tubes enclosed within a cylindrical shell.
+Uses thin, gasketed plates stacked together to create flow channels.";"";"Matching";3;"";"";6;""
+69;9;"";"Which type of heat exchanger is typically more compact for a given heat transfer capacity?
+A. Shell and tube
+B. Plate";"";"Multiple Choice";4;"";"";6;""
+70;9;"";"What component in a shell and tube heat exchanger separates the two fluids?
+A. Baffles
+B. Tube sheet
+C. Gaskets
+D. Shell";"";"Multiple Choice";5;"";"";6;""
+71;9;"";"True or False: Both shell and tube and plate heat exchangers are suitable for handling high pressures and temperatures.";"";"True/False";1;"";"";6;""
+72;9;"";"True or False: Shell and tube heat exchangers are generally easier to clean and maintain compared to plate heat exchangers.";"";"True/False";2;"";"";6;""
+73;9;"";"Analyze a diagram of each type of heat exchanger and identify the key components: shell, tubes, tube sheet, plates, gaskets, flow channels.";"";"Diagram";3;"";"";6;""
+74;9;"";"Explain the flow path of the two fluids in both types of heat exchangers.";"";"Short answer";4;"";"";6;""
+75;9;"";"Discuss the advantages and disadvantages of each type of heat exchanger construction.";"";"Short answer";5;"";"";6;""
+76;9;"";"Describe the factors to consider when choosing between a shell and tube and a plate heat exchanger for a specific application.";"";"Short answer";1;"";"";6;""
+77;9;"";"Explain the purpose of baffles in a shell and tube heat exchanger.";"";"Short answer";2;"";"";6;""
+78;10;"";"Match the following terms to their descriptions and locations in the drawing:
+A. Tubes (T)
+B. Tube sheet (TS)
+C. Shell (S)
+D. Baffles (B)
+Cylindrical enclosure containing the entire heat exchanger assembly. (S)
+Metal plate with holes drilled for tubes to pass through, separating the two fluid streams. (TS)
+Series of thin plates or rods, positioned within the shell to guide and disrupt fluid flow for improved heat transfer. (B)
+Hollow cylinders that carry one of the fluids involved in the heat exchange process. (T)";"";"Matching";3;"";"";6;""
+79;10;"";"
+Test Questions for Heat Exchanger Internal Parts:
+Matching:
+
+Match the following terms to their descriptions and locations in the drawing:
+A. Tubes (T)
+B. Tube sheet (TS)
+C. Shell (S)
+D. Baffles (B)
+Cylindrical enclosure containing the entire heat exchanger assembly. (S)
+Metal plate with holes drilled for tubes to pass through, separating the two fluid streams. (TS)
+Series of thin plates or rods, positioned within the shell to guide and disrupt fluid flow for improved heat transfer. (B)
+Hollow cylinders that carry one of the fluids involved in the heat exchange process. (T)
+Multiple Choice:
+
+Which part of the heat exchanger directly separates the two fluids being exchanged?
+A. Tubes
+B. Tube sheet
+C. Shell
+D. Baffles";"";"Matching";4;"";"";6;""
+80;10;"";"What provides structural support for the tubes and seals them within the shell?
+A. Tubes
+B. Tube sheet
+C. Shell
+D. Baffles";"";"Multiple Choice";5;"";"";6;""
+81;10;"";"True or False: Baffles are always present in all types of heat exchangers.";"";"True/False";1;"";"";6;""
+82;10;"";"Based on the provided drawing, locate and label the identified internal parts (tubes, tube sheet, shell, baffles) on a copy of the diagram.";"";"Diagram";2;"";"";6;""
+83;10;"";"Identify the two fluid flow paths entering and exiting the heat exchanger through arrows on the diagram.";"";"Diagram";3;"";"";6;""
+84;10;"";"Briefly explain the role of each internal part (tubes, tube sheet, shell, baffles) in the heat exchange process.";"";"Short answer";4;"";"";6;""
+85;10;"";"Describe the impact of tube material and arrangement on the efficiency of the heat exchanger.";"";"Short answer";5;"";"";6;""
+86;10;"";"Discuss the potential consequences of neglecting proper maintenance for different parts of the heat exchanger.";"";"Short answer";1;"";"";6;""
+87;11;"";"Match the following flow arrangements to their descriptions:
+A. Parallel flow
+B. Counter flow
+C. Cross flow
+Both fluids enter at one end and flow in the same direction.
+Fluids enter at opposite ends and flow in opposite directions.
+One fluid flows perpendicular to the other, often in multiple passes.";"";"Matching";2;"";"";6;""
+88;11;"";"Which flow arrangement provides the highest theoretical heat transfer efficiency?
+A. Parallel flow
+B. Counter flow
+C. Cross flow";"";"Multiple Choice";3;"";"";6;""
+89;11;"";"Why might cross flow be preferred in situations where one fluid has significantly higher fouling potential than the other?
+A. Minimizes mixing between fluids.
+B. Easier to clean individual flow channels.
+C. Reduces pressure drop for the high-fouling fluid.
+D. All of the above.";"";"Matching";4;"";"";6;""
+90;11;"";"True or False: Counter flow always guarantees the hottest exiting fluid temperature compared to other arrangements.";"";"True/False";5;"";"";6;""
+91;11;"";"Analyze diagrams of each flow arrangement (parallel, counter, cross) and trace the path of both fluids, highlighting entry and exit points.";"";"Diagram";1;"";"";6;""
+92;11;"";"Explain how the flow direction of each fluid affects the temperature change they experience in each arrangement.";"";"Short answer";2;"";"";7;""
+93;11;"";"Describe the advantages and disadvantages of using parallel flow in heat exchangers.";"";"Short answer";3;"";"";7;""
+94;11;"";"Explain why counter flow is often the preferred choice for maximizing heat transfer between fluids.";"";"Short answer";4;"";"";7;""
+95;11;"";"Discuss the design considerations and practical limitations of implementing cross flow arrangements in heat exchangers.";"";"Short answer";5;"";"";7;""
+96;11;"";"Discuss the impact of fluid properties (viscosity, density, etc.) on the effectiveness of different flow arrangements.";"";"Short answer";1;"";"";7;""
+97;12;"";"Match the following terms to their descriptions:
+A. Single-pass heat exchanger
+B. Multi-pass heat exchanger
+C. Regenerative heat exchanger
+D. Non-regenerative heat exchanger
+Fluid flows through each channel only once during the heat exchange process. (A)
+Fluid makes multiple passes through the exchanger for increased heat transfer. (B)
+Temporarily stores one fluid and periodically releases its thermal energy to the other fluid. (C)
+Heat transfer occurs directly between two separate fluid streams. (D)";"";"Matching";2;"";"";7;""
+98;12;"";"Which type of heat exchanger is generally more compact for a given heat transfer capacity?
+A. Single-pass
+B. Multi-pass
+C. Regenerative
+D. Non-regenerative";"";"Multiple Choice";3;"";"";7;""
+99;12;"";"What potential advantage does a regenerative heat exchanger offer compared to a non-regenerative one?
+A. Higher overall heat transfer efficiency
+B. Reduced need for external energy sources
+C. Both A and B
+D. Neither A nor B";"";"Multiple Choice";4;"";"";7;""
+100;12;"";"True or False: Multi-pass heat exchangers are always more efficient than single-pass heat exchangers.";"";"True/False";5;"";"";7;""
+101;12;"";"Analyze diagrams of each type of heat exchanger (single-pass, multi-pass, regenerative) and identify the key components and flow paths.";"";"Diagram";1;"";"";7;""
+102;12;"";"Describe the situations where using a single-pass heat exchanger might be suitable.";"";"Short answer";2;"";"";7;""
+103;12;"";"Discuss the factors to consider when choosing between a multi-pass and a regenerative heat exchanger for a specific application.";"";"Short answer";3;"";"";7;""
+104;12;"";"Explain the potential limitations and maintenance requirements of regenerative heat exchangers.";"";"Short answer";4;"";"";7;""
+105;13;"";"A. Air conditioning system
+B. Car radiator
+C. Power plant condenser
+D. Water heater
+Cools warm refrigerant using cold air. (A)
+Transfers engine heat to passing air for cooling. (B)
+Condenses steam back into liquid using cool water. (C)
+Heats domestic water using an external heat source. (D)";"";"Multiple Choice";5;"";"";7;""
+106;13;"";"What is the primary purpose of a heat exchanger in a food processing plant?
+A. Preheat ingredients for cooking
+B. Pasteurize liquids for safety
+C. Cool down finished products
+D. All of the above";"";"Multiple Choice";1;"";"";7;""
+107;13;"";"True or False: Heat exchangers are mainly used in industrial applications and not found in everyday household appliances.";"";"True/False";2;"";"";7;""
+108;13;"";"Describe the heat exchange process occurring in a car radiator and its importance for engine operation.";"";"Short answer";3;"";"";7;""
+109;13;"";"Explain how a heat exchanger contributes to the energy efficiency of a power plant.";"";"Short answer";4;"";"";7;""
+110;13;"";"Discuss the role of heat exchangers in maintaining comfortable temperatures in buildings.";"";"Short answer";5;"";"";7;""
+120;1;"Define  ""Compression ratio for diesel engines:";"<p>Define ""Compression ratio"" for diesel engines:</p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________<br><br></p>""""""""""""""";"<p><b>Compression ratio </b>in diesel engines refers to the <b>ratio of the volume of
+ the combustion chamber </b>when the <b>piston is at the bottom of its stroke 
+to the volume when it's at the top</b>, indicating <u>how much the air-fuel 
+mixture is compressed before ignition.</u></p>";"short answer";1;"N/A";"Fully correct: 5 | Partially Correct: 3 | Incorrect: 0";5;""
+121;1;"Define ""Bore"" for diesel engines:";"<p>Define ""Bore"" for diesel engines:</p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________<br><br></p>""""""""""""""";"<b>Bore </b>refers to the <b>diameter of the cylindrical space </b>within the 
+engine's cylinder where the piston moves. It represents the <b>size of the 
+piston chamber </b>and <u>determines the displacement volume of the engine.</u>";"short answer";1;"N/A";"Fully correct: 5 | Partially Correct: 3 | Incorrect: 0";5;""
+122;1;"Define ""Stroke"" for diesel engines:";"<p>Define ""Stroke"" for diesel engines:</p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________<br><br></p>""""""""""""""";"<b>Stroke </b>refers to the <b>distance traveled by the piston within the 
+cylinder </b>as it <b>moves from top dead center (TDC) to bottom dead center 
+(BDC) or vice versa</b>. It represents the <b>length of the piston's movement 
+</b>and <u>determines the volume change within the combustion chamber during 
+the engine's operation. </u>";"short answer";1;"N/A";"Fully correct: 5 | Partially Correct: 3 | Incorrect: 0";5;""
+124;1;"Which of the following is NOT a factor that affects a diesel engine's compression ratio?";"<p>Which of the following is NOT a factor that affects a diesel engine's compression ratio?</p><p><br>&nbsp;&nbsp;&nbsp; A) The volume of the cylinder at its smallest size<br>&nbsp;&nbsp;&nbsp; B) The volume of the combustion chamber<br>&nbsp;&nbsp;&nbsp; C) The type of fuel used<br>&nbsp;&nbsp;&nbsp; D) The length of the stroke</p>";"C) The type of fuel used";"multiple choice";1;"None of the other answers are correct.";"all or nothing";3;""
+125;1;"What is the typical range of compression ratios for diesel engines?";"<p>What is the typical range of compression ratios for diesel engines?<br>&nbsp;&nbsp;&nbsp; A) 8:1 to 12:1<br>&nbsp;&nbsp;&nbsp; B) 14:1 to 22:1<br>&nbsp;&nbsp;&nbsp; C) 25:1 to 30:1<br>&nbsp;&nbsp;&nbsp; D) 35:1 and up</p>";"B) 14:1 to 22:1";"multiple choice";1;"None of the other answers are correct.";"all or nothing";3;""
+126;1;"What is the main function of the combustion chamber in a diesel engine?";"<p>What is the main function of the combustion chamber in a diesel engine?</p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________<br></p>";"<p>The main function of the combustion chamber in a diesel engine is to <b>provide a space where the air-fuel mixture is compressed and subsequently ignited, leading to controlled combustion</b>. </p>";"short answer";1;"N/A";"Fully correct: 5 | Partially Correct: 3 | Incorrect: 0";5;""
+127;1;"Describe the difference between bore and stroke in a diesel engine:";"<p>Describe the difference between bore and stroke in a diesel engine:</p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________<br></p>";"<p>In summary, while <u>bore influences the engine's capacity for air intake 
+ and fuel combustion</u>, <u>stroke affects the engine's torque output and 
+ overall power delivery characteristics</u>. Together, bore and stroke 
+ specifications play a crucial role in defining an <b>engine's displacement,
+  performance, and efficiency in diesel engines.</b></p>";"short answer";1;"N/A";"Fully correct: 5 | Partially Correct: 3 | Incorrect: 0";5;""
+128;1;"Explain how the size of the bore and stroke can affect the power output of a diesel engine.";"<p>Explain how the size of the bore and stroke can affect the power output of a diesel engine.</p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________</p><p>__________________________________________________________________________________________<br></p>";"<p>The size of the bore and stroke in a diesel engine directly influences its power output through several mechanisms:</p><ol><li><p><strong>Displacement Volume</strong>: The bore and stroke dimensions determine the engine's displacement volume, which is the total volume of air and fuel mixture that can be accommodated within all cylinders of the engine during one complete engine cycle. A larger bore or stroke typically results in a higher displacement volume, allowing for more air and fuel to be combusted per cycle, which can lead to increased power output.</p></li><li><p><strong>Air Intake and Exhaust Flow</strong>: The bore diameter affects the engine's ability to intake and exhaust air. A larger bore allows for larger intake and exhaust ports, facilitating better airflow into and out of the cylinders. Improved airflow enhances engine breathing efficiency, which can contribute to higher power output.</p></li><li><p><strong>Combustion Chamber Volume</strong>: The size and shape of the combustion chamber, influenced by the bore and stroke, affect the compression ratio and combustion characteristics. A larger bore or stroke can lead to a larger combustion chamber volume, which may result in a higher compression ratio. Higher compression ratios typically lead to more efficient combustion and increased power output.</p></li><li><p><strong>Piston Speed and Torque</strong>: The stroke length determines the distance the piston travels within the cylinder during each engine cycle. A longer stroke can result in a higher piston speed, which may generate higher torque output, especially at lower engine speeds. This is because the longer stroke allows for a longer lever arm, providing more mechanical advantage to produce torque.</p></li><li><p><strong>Engine Speed and RPM Range</strong>: The combination of bore and stroke dimensions influences the engine's RPM range and operating characteristics. Engines with larger bore diameters tend to rev higher and produce power at higher RPMs, whereas engines with longer strokes typically produce more low-end torque and are better suited for lower RPM ranges.</p></li></ol><p>Overall, the size of the bore and stroke in a diesel engine is a critical design consideration that directly impacts its power output, torque characteristics, and overall performance across a range of operating conditions.</p></div></div></div><p></p>";"short answer";1;"N/A";"Fully correct: 5 | Partially Correct: 3 | Incorrect: 0";5;""

@@ -1,0 +1,8 @@
+"subject_id";"name";"description"
+1;"DOE - Mechanical Science";"Pumps, valves, heat exchangers, filters, and other mechanical equipment."
+2;"DOE - Electrical Science";"AC and DC fundamentals, circuits, batteries, generators, motors, reactive components, regulators, etc"
+3;"Fish ladders";"Fish ladder principles of operation, design, construction, and operating criteria"
+4;"Bulk electric system";"Principles of bulk electricity distribution."
+5;"Alarms, indications, and measurement devices (mechanical)";"How pressure, flow, level, and other mechanical condition indicating devices work"
+6;"Alarms, indications, measurement devices, and relays (electrical)";"How voltage, current, differential, and other electrical measurement and relaying devices work."
+7;"Relay protection schema";"Relay protection schemas for generating units, transformers, and the switchyard"
