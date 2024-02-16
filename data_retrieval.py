@@ -3,7 +3,7 @@ import random
 import logging
 
 # Related third-party imports
-from sqlalchemy import text,insert
+from sqlalchemy import text
 
 # Local application/library specific imports
 from db_config import db
@@ -338,3 +338,10 @@ def insertSubject(name, description):
 
 
 
+
+def get_subjects():
+    with db.engine.connect() as connection:
+        query = text("SELECT * FROM subjects")
+        result = connection.execute(query).fetchall()
+
+    return result
