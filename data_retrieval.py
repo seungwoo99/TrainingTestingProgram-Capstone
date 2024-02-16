@@ -333,7 +333,7 @@ def selectSubjectDescriptions():
 
 def insertSubject(name, description):
     with db.engine.connect() as connection:
-        query=text("""INSERT INTO subjects (name,description) VALUES (:name,:description)""")
+        query=text("""INSERT INTO subjects (subject_id,name,description) VALUES (0,:name,:description)""")
         connection.execute(query,name=name, description=description)
 
 

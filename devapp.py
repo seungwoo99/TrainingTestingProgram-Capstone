@@ -206,8 +206,9 @@ def data():
             name = pData.get("value1")
             description = pData.get("value2")
 
-            query = text("""INSERT INTO subjects (name,description) VALUES (:name,:description)""")
-            db.engine.execute(query, name=name, description=description)
+            insertSubject(name,description)
+            #query = text("""INSERT INTO subjects (name,description) VALUES (:name,:description)""")
+            #db.engine.execute(query, name=name, description=description)
             logging.debug("adding new data")
         elif pData.get("type") == "delete":
             subject_id = pData.get("value1")
@@ -216,9 +217,8 @@ def data():
 
         return jsonify({"category":"SUCCESS"})
     else:
-        subjectNames = selectSubjectNames()
-        subjectDescriptions = selectSubjectDescriptions()
-        return render_template('datahierarchy.html', subjectNames=subjectNames, subjectDescriptions=subjectDescriptions)
+        subjects = get_subjects()
+        return render_template('datahierarchy.html', subjects=subjects)
 
 
 #---------- Routes for the test list page and tester list page ----------
