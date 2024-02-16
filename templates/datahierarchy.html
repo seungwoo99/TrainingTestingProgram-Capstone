@@ -81,6 +81,33 @@
 
                 viewAllDatas();
 
+                function xhrSend(type,value1,value2)
+                {
+                    let xhr = new XMLHttpRequest();
+
+                    let json = JSON.stringify({
+                      type: type,
+                      value1: value1,
+                        value2: value2
+                    });
+
+                    xhr.open("POST", '/datahierarchy')
+                    xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+
+                    xhr.send(json);
+
+                    xhr.onload = function(event)
+                    {
+                        if(json.type === "add") {
+                            data.push({data: json.value1, description: json.value2});
+                            viewAllDatas();
+                        }
+                        let res = event.target.response;
+                        console.log(res);
+
+                    }
+                }
+
                 //function takes all the junk that gets inserted into the data from flask, probably breaks under
                 //specific character sequences, also it removes all apostrophes and single quotes
                 function filterFlask(str)
@@ -116,10 +143,14 @@
                     const newData = prompt('Enter the new data:');
                     const newDescription = prompt('Enter the description for the new data:');
 
+                    /*
                     if (newData && newDescription) {
                         data.push({ data: newData, description: newDescription });
                         viewAllDatas();
                     }
+                     */
+
+                    xhrSend("add",""+newData,""+newDescription);
                 }
 
                 // Function to edit data entries
@@ -147,6 +178,7 @@
                         data.splice(rowIndex, 1);
                         viewAllDatas();
                     }
+                    xhrSend("delete",""+rowIndex,"");
                 }
 
                 // Function to clear table

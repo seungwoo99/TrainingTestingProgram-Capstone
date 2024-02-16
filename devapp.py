@@ -31,7 +31,7 @@ from itsdangerous import URLSafeTimedSerializer
 from config import MailConfig
 from db_config import db
 from data_retrieval import (fetch_test_creation_options, get_questions, select_questions, get_user, get_test_questions, 
-                            check_registered, get_test_data, get_tests_temp, get_tests, get_topics, get_subjects, get_tester_list, selectSubjectNames, selectSubjectDescriptions)
+                            check_registered, get_test_data, get_tests_temp, get_tests, get_topics, get_subjects, get_tester_list, selectSubjectNames, selectSubjectDescriptions,insertSubject)
 
 # Load environment variables from a .env file
 load_dotenv()
@@ -195,15 +195,31 @@ def homepage():
     # Temporary redirect to a different page
     return redirect(url_for('data'))
   
-@app.route('/datahierarchy')
+@app.route('/datahierarchy',methods = ['POST', 'GET'])
 def data():
-    if 'user' not in session or not session['user'].get('is_authenticated', False):
-        flash("Access denied, please login.")
-        return redirect(url_for('trylogin'))
+    #if 'user' not in session or not session['user'].get('is_authenticated', False):
+        #flash("Access denied, please login.")
+        #return redirect(url_for('trylogin'))
+    if request.method == "POST":
+        pData = request.get_json()
+        if pData.get("type") == "add":
+            #insertSubject(pData.get("value1"),pData.get("value2"))
+            name = pData.get("value1")
+            description = pData.get("value2")
 
-    subjectNames = selectSubjectNames()
-    subjectDescriptions = selectSubjectDescriptions()
-    return render_template('datahierarchy.html', subjectNames=subjectNames, subjectDescriptions=subjectDescriptions)
+            query = text("""INSERT INTO subjects (name,description) VALUES (:name,:description)""")
+            db.engine.execute(query, name=name, description=description)
+            logging.debug("adding new data")
+        elif pData.get("type") == "delete":
+            subject_id = pData.get("value1")
+            query = text("""DELETE FROM subjects where subject_id = :subject_id""")
+            db.engine.execute(query, subject_id=subject_id)
+
+        return jsonify({"category":"SUCCESS"})
+    else:
+        subjectNames = selectSubjectNames()
+        subjectDescriptions = selectSubjectDescriptions()
+        return render_template('datahierarchy.html', subjectNames=subjectNames, subjectDescriptions=subjectDescriptions)
 
 
 #---------- Routes for the test list page and tester list page ----------

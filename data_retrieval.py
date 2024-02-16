@@ -3,7 +3,7 @@ import random
 import logging
 
 # Related third-party imports
-from sqlalchemy import text
+from sqlalchemy import text,insert
 
 # Local application/library specific imports
 from db_config import db
@@ -330,3 +330,11 @@ def selectSubjectDescriptions():
         result = connection.execute(query).fetchall()
 
     return result
+
+def insertSubject(name, description):
+    with db.engine.connect() as connection:
+        query=text("""INSERT INTO subjects (name,description) VALUES (:name,:description)""")
+        connection.execute(query,name=name, description=description)
+
+
+
