@@ -125,3 +125,9 @@ div.flashes {
 div.flashes p {
   color: lightcoral;
 }
+
+.page-wrapper {
+  position: relative;
+  min-height: 100vh;
+  margin-bottom: 200px;
+}
