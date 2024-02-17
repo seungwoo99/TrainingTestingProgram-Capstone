@@ -15,7 +15,7 @@
     <body>
         <div class="container">
             <h2>Data Hierarchy</h2>
-            <table id="datasTable">
+            <table class="gridview" id="datasTable">
                 <thead>
                     <tr>
                         <th>Subject ID</th>
@@ -25,16 +25,16 @@
                 </thead>
                 <tbody>
                     {% for subject in subjects %}
-                        <tr>
-                        <td>{{ subject.subject_id | string}}</td>
-                        <td>{{ subject.name | string}}</td>
-                        <td>{{ subject.description | string}}</td>
+                        <tr onclick="toggleClass(this, 'selected');">
+                            <td>{{ subject.subject_id | string}}</td>
+                            <td>{{ subject.name | string}}</td>
+                            <td>{{ subject.description | string}}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
             <!-- Buttons -->
-            <button onclick="viewAllDatas()">View Topics</button>
+            <button onclick="viewTopics()">View Topics</button>
             <button onclick="addData()">Add</button>
             <button onclick="editData()">Edit</button>
             <button onclick="deleteData()">Delete</button>
@@ -42,22 +42,58 @@
             <script>
                 let data = [];
 
-                loadData();
+                function toggleClass(el, className) {
+                    var rows = el.parentNode.getElementsByTagName("tr");
 
-                function loadData()
-                {
-                    
+                    for (var i = 0; i < rows.length; i++){
+                        // Remove class from all other rows that aren't selected
+                        if(rows[i] !== el){
+                            rows[i].classList.remove(className);
+                        }
+                    }
+                    //Toggle the class of selected row
+                    if(el.classList.contains(className)){
+                        // If class is selected, remove
+                        el.classList.remove(className);
+                    }else{
+                        // if not selected, select
+                        el.classList.add(className);
+                    }
                 }
 
+                function viewTopics() {
+                    // Get all the table rows
+                    var rows = document.querySelectorAll('tbody tr');
 
-                function xhrSend(type,value1,value2)
+                    // Initialize a variable to store the selected subject_id
+                    var selectedSubjectId = null;
+
+                    // Iterate over each row to find the selected one
+                    rows.forEach(function(row) {
+                        // Check if the row has the 'selected' class
+                        if (row.classList.contains('selected')) {
+                            // Get the first cell (subject_id cell) content
+                            selectedSubjectId = row.cells[0].textContent;
+                        }
+                    });
+
+                    // Check if a subject is selected
+                    if (selectedSubjectId) {
+                        window.location.href = '/datatopichierarchy?subject_id=' + selectedSubjectId;
+                    } else {
+                        alert('Please select a subject')
+                    }
+                }
+
+                function xhrSend(type,value1,value2,value3)
                 {
                     let xhr = new XMLHttpRequest();
 
                     let json = JSON.stringify({
                       type: type,
                       value1: value1,
-                        value2: value2
+                        value2: value2,
+                        value3:value3
                     });
 
                     xhr.open("POST", '/datahierarchy')
@@ -67,70 +103,36 @@
 
                     xhr.onload = function(event)
                     {
-                        if(json.type === "add") {
-                            data.push({data: json.value1, description: json.value2});
-                            viewAllDatas();
-                        }
-                        let res = event.target.response;
-                        console.log(res);
-
+                       window.location.reload();
                     }
                 }
 
-                // Function to view topics that are part of the data theme *work in progress
-                function viewAllDatas() {
-                    const tableBody = document.getElementById('datasTable').getElementsByTagName('tbody')[0];
-                    clearTable(tableBody);
-
-                    data.forEach(data => {
-                        const row = tableBody.insertRow();
-                        row.insertCell(0).innerText = data.data_id;
-                        row.insertCell(1).innerText = data.data;
-                        row.insertCell(2).innerText = data.description;
-                    });
-                }
 
                 // Function to add data entries
                 function addData() {
                     const newData = prompt('Enter the new data:');
                     const newDescription = prompt('Enter the description for the new data:');
 
-                    /*
-                    if (newData && newDescription) {
-                        data.push({ data: newData, description: newDescription });
-                        viewAllDatas();
-                    }
-                     */
-
-                    xhrSend("add",""+newData,""+newDescription);
+                    xhrSend("add",""+newData,""+newDescription,"");
                 }
 
                 // Function to edit data entries
-                function editData() {
-                    const rowIndex = prompt('Enter the row index to edit:');
-                    const dataToEdit = data[rowIndex];
+                 function editData() {
+                    const rowIndex = prompt('Enter the Subject ID to edit:');
 
-                    if (dataToEdit) {
-                        const updatedData = prompt('Enter the updated data:', dataToEdit.data);
-                        const updatedDescription = prompt('Enter the updated description:', dataToEdit.description);
+                    const uSubject = prompt('Enter the updated data:');
+                    const uDescription = prompt('Enter the updated description:');
 
-                        if (updatedData !== null && updatedDescription !== null) {
-                            dataToEdit.data = updatedData;
-                            dataToEdit.description = updatedDescription;
-                            viewAllDatas(); // Refresh the table after editing
-                        }
-                    }
+                    xhrSend("edit",""+rowIndex,""+uSubject,""+uDescription);
+
+
                 }
 
                 // Function to delete data
                 function deleteData() {
                     const rowIndex = prompt('Enter the row index to delete:');
 
-                    if (rowIndex !== null && rowIndex >= 0 && rowIndex < data.length) {
-                        data.splice(rowIndex, 1);
-                        viewAllDatas();
-                    }
-                    xhrSend("delete",""+rowIndex,"");
+                    xhrSend("delete",""+rowIndex,"","");
                 }
 
                 // Function to clear table

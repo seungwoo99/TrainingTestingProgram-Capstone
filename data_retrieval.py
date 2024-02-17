@@ -336,12 +336,37 @@ def insertSubject(name, description):
         query=text("""INSERT INTO subjects (subject_id,name,description) VALUES (0,:name,:description)""")
         connection.execute(query,name=name, description=description)
 
+def insertTopic(subject_id, name, description, facility):
+    with db.engine.connect() as connection:
+        query=text("""INSERT INTO topics (topic_id, subject_id, name, description, facility) VALUES (0,:subject_id,:name,:description,:facility)""")
+        connection.execute(query,subject_id=subject_id,name=name, description=description, facility=facility)
 
 
 
-def get_subjects():
+
+def get_all_subjects():
     with db.engine.connect() as connection:
         query = text("SELECT * FROM subjects")
         result = connection.execute(query).fetchall()
 
     return result
+
+def get_all_topics(subject_id):
+    with db.engine.connect() as connection:
+
+        # Execute the SQL query to retrieve all topics for a subject
+        sql_query = text("""
+                            SELECT * FROM topics 
+                            WHERE subject_id = :subject_id
+                    """)
+        result = connection.execute(sql_query, subject_id=subject_id)
+
+        # get subject name and description
+        sql_query = text("""
+                                    SELECT name, description FROM subjects 
+                                    WHERE subject_id = :subject_id
+                            """)
+        subject_data = connection.execute(sql_query, subject_id=subject_id)
+        subject_data = subject_data.fetchone()
+
+    return result, subject_data

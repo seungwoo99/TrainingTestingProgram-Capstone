@@ -30,8 +30,10 @@ from itsdangerous import URLSafeTimedSerializer
 # Local application/library specific imports
 from config import MailConfig
 from db_config import db
-from data_retrieval import (fetch_test_creation_options, get_questions, select_questions, get_user, get_test_questions, 
-                            check_registered, get_test_data, get_tests_temp, get_tests, get_topics, get_subjects, get_tester_list, selectSubjectNames, selectSubjectDescriptions,insertSubject)
+from data_retrieval import (fetch_test_creation_options, get_questions, select_questions, get_user, get_test_questions,
+                            check_registered, get_test_data, get_tests_temp, get_tests, get_topics, get_subjects, get_all_subjects, get_tester_list, selectSubjectNames, selectSubjectDescriptions,insertSubject, get_all_topics, insertTopic)
+
+import data_retrieval
 
 # Load environment variables from a .env file
 load_dotenv()
@@ -42,7 +44,7 @@ load_dotenv()
 app = Flask(__name__)
 
 # Configure Flask app to use SQLAlchemy for a local MySQL database
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:@localhost:3307/test_train_db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:@localhost:3306/test_train_db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Configure logging to write to a file
@@ -215,11 +217,52 @@ def data():
             subject_id = pData.get("value1")
             query = text("""DELETE FROM subjects where subject_id = :subject_id""")
             db.engine.execute(query, subject_id=subject_id)
+        elif pData.get("type") == "edit":
+            subject_id = pData.get("value1")
+            name = pData.get("value2")
+            description = pData.get("value3")
+            query = text("""UPDATE subjects SET name = :name, description = :description WHERE subject_id = :subject_id""")
+            db.engine.execute(query, subject_id=subject_id, name=name, description=description)
 
         return jsonify({"category":"SUCCESS"})
     else:
-        subjects = get_subjects()
+        subjects = get_all_subjects()
         return render_template('datahierarchy.html', subjects=subjects)
+
+@app.route('/datatopichierarchy', methods=['GET', 'POST'])
+def topics():
+
+    # Get the selected subject_id from the query parameters
+    subject_id = request.args.get('subject_id')
+
+    # Use the subject_id to fetch topics
+    topics, subject_data = get_all_topics(subject_id)
+
+    # Check which database function to execute
+    if request.method == "POST":
+        pData = request.get_json()
+        if pData.get("type") == "add":
+            subject_id=pData.get("value1")
+            name = pData.get("value2")
+            description = pData.get("value3")
+            facility = pData.get("value4")
+            insertTopic(subject_id, name, description, facility)
+        elif pData.get("type") == "delete":
+            print()
+
+        elif pData.get("type") == "edit":
+            topic_id = pData.get("value1")
+            name = pData.get("value2")
+            description = pData.get("value3")
+            facility = pData.get("value4")
+            query = text(
+                """UPDATE topics SET name = :name, description = :description, facility=:facility WHERE topic_id = :topic_id""")
+            db.engine.execute(query, topic_id=topic_id, name=name, description=description, facility=facility)
+            print()
+    else:
+        # Pass topics to the template
+        return render_template('datatopichierarchy.html', topics=topics ,subject_id=subject_id, subject_data=subject_data)
+
 
 
 #---------- Routes for the test list page and tester list page ----------
