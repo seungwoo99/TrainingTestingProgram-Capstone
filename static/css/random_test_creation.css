@@ -131,6 +131,12 @@ h1 {
     box-shadow: 0 5px 10px rgba(0,0,0,0.3);
 }
 
+#confirm-selection:active {
+    background-color: #040f16;
+    box-shadow: 0 5px #726e60;
+    transform: translateY(4px);
+  }
+
 /* Element that style the dropdown input */
 .dropdown-input {
     width: 50%;

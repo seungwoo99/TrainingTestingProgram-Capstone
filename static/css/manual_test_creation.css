@@ -176,8 +176,9 @@ input[type="text"], input[type="number"] {
 
 input[type="text"]:hover, 
 input[type="number"]:hover,
-.selected-table input[type="number"]
-.submit-table input[type="text"]:hover {
+.selected-table input[type="number"]:hover,
+.submit-table input[type="text"]:hover,
+.submit-table .large-textbox:hover {
   box-shadow: 0 5px 10px rgba(0,0,0,0.3);
   border: 2px solid black;
 }
@@ -192,9 +193,14 @@ input[type="number"]:hover,
   text-align: center;
 }
 
-#large-textbox {
+.submit-table .large-textbox {
   width: 100%;
   height: 100%;
+  padding: 0.3%;
+  margin-top: 0.15%;
+  font-size: 125%;
+  cursor: pointer;
+  font-family: 'Code Next', sans-serif;
 }
 
 /* Elements to style buttons */

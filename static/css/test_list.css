@@ -134,6 +134,11 @@ h1 {
   width: 90%; /* Adjust as needed */
 }
 
+.filter-table select:hover {
+  box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+  border: 2px solid black;
+}
+
 .filter-table[type="date"] {
   width: 100%;
 }

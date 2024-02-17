@@ -41,17 +41,21 @@ body {
 
 /* Table Styles */
 table {
-  width: 50%;
+  width: 90%;
   border-collapse: collapse;
   margin: 2%;
-  text-align: center;
   font-family: 'Code Next', sans-serif;
+}
+
+table.selected, 
+table tbody .selected {
+  background-color: #6ccbfb;
+  color: #fff;
 }
 
 th, td {
   border: 1px solid #ddd;
   padding: 1%;
-  text-align: left;
 }
 
 th {
@@ -62,6 +66,51 @@ th {
 
 td {
   font-size: 125%;
+}
+
+.subject-table td:nth-child(1), 
+.subject-table td:nth-child(2),
+.topics-table td:nth-child(1), 
+.topics-table td:nth-child(2),
+.topics-table td:nth-child(4) {
+  text-align: center;
+}
+
+.subject-table td:nth-child(3),
+.topics-table td:nth-child(3) {
+  text-align: left;
+}
+
+.subject-table td:nth-child(1), 
+.subject-table th:nth-child(1) {
+  width: 10%;
+}
+
+.subject-table td:nth-child(2), 
+.subject-table th:nth-child(2) {
+  width: 30%;
+}
+
+.subject-table td:nth-child(3), 
+.subject-table th:nth-child(3) {
+  width: 60%;
+}
+
+.topics-table td:nth-child(1), 
+.topics-table th:nth-child(1) {
+  width: 10%;
+}
+
+.topics-table td:nth-child(2), 
+.topics-table th:nth-child(2),
+.topics-table td:nth-child(4), 
+.topics-table th:nth-child(4) {
+  width: 15%;
+}
+
+.topics-table td:nth-child(3), 
+.topics-table th:nth-child(3) {
+  width: 60%;
 }
 
 /* Button Styles */
@@ -94,9 +143,4 @@ h1 {
   font-size: 225%;
   font-weight: 700;
   margin-bottom: 1%;
-}
-
-.gridview .selected, .gridview tbody .selected {
-  background-color: #6ccbfb;
-  color: #fff;
 }
