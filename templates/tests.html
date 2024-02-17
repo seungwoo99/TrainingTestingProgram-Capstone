@@ -14,7 +14,7 @@
     <div class="main-container">
       <div class="login form">
         <header class="form-header">Test Export</header>
-          <form id="form" method="post">
+          <form id="form" method="post" target="_blank">
               <select name="test_id" class="form-select" aria-label="Select Test">
                 {% for test in test_list %}
                   <option value="{{ test[0] }}">Test ID: {{ test[0] }} Test Name: {{ test[1] }}</option>
