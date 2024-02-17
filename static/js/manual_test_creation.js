@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', (event) => {
-  // Element references
   const mainContainer = document.querySelector(".main-container");
   const sidePanelToggle = document.querySelector(".side-panel-toggle");
   const sidePanel = document.querySelector(".side-panel");
@@ -106,7 +105,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
   function handleAddButtonClick() {
     const selectedCheckboxes = document.querySelectorAll('.results-table tbody input[type="checkbox"]:checked');
-    let totalPoints = 0;
   
     if (selectedCheckboxes.length > 0) {
       selectedCheckboxes.forEach(checkbox => {
@@ -114,42 +112,121 @@ document.addEventListener('DOMContentLoaded', (event) => {
         checkbox.checked = false;
       });
   
-      const selectedTableRows = document.querySelectorAll('.selected-table tbody tr');
-      selectedTableRows.forEach(row => {
-        totalPoints += parseInt(row.cells[0].textContent) || 0;
-      });
-  
-      adjustAnimatedBorderPosition();
+      updateTotalPoints()
       animatedBorder.classList.add('animate');
-  
-      const submitTablePointValueTd = document.querySelector('.submit-table tr td:first-child');
-      if (submitTablePointValueTd) {
-        submitTablePointValueTd.textContent = totalPoints;
-      }
+      adjustAnimatedBorderPosition()
     }
-  }  
+  }
   
   function addQuestionToSelected(checkbox) {
     const row = checkbox.closest('tr');
+    const questionId = row.dataset.questionId; 
+  
     const newRow = selectedTableBody.insertRow();
-    const newCell1 = newRow.insertCell(0);
+    const newCell1 = newRow.insertCell(0)
     const newCell2 = newRow.insertCell(1);
     const newCell3 = newRow.insertCell(2);
-
-    newCell1.textContent = row.cells[0].textContent;
-    newCell2.textContent = row.cells[1].textContent;
-    newCell3.appendChild(createRemoveButton(newRow));
+    const newCell4 = newRow.insertCell(3);
+  
+    const numInput = document.createElement('input');
+    numInput.type = 'number'; 
+    newCell1.appendChild(numInput);
+  
+    newCell2.textContent = row.cells[0].textContent;
+    newCell3.textContent = row.cells[1].textContent;
+    newCell4.appendChild(createRemoveButton(newRow));
+  
+    newRow.dataset.questionId = questionId; 
   }
-
+  
   function createRemoveButton(row) {
     const removeButton = document.createElement('button');
     removeButton.textContent = 'Remove';
     removeButton.className = 'remove-button';
     removeButton.onclick = function() {
       row.remove();
+      updateTotalPoints();
     };
     return removeButton;
   }
+
+  function updateTotalPoints() {
+    let totalPoints = 0;
+  
+    const selectedTableRows = document.querySelectorAll('.selected-table tbody tr');
+    selectedTableRows.forEach(row => {
+      totalPoints += parseInt(row.cells[1].textContent) || 0;
+    });
+  
+    const submitTablePointValueTd = document.querySelector('.submit-table tr td:first-child');
+    if (submitTablePointValueTd) {
+      submitTablePointValueTd.textContent = totalPoints;
+    }
+  }
+
+  function getTotalPoints() {
+    let totalPoints = 0;
+  
+    const selectedTableRows = document.querySelectorAll('.selected-table tbody tr');
+    selectedTableRows.forEach(row => {
+      totalPoints += parseInt(row.cells[1].textContent) || 0;
+    });
+  
+    return totalPoints;
+  }
+
+  document.getElementById('submit').addEventListener('click', function() {
+    const selectedQuestions = document.querySelectorAll('.selected-table tbody tr');
+    
+    const questionOrder = Array.from(selectedQuestions).map(row => {
+    const input = row.querySelector('input[type="number"]');
+    const questionId = row.dataset.questionId;
+    const orderValue = input ? parseInt(input.value, 10) : null;
+      return {
+        questionId: questionId,
+        questionOrder: !isNaN(orderValue) ? orderValue : null
+      };
+    });
+  
+    const totalScore = parseInt(getTotalPoints(), 10);
+    const testName = document.getElementById('test_name_input').value.trim();
+    const testDescription = document.getElementById('test_description').value.trim();
+    if (!testName || isNaN(totalScore) || !testDescription) {
+      alert('Please fill in all the required fields correctly.');
+      return;
+    }
+    
+    const isActive = document.querySelector('.switch input[type="checkbox"]').checked;
+  
+    const requestData = {
+      questionOrder: questionOrder,
+      totalScore: totalScore,
+      testName: testName,
+      isActive: isActive,
+      testDescription: testDescription,
+    };
+  
+    fetch('/handle_test_creation', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestData)
+    })
+    .then(response => response.json().then(data => ({ status: response.status, body: data })))
+    .then(result => {
+      if (result.status === 200) {
+        alert('Test created successfully!');
+      } else {
+        console.error('Error:', result.body.error);
+        alert('An error occurred while creating the test: ' + result.body.error);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('An error occurred while processing your request. Please check your network connection and try again.');
+    });
+  });
 
   function adjustAnimatedBorderPosition() {
     const toggleRect = sidePanelToggle.getBoundingClientRect();

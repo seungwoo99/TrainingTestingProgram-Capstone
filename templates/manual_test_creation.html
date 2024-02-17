@@ -156,6 +156,7 @@
           <table class="selected-table">
             <thead>
               <tr>
+                <th>Order</th>
                 <th>Point Value</th>
                 <th>Question Contents</th>
                 <th></th>
@@ -169,12 +170,27 @@
             <tr>
               <th>Test Point Value</th>
               <th>Test Name</th>
-              <th></th>
+              <th>Active?</th>
             </tr>
             <tr>
               <td></td>
               <td>
                 <input type="text" id="test_name_input" name="test_name" required>
+              </td>
+              <td>
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+            </tr>
+            <tr>
+              <th colspan="2">Description</th>
+              <th></th>
+            </tr>
+            <tr>
+              <td colspan="2">
+                <textarea class="large-textbox" id="test_description" rows="6" cols="50" required></textarea>
               </td>
               <td>
                 <button class="submit-button" id="submit">Create Test</button>
