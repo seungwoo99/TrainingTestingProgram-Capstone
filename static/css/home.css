@@ -40,6 +40,12 @@ body {
   align-items: center;
 }
 
+
+.button-group {
+  display: flex;
+  align-items: center;
+}
+
 /* Wrapper Styles */
 .wrapper {
   display: flex;
