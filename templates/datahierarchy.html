@@ -42,22 +42,16 @@
             <script>
                 let data = [];
 
-                loadData();
 
-                function loadData()
-                {
-                    
-                }
-
-
-                function xhrSend(type,value1,value2)
+                function xhrSend(type,value1,value2,value3)
                 {
                     let xhr = new XMLHttpRequest();
 
                     let json = JSON.stringify({
                       type: type,
                       value1: value1,
-                        value2: value2
+                        value2: value2,
+                        value3:value3
                     });
 
                     xhr.open("POST", '/datahierarchy')
@@ -67,13 +61,7 @@
 
                     xhr.onload = function(event)
                     {
-                        if(json.type === "add") {
-                            data.push({data: json.value1, description: json.value2});
-                            viewAllDatas();
-                        }
-                        let res = event.target.response;
-                        console.log(res);
-
+                        window.location.reload();
                     }
                 }
 
@@ -102,35 +90,25 @@
                     }
                      */
 
-                    xhrSend("add",""+newData,""+newDescription);
+                    xhrSend("add",""+newData,""+newDescription,"");
                 }
 
                 // Function to edit data entries
                 function editData() {
-                    const rowIndex = prompt('Enter the row index to edit:');
-                    const dataToEdit = data[rowIndex];
+                    const rowIndex = prompt('Enter the Subject ID to edit:');
 
-                    if (dataToEdit) {
-                        const updatedData = prompt('Enter the updated data:', dataToEdit.data);
-                        const updatedDescription = prompt('Enter the updated description:', dataToEdit.description);
+                    const uSubject = prompt('Enter the updated data:');
+                    const uDescription = prompt('Enter the updated description:');
 
-                        if (updatedData !== null && updatedDescription !== null) {
-                            dataToEdit.data = updatedData;
-                            dataToEdit.description = updatedDescription;
-                            viewAllDatas(); // Refresh the table after editing
-                        }
-                    }
+                    xhrSend("edit",""+rowIndex,""+uSubject,""+uDescription);
+
+
                 }
 
                 // Function to delete data
                 function deleteData() {
                     const rowIndex = prompt('Enter the row index to delete:');
-
-                    if (rowIndex !== null && rowIndex >= 0 && rowIndex < data.length) {
-                        data.splice(rowIndex, 1);
-                        viewAllDatas();
-                    }
-                    xhrSend("delete",""+rowIndex,"");
+                    xhrSend("delete",""+rowIndex,"","");
                 }
 
                 // Function to clear table

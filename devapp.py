@@ -215,6 +215,12 @@ def data():
             subject_id = pData.get("value1")
             query = text("""DELETE FROM subjects where subject_id = :subject_id""")
             db.engine.execute(query, subject_id=subject_id)
+        elif pData.get("type") == "edit":
+            subject_id = pData.get("value1")
+            name = pData.get("value2")
+            description = pData.get("value3")
+            query = text("""UPDATE subjects SET name = :name, description = :description WHERE subject_id = :subject_id""")
+            db.engine.execute(query, subject_id=subject_id, name=name, description=description)
 
         return jsonify({"category":"SUCCESS"})
     else:
