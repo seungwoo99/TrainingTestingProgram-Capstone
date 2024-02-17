@@ -80,16 +80,25 @@ document.addEventListener('DOMContentLoaded', (event) => {
       tableBody.innerHTML = "";
 
       if (typeof data.total_questions_in_pool !== 'undefined' && data.selected_questions) {
-        data.selected_questions.forEach(function(question) {
-          const row = tableBody.insertRow();
-          const cell1 = row.insertCell(0);
-          const cell2 = row.insertCell(1);
-          const cell3 = row.insertCell(2);
-        
-          cell1.textContent = question.max_points;
-          cell2.textContent = question.question_desc;
-          cell3.innerHTML = '<input type="checkbox" name="select_question" value="' + question.question_id + '">';
+        data.selected_questions.forEach(question => {
+            const row = tableBody.insertRow();
+            row.dataset.questionId = question.question_id;
+    
+            const cell1 = row.insertCell(0);
+            const cell2 = row.insertCell(1);
+            const cell3 = row.insertCell(2);
+    
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.name = 'select_question';
+            checkbox.value = question.question_id; 
+            console.log(checkbox.value);
+            cell3.appendChild(checkbox);
+    
+            cell1.textContent = question.max_points;
+            cell2.textContent = question.question_desc;
         });
+        console.log('----------');
       } else if (data.total_questions_in_pool === 0) {
         alert(data.message || "No questions found that meet the selection criteria.");
       } else {
@@ -120,23 +129,31 @@ document.addEventListener('DOMContentLoaded', (event) => {
   
   function addQuestionToSelected(checkbox) {
     const row = checkbox.closest('tr');
-    const questionId = row.dataset.questionId; 
-  
+    const questionId = row.dataset.questionId;
+
     const newRow = selectedTableBody.insertRow();
-    const newCell1 = newRow.insertCell(0)
+    newRow.dataset.questionId = questionId;
+
+    const newCell1 = newRow.insertCell(0);
     const newCell2 = newRow.insertCell(1);
     const newCell3 = newRow.insertCell(2);
     const newCell4 = newRow.insertCell(3);
-  
+
     const numInput = document.createElement('input');
-    numInput.type = 'number'; 
+    numInput.type = 'number';
     newCell1.appendChild(numInput);
-  
+
+    const hiddenInput = document.createElement('input');
+    hiddenInput.type = 'hidden';
+    hiddenInput.name = 'questionId';
+    hiddenInput.value = questionId;
+    console.log(hiddenInput.value);
+    newCell1.appendChild(hiddenInput);
+
     newCell2.textContent = row.cells[0].textContent;
     newCell3.textContent = row.cells[1].textContent;
+
     newCell4.appendChild(createRemoveButton(newRow));
-  
-    newRow.dataset.questionId = questionId; 
   }
   
   function createRemoveButton(row) {
@@ -179,9 +196,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const selectedQuestions = document.querySelectorAll('.selected-table tbody tr');
     
     const questionOrder = Array.from(selectedQuestions).map(row => {
-    const input = row.querySelector('input[type="number"]');
-    const questionId = row.dataset.questionId;
-    const orderValue = input ? parseInt(input.value, 10) : null;
+      const input = row.querySelector('input[type="number"]');
+      const questionId = row.dataset.questionId;
+      console.log(questionId);
+      const orderValue = input ? parseInt(input.value, 10) : null;
       return {
         questionId: questionId,
         questionOrder: !isNaN(orderValue) ? orderValue : null
@@ -199,7 +217,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const isActive = document.querySelector('.switch input[type="checkbox"]').checked;
   
     const requestData = {
-      questionOrder: questionOrder,
+      questionOrder: questionOrder, // This array should now have the correct questionId and questionOrder pairs
       totalScore: totalScore,
       testName: testName,
       isActive: isActive,

@@ -90,7 +90,7 @@ body {
 }
 
 .form input:hover {
-  box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+  box-shadow: 0 5pt 10pt rgba(0,0,0,0.3);
   border: 2px solid black;
 }
 
@@ -131,6 +131,7 @@ body {
 .form input.button:hover {
   background: #0d688f;
   box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+  border: none !important;
 }
 
 .form input.button:active {

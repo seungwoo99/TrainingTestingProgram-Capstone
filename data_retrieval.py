@@ -161,14 +161,16 @@ def select_questions(questions_pool, num_questions, max_points):
     logging.debug(f"Finished question selection. Total selected questions: {len(selected_questions)}, Total points of selected questions: {current_points}")
     return selected_questions
 
+
 def create_test(is_active, created_by, creation_date, test_name, test_description, total_score, question_order):
     logging.info("Starting create_test function")
     try:
         is_active_db = int(is_active)
-        
         logging.info(f"Parameters received: active_status={is_active_db}, created_by={created_by}, test_name={test_name}, ...")
-        
+
+        # Begin a transaction explicitly
         with db.engine.begin() as transaction:
+            logging.info("Transaction started")
             logging.info("Attempting to insert into tests table")
             result = transaction.execute(
                 text(
@@ -189,13 +191,35 @@ def create_test(is_active, created_by, creation_date, test_name, test_descriptio
             test_id = result.lastrowid
             logging.info(f"Successfully inserted test with ID {test_id}")
 
+            # Track success of question inserts
+            successful_inserts = 0
             for order in question_order:
                 if order['questionOrder'] is not None:
-                    logging.info(f"Inserting question order for question ID {order['questionId']}")
+                    question_order_int = int(order['questionOrder'])
+                    transaction.execute(
+                        text(
+                            "INSERT INTO test_questions (question_id, question_order, test_id) "
+                            "VALUES (:question_id, :question_order, :test_id)"
+                        ),
+                        {
+                            "question_id": order['questionId'],
+                            "question_order": question_order_int,
+                            "test_id": test_id
+                        }
+                    )
+                    successful_inserts += 1
 
-        logging.info(f"Test '{test_name}' created successfully with ID {test_id}")
-        return {"message": f"Test '{test_name}' created successfully with ID {test_id}"}
+            if successful_inserts != len(question_order):
+                raise ValueError("Not all questions were successfully inserted.")
+                
+            # If everything went well, commit the transaction
+            transaction.execute("COMMIT")
+            logging.info("Transaction committed")
+            return {"message": f"Test '{test_name}' created successfully with ID {test_id}"}
 
+    except ValueError as e:
+        logging.error("There was a problem inserting the questions: %s", str(e), exc_info=True)
+        return {"error": str(e)}
     except SQLAlchemyError as e:
         logging.error("An error occurred while creating the test in the database", exc_info=True)
         return {"error": str(e)}
