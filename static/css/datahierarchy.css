@@ -64,17 +64,28 @@ h2 {
 
 .container {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%,-50%);
-  max-width: 1000px;
+  top: calc(50px + 2.5%);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: calc(100% - 100px - 2.5% - 20px);
+  overflow: auto;
   width: 100%;
+  max-width: 1000px;
+  margin: auto;
+  padding: 30px;
   background: #fff;
   border-radius: 7px;
   box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+  overflow-x: hidden;
   text-align: center;
 }
 
 button {
   margin-bottom: 4%;
+}
+
+.gridview .selected, .gridview tbody .selected {
+  background-color: #6ccbfb;
+  color: #fff;
 }
