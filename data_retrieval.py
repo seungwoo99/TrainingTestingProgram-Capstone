@@ -4,6 +4,7 @@ import logging
 
 # Related third-party imports
 from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 
 # Local application/library specific imports
 from db_config import db
@@ -33,7 +34,10 @@ def fetch_test_creation_options():
             'question_difficulty': [str(q_difficulty[0]).strip() for q_difficulty in question_difficulty]
         }
         return options
-
+    
+    except SQLAlchemyError as e:
+        logging.error("An error occurred while creating the test", exc_info=True)
+        return {"error": str(e)}, 500
     except Exception as e:
         # Log and raise any exceptions that occur during the process.
         logging.error("An error occurred while fetching test creation options:", exc_info=True)
@@ -105,7 +109,7 @@ def get_questions(blooms_taxonomy, subjects, topics, question_types, question_di
 
             # Define the SQL query with placeholders.
             sql = text(f"""
-                SELECT q.question_id, q.question_text, q.max_points
+                SELECT q.question_id, q.question_desc, q.max_points
                 FROM questions q
                 INNER JOIN learning_objectives lo ON q.obj_id = lo.obj_id
                 INNER JOIN blooms_tax b ON lo.blooms_id = b.blooms_id
@@ -127,8 +131,10 @@ def get_questions(blooms_taxonomy, subjects, topics, question_types, question_di
             # Return the result of the SQL query.
             return result
 
+    except SQLAlchemyError as e:
+        logging.error("An error occurred while creating the test", exc_info=True)
+        return {"error": str(e)}, 500
     except Exception as e:
-        # Log an error message with exception details.
         logging.error(f"Error while getting questions: {e}", exc_info=True)
         return None
 
@@ -155,6 +161,48 @@ def select_questions(questions_pool, num_questions, max_points):
     logging.debug(f"Finished question selection. Total selected questions: {len(selected_questions)}, Total points of selected questions: {current_points}")
     return selected_questions
 
+def create_test(is_active, created_by, creation_date, test_name, test_description, total_score, question_order):
+    logging.info("Starting create_test function")
+    try:
+        is_active_db = int(is_active)
+        
+        logging.info(f"Parameters received: active_status={is_active_db}, created_by={created_by}, test_name={test_name}, ...")
+        
+        with db.engine.begin() as transaction:
+            logging.info("Attempting to insert into tests table")
+            result = transaction.execute(
+                text(
+                    "INSERT INTO tests (active_status, created_by, creation_date, last_modified_date, modified_by, test_name, test_description, total_score) "
+                    "VALUES (:active_status, :created_by, :creation_date, :creation_date, :created_by, :test_name, :test_description, :total_score)"
+                ),
+                {
+                    "active_status": is_active_db,
+                    "created_by": created_by,
+                    "creation_date": creation_date,
+                    "last_modified_date": creation_date,
+                    "modified_by": created_by,
+                    "test_name": test_name,
+                    "test_description": test_description,
+                    "total_score": total_score
+                }
+            )
+            test_id = result.lastrowid
+            logging.info(f"Successfully inserted test with ID {test_id}")
+
+            for order in question_order:
+                if order['questionOrder'] is not None:
+                    logging.info(f"Inserting question order for question ID {order['questionId']}")
+
+        logging.info(f"Test '{test_name}' created successfully with ID {test_id}")
+        return {"message": f"Test '{test_name}' created successfully with ID {test_id}"}
+
+    except SQLAlchemyError as e:
+        logging.error("An error occurred while creating the test in the database", exc_info=True)
+        return {"error": str(e)}
+    except Exception as e:
+        logging.error("Unexpected error while creating the test", exc_info=True)
+        return {"error": "An unexpected error occurred while creating the test."}
+    
 # Function to get user from database
 def get_user(input_user):
 

@@ -1,22 +1,69 @@
-/* DATA HIERARCHY TABLE CSS */
+body {
+  overflow: hidden;
+}
+
+/* Container Styles */
+.main-container {
+  position: relative;
+  top: -4%;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  min-height: 30%;
+  max-height: 82%;
+  min-width: 30%;
+  max-width: 85%;
+  overflow: auto;
+  margin: auto;
+  padding: 1.5%;
+  background: #fff;
+  border-radius: 7px;
+  box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+  overflow-x: hidden;
+}
+
+.centered-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Wrapper Styles */
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Table Styles */
 table {
-  width: 50%;
+  margin-top: 2.5%;
+  width: 90%;
   border-collapse: collapse;
-  margin: 5% 25% 5% 25%;
-  text-align: center;
+  font-family: 'Code Next', sans-serif;
 }
 
 th, td {
   border: 1px solid #ddd;
-  padding: 8px;
+  padding: 1%;
   text-align: left;
 }
 
 th {
   background-color: #f2f2f2;
   text-align: center;
+  font-size: 150%;
 }
 
+td {
+  font-size: 125%;
+}
+
+td:nth-child(2) {
+  text-align: center;
+}
+
+/* Button Styles */
 button {
   margin-right: 1%;
   background-color: #0b80bd;
@@ -27,52 +74,22 @@ button {
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  font-family: 'Montserrat';
   font-size: 16px;
-
 }
 
-button:hover{background-color: #0d688f}
+button:hover {
+  background-color: #0d688f;
+}
+
 button:active {
   background-color: #040f16;
   box-shadow: 0 5px #726e60;
   transform: translateY(4px);
 }
-#navbar-primary.navbar-default {
-  background: transparent;
-  border: none;
-  .navbar-nav {
-    width: 100%;
-    text-align: center;
-    > li {
-      display: inline-block;
-      float: none;
-      > a {
-        padding-left: 30px;
-        padding-right: 30px;
-      }
-    }
-  }
-}
 
-/* Rest of page */
-h2{
-  margin-top: 2%;
-}
-
-.container{
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%,-50%);
-  max-width: 1000px;
-  width: 100%;
-  background: #fff;
-  border-radius: 7px;
-  box-shadow: 0 5px 10px rgba(0,0,0,0.3);
-  text-align: center;
-}
-
-button{
-  margin-bottom: 4%;
+/* Heading Styles */
+h1 {
+  font-size: 225%;
+  font-weight: 700;
+  margin-bottom: 1%;
 }

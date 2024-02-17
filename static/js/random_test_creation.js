@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function () {
         num_questions: numQuestionsValue,
         test_max_points: testMaxPointValue,
         training_level: trainingLevelValue,
-        test_type: "random" // Assuming this is for random test creation; change to "manual" where appropriate
+        test_type: "random"
       };
       
       fetch('/get-questions', {
