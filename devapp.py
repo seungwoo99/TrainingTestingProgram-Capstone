@@ -30,15 +30,12 @@ from itsdangerous import URLSafeTimedSerializer
 # Local application/library specific imports
 from config import MailConfig
 from db_config import db
-from data_retrieval import (fetch_test_creation_options, get_questions, select_questions, get_user, get_test_questions,
-                            check_registered, get_test_data, get_tests_temp, get_tests, get_topics, get_subjects, get_all_subjects, get_tester_list, selectSubjectNames, selectSubjectDescriptions,insertSubject, get_all_topics, insertTopic)
-
-import data_retrieval
+from data_retrieval import (fetch_test_creation_options, get_questions, select_questions, create_test, get_user, get_test_questions,
+                            check_registered, get_test_data, get_tests_temp, get_tests, get_topics, get_subjects, get_all_subjects, get_tester_list, 
+                            selectSubjectNames, selectSubjectDescriptions,insertSubject, get_all_topics, insertTopic)
 
 # Load environment variables from a .env file
 load_dotenv()
-
-
 
 #Initialize Flask App
 app = Flask(__name__)
@@ -51,7 +48,6 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 handler = RotatingFileHandler('app_errors.log', maxBytes=10000, backupCount=1)
 handler.setLevel(logging.ERROR)
 app.logger.addHandler(handler)
-
 
 # Configure Flask app with a secret key
 app.config["SECRET_KEY"] = 'os.getenv("SECRET_KEY")'
@@ -72,7 +68,7 @@ bcrypt = Bcrypt(app)
 mail = Mail(app)
 
 # Hash the password before storing it in the database
-hashed_password = bcrypt.generate_password_hash('capstone1!',12).decode('utf-8')
+hashed_password = bcrypt.generate_password_hash('1234',12).decode('utf-8')
 print("Password: ", hashed_password)
 
 #----------Helper functions for OTP and token generation----------
@@ -159,6 +155,10 @@ def login():
             otp_created_time = datetime.now(timezone.utc)
             otp = generate_otp(user['email'], otp_created_time)
 
+            # Set up user session cookie
+            session['user'] = user
+            session['username'] = input_username  # Add username to session
+            
             # Send email to user using SMTP - Simple Mail Transfer Protocol
             # Create URL link
             full_url = request.url + 'code'
@@ -495,7 +495,7 @@ def show_test_creation_page(template_name):
     if 'user' not in session or not session['user'].get('is_authenticated', False):
         flash("Access denied, please login.")
         return redirect(url_for('trylogin'))
-
+    
     try:
         # Fetch test creation options from a function.
         options = fetch_test_creation_options()
@@ -572,11 +572,12 @@ def handle_get_questions():
                 [
                     {
                         'question_id': q['question_id'], 
-                        'question_text': q['question_text']
+                        'max_points': q['max_points'],
+                        'question_desc': q['question_desc']
                     } 
                     for q in questions_pool
                 ],
-                key=lambda x: x['question_id']
+                key=lambda x: x['max_points']
             )
             questions_available_for_selection = len(selected_questions)
             logging.debug(f"Questions available for manual selection: {questions_available_for_selection}")
@@ -609,13 +610,43 @@ def handle_get_questions():
     except Exception as e:
         logging.error(f"Unhandled exception: {e}", exc_info=True)
         return jsonify({'error': "An error occurred while preparing the test creation page."}), 500
+    
+# Route to handle test creation
+@app.route('/handle_test_creation', methods=['POST'])
+def handle_test_creation():
+    try:
+        data = request.get_json()
+        is_active = data.get('isActive')
+        created_by = session.get('username')
+        print(session.get('username'))
+        creation_date = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+        test_name = data.get('testName')
+        test_description = data.get('testDescription')
+        total_score = data.get('totalScore', 0)
+        question_order = data.get('questionOrder')
+        
+        total_score = int(total_score) if isinstance(total_score, int) else 0
+        
+        test_message = create_test(is_active, created_by, creation_date, test_name, test_description, total_score, question_order)
 
-# Test route to create test questions
+        logging.info("Received test_message from create_test")
+        logging.info(f"test_message content: {test_message}")
+
+        if "error" in test_message:
+            logging.error(f"Error in test creation: {test_message['error']}")
+            return jsonify({"error": test_message["error"]}), 500
+        
+        logging.info("Test created successfully")
+        return jsonify({"message": test_message["message"]}), 200
+
+    except Exception as e:
+        logging.error("An error occurred while creating the test: %s", str(e), exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/create_questions')
 def create_questions():
     return render_template('create_questions.html')
 
-# Test route to process questions created on /create_questions
 @app.route('/process_question', methods=['POST'])
 def process_question():
     html_content = request.form['content']
@@ -623,7 +654,6 @@ def process_question():
     obj_id = 1
     question_type = 'multiple choice'
 
-    # SQL query with parameters
     query = text("""
         INSERT INTO questions (obj_id, question_text, question_answer, question_type, question_difficulty, answer_explaination, points_definition, max_points)
         VALUES (:obj_id, :html_content, 'C) Nathan', :question_type, '1', 'None of the other members exist', 'all or nothing', '1')
