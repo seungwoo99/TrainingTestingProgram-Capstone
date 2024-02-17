@@ -132,6 +132,12 @@ body {
   box-shadow: 0 5px 10px rgba(0,0,0,0.3);
 }
 
+.form input.button:active {
+  background-color: #040f16;
+  box-shadow: 0 5px #726e60;
+  transform: translateY(4px);
+}
+
 /* Signup Styles */
 .signup {
   font-size: 150%;

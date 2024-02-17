@@ -33,18 +33,14 @@ from db_config import db
 from data_retrieval import (fetch_test_creation_options, get_questions, select_questions, get_user, get_test_questions,
                             check_registered, get_test_data, get_tests_temp, get_tests, get_topics, get_subjects, get_all_subjects, get_tester_list, selectSubjectNames, selectSubjectDescriptions,insertSubject, get_all_topics, insertTopic)
 
-import data_retrieval
-
 # Load environment variables from a .env file
 load_dotenv()
-
-
 
 #Initialize Flask App
 app = Flask(__name__)
 
 # Configure Flask app to use SQLAlchemy for a local MySQL database
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:@localhost:3306/test_train_db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:1234@localhost:3306/test_train_db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Configure logging to write to a file
@@ -573,7 +569,7 @@ def handle_get_questions():
                     {
                         'question_id': q['question_id'], 
                         'max_points': q['max_points'],
-                        'question_text': q['question_text']
+                        'question_desc': q['question_desc']
                     } 
                     for q in questions_pool
                 ],

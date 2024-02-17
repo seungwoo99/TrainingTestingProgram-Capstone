@@ -105,7 +105,7 @@ def get_questions(blooms_taxonomy, subjects, topics, question_types, question_di
 
             # Define the SQL query with placeholders.
             sql = text(f"""
-                SELECT q.question_id, q.question_text, q.max_points
+                SELECT q.question_id, q.question_desc, q.max_points
                 FROM questions q
                 INNER JOIN learning_objectives lo ON q.obj_id = lo.obj_id
                 INNER JOIN blooms_tax b ON lo.blooms_id = b.blooms_id

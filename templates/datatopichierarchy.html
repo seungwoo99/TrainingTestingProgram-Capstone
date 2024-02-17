@@ -5,16 +5,10 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel = "stylesheet" href = "{{url_for('static', filename='/css/datahierarchy.css')}}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
-        <style>
-            .error {
-              color: red;
-            }
-        </style>
         {% include 'navbar.html' %}
     </head>
     <body>
-        <div class="container">
-
+        <div class="main-container">
             <h2>{{ subject_data['name'] }}</h2>
             <p>{{ subject_data['description'] }}</p>
             <table class="gridview" id="datasTable">

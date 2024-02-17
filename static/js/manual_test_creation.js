@@ -9,24 +9,18 @@ document.addEventListener('DOMContentLoaded', (event) => {
   const wrapper = document.querySelector(".wrapper");
   const animatedBorder = document.querySelector('.animated-border');
   
-  // Function to adjust the side panel's position based on the main container's scroll position
   function adjustPanelPosition() {
     let newTopPosition = mainContainer.scrollTop;
     sidePanel.style.top = `${newTopPosition}px`;
     sidePanelToggle.style.top = `${newTopPosition + 20}px`;
 
-    // Check if the animated border is currently displayed (i.e., has the 'animate' class)
     if(animatedBorder.classList.contains('animate')) {
-      // Adjust the animated border's position to match the side-panel-toggle's position
-      // You might need to adjust the '20px' offset based on your design
       adjustAnimatedBorderPosition();
     }
   }
 
-  // Scroll event listener for the main container
   mainContainer.addEventListener('scroll', adjustPanelPosition);
 
-  // Click event listener for the side panel toggle
   if (sidePanelToggle) {
     sidePanelToggle.addEventListener("click", () => {
       wrapper.classList.toggle("side-panel-open");
@@ -34,12 +28,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
   }
 
-  // Click event listener for the search button
   if (searchButton) {
     searchButton.addEventListener('click', handleSearchButtonClick);
   }
 
-  // Click event listener for the add button
   if (addButton) {
     addButton.addEventListener('click', handleAddButtonClick);
   }
@@ -54,15 +46,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const questionDifficultyValue = document.getElementById('question_difficulty_dropdown').value;
     const questionMaxPointValue = document.getElementById('question_max_points_input').value;
     
-    // Instead, get a reference to the input element itself
     const questionMaxPointsInput = document.getElementById('question_max_points_input');
     questionMaxPointsInput.classList.remove('error');
 
-    // Now, you can perform checks and manipulate the element as needed
     if (!questionMaxPointsInput.checkValidity()) {
-      questionMaxPointsInput.classList.add('error'); // Visually indicate an issue
-      questionMaxPointsInput.reportValidity(); // Show the browser's validation message
-      return; // Prevent further action until the input is valid
+      questionMaxPointsInput.classList.add('error');
+      questionMaxPointsInput.reportValidity();
+      return;
     }
 
     const formData = {
@@ -98,7 +88,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
           const cell3 = row.insertCell(2);
         
           cell1.textContent = question.max_points;
-          cell2.textContent = question.question_text;
+          cell2.textContent = question.question_desc;
           cell3.innerHTML = '<input type="checkbox" name="select_question" value="' + question.question_id + '">';
         });
       } else if (data.total_questions_in_pool === 0) {
@@ -121,8 +111,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
     if (selectedCheckboxes.length > 0) {
       selectedCheckboxes.forEach(checkbox => {
         addQuestionToSelected(checkbox);
-        totalPoints += parseInt(checkbox.closest('tr').cells[0].textContent) || 0;
         checkbox.checked = false;
+      });
+  
+      const selectedTableRows = document.querySelectorAll('.selected-table tbody tr');
+      selectedTableRows.forEach(row => {
+        totalPoints += parseInt(row.cells[0].textContent) || 0;
       });
   
       adjustAnimatedBorderPosition();
@@ -133,7 +127,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         submitTablePointValueTd.textContent = totalPoints;
       }
     }
-  }
+  }  
   
   function addQuestionToSelected(checkbox) {
     const row = checkbox.closest('tr');
@@ -166,7 +160,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
   
     animatedBorder.style.top = `${topPosition - 5}px`;
     animatedBorder.style.right = `${rightPosition - 17}px`;
-    animatedBorder.style.width = `8.5%`;
-    animatedBorder.style.height = `6.5%`;
+    animatedBorder.style.width = `137px`;
+    animatedBorder.style.height = `49px`;
   }
 });

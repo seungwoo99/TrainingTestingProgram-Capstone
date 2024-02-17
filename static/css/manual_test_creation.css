@@ -223,6 +223,7 @@ input[type="number"]:hover,
   font-size: 100%;
   font-family: 'Code Next', sans-serif;
   font-weight: 200;
+  text-shadow: -1px -1px 0 #800d0d, 1px -1px 0 #800d0d, -1px 1px 0 #800d0d, 1px 1px 0 #800d0d;
 }
 
 .select-button:hover,
@@ -235,6 +236,15 @@ input[type="number"]:hover,
 .remove-button:hover {
   background-color: #b30000;
   box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+}
+
+.select-button:active,
+.add-button:active,
+.submit-button:active,
+.remove-button:active {
+  background-color: #040f16;
+  box-shadow: 0 5px #726e60;
+  transform: translateY(4px);
 }
 
 /*----- Elements to style side bar ------*/
