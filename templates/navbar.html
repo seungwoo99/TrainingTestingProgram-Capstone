@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{{url_for('static', filename='/css/navbar.css')}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
   </head>
-  <header class="navigation">
+  <header class="navbar-navigation">
     <ul class="nav-links">
         <li class="center"><a href="{{url_for('tryregister')}}">Register</a></li>
         <li class="center"><a href="/datahierarchy">Data Hierarchy</a></li>
@@ -22,6 +23,4 @@
         <li class="center"><a href="{{ url_for('logout') }}">Logout/Login</a></li>
     </ul>
   </header>
-  <body>
-  </body>
 </html>

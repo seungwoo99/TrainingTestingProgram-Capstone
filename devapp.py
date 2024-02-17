@@ -502,11 +502,12 @@ def handle_get_questions():
                 [
                     {
                         'question_id': q['question_id'], 
+                        'max_points': q['max_points'],
                         'question_text': q['question_text']
                     } 
                     for q in questions_pool
                 ],
-                key=lambda x: x['question_id']
+                key=lambda x: x['max_points']
             )
             questions_available_for_selection = len(selected_questions)
             logging.debug(f"Questions available for manual selection: {questions_available_for_selection}")

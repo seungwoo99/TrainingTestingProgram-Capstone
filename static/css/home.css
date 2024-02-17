@@ -1,29 +1,53 @@
-*{
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Montserrat', sans-serif;
-}
-
 body {
-  min-height: 100vh;
-  width: 100%;
-  background: #0b80bd;
+  overflow: hidden;
 }
 
-.container {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%,-50%);
-  max-width: 430px;
-  width: 100%;
+/* Container Styles */
+.main-container {
+  position: relative;
+  top: -4%;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: 82%;
+  overflow: auto;
+  max-width: 25%;
+  margin: auto;
+  padding: 1.5%;
   background: #fff;
   border-radius: 7px;
   box-shadow: 0 5px 10px rgba(0,0,0,0.3);
-  text-align: center;
+  overflow-x: hidden;
 }
 
+.login-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 25%;
+  margin: auto;
+  padding: 1.5%;
+  background: #fff;
+  border-radius: 7px;
+  box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+  overflow-x: hidden;
+}
+
+.centered-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Wrapper Styles */
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Registration and Login Styles */
 .container .registration {
   display: none;
 }
@@ -40,46 +64,43 @@ body {
   display: none;
 }
 
-.container .form {
-  padding: 2rem;
-}
-
-.form header {
-  font-size: 2rem;
-  font-weight: 500;
+/* Form Styles */
+.form-header {
+  font-size: 225%;
+  font-weight: 700;
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 5%;
 }
 
 .form input {
-  height: 60px;
+  height: 6vh;
   width: 100%;
-  padding: 0 15px;
-  font-size: 17px;
+  padding-left: 5%;
+  font-size: 125%;
   margin-bottom: 1.3rem;
   border: 1px solid #ddd;
-  border-radius: 6px;
   outline: none;
+  font-family: 'Code Next', sans-serif;
 }
 
-.form input[type="checkbox"] {
-  height: 20px;
-  width: 20px;
+.form input:hover {
+  box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+}
+
+.form .centered-container input[type="checkbox"] {
+  height: 1vw;
+  width: 1vw; 
   margin-bottom: 0;
+  margin-left: 0.25vw;
 }
 
-
-.form input[type="checkbox"] + label {
-  vertical-align: middle;
-  margin-left: 20px;
-}
-
-.form input:focus {
-  box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+.form .centered-container [type="checkbox"] + label {
+  display: inline-block;
+  width: 100%;
 }
 
 .form a {
-  font-size: 16px;
+  font-size: 125%;
   color: #0b80bd;
   text-decoration: none;
 }
@@ -91,20 +112,23 @@ body {
 .form input.button {
   color: #fff;
   background: #0b80bd;
-  font-size: 1.2rem;
+  font-size: 150%;
   font-weight: 500;
-  letter-spacing: 1px;
-  margin-top: 1.7rem;
+  letter-spacing: 0.05vw;
+  margin-top: 3vh;
   cursor: pointer;
-  transition: 0.4s;
+  width: 80%;
+  padding-left: 0;
 }
 
 .form input.button:hover {
   background: #0d688f;
+  box-shadow: 0 5px 10px rgba(0,0,0,0.3);
 }
 
+/* Signup Styles */
 .signup {
-  font-size: 17px;
+  font-size: 150%;
   text-align: center;
 }
 
@@ -117,6 +141,7 @@ body {
   text-decoration: underline;
 }
 
+/* Flashes Styles */
 div.flashes {
   list-style-type: none;
   text-align: center;

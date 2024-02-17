@@ -1,49 +1,69 @@
+body {
+    overflow: hidden;
+}
+
 /* Main container styles */
 .main-container {
-    position: absolute;
-    top: calc(50px + 2.5%);
+    position: relative;
+    top: -4%;
     left: 0;
     right: 0;
     bottom: 0;
-    max-height: calc(100% - 100px - 2.5% - 20px);
+    min-height: 82%;
+    max-height: 82%;
     overflow: auto;
     width: 85%;
     margin: auto;
-    padding-top: 20px; 
-    padding-left: 10px;
-    padding-right: 10px;
+    padding: 1.5%;
     background: #fff;
     border-radius: 7px;
     box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+    overflow-x: hidden;
+}
+
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
 }
 
 /* Elements to style headings */
 h1 {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 1%;
     font-size: 225%;
-    font-weight: 700;
-    color: #3B4856;
+    color: black;
     text-align: center;
-    padding-bottom: 5px;
-}
-
-h2 {
+    padding-bottom: 0.125%;
+    font-weight: 700;
+  }
+  
+  h2 {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 0.125%;
+    font-size: 150%;
+    color: black;
+    text-align: center;
+    padding-bottom: 0.125%;
+    font-family: 'Code Next', sans-serif;
+  }
+  
+  h3 {
+    display: block;
+    margin-bottom: 0.125%;
     font-size: 200%;
     font-weight: 700;
-    color: #3B4856; 
-}
+    color: black; 
+  }
 
 /* Elements that style the sections */
 .section {
-    margin-bottom: 50px;
+    margin-bottom: 2.5%;
 }
 
 .label-container {
     width: 98.5%;
-    margin: 10px;
+    margin: 1%;
     border-bottom: 1px solid black;
 }
 
@@ -51,31 +71,31 @@ h2 {
 .grid-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px; 
-    padding-left: 30px;
+    gap: 1%; 
+    padding-left: 2%;
 }
 
 .grid-item {
-    padding: 10px; 
+    padding: 1%; 
 }
 
 .label-textboxsection-container {
     width: 75%;
-    margin: 10px;
+    margin: 1%;
     border-bottom: 1px solid black;
 }
 
 .textinput-container {
     width: 98.5%;
-    margin: 10px;
+    margin: 1%;
     padding-bottom: 10px;
 }
 
 .section input[type="text"], .section input[type="number"] {
     width: 50%;
-    padding: 10px;
-    margin-top: 5px;
-    font-size: 18px;
+    padding: 1%;
+    margin-top: 0.5%;
+    font-size: 125%;
     cursor: pointer;
     font-family: 'Code Next', sans-serif;
 }
@@ -89,7 +109,7 @@ h2 {
 /* Elements that style the bottom button */
 .centered-button-container {
     width: 98.5%;
-    margin: 10px;
+    margin: 1%;
     display: flex;
     justify-content: center; 
     align-items: center;
@@ -100,9 +120,8 @@ h2 {
     background-color: #0b80bd;
     color: #FFFFFF;
     border: none;
-    border-radius: 5px;
     cursor: pointer;
-    font-size: 24px;
+    font-size: 125%;
     font-family: 'Code Next', sans-serif;
     font-weight: 200;
 }
@@ -115,9 +134,9 @@ h2 {
 /* Element that style the dropdown input */
 .dropdown-input {
     width: 50%;
-    padding: 10px;
-    margin-top: 5px;
-    font-size: 18px;
+    padding: 1%;
+    margin-top: 0.5%;
+    font-size: 125%;
     cursor: pointer;
     font-family: 'Code Next', sans-serif;
 }
@@ -128,7 +147,7 @@ h2 {
 }
 
 .dropdown-input option {
-    padding: 10px;
+    padding: 1%;
 }
 
 .dropdown-input option:hover {
@@ -140,33 +159,32 @@ h2 {
 .criteria-container {
     width: 95%;
     margin: auto;
-    padding: 10px;
+    padding: 1%;
     border-style: groove;
     border-radius: 7px;
-    border-width: 10px;
+    border-width: 1vw;
 }
 
 .selection-container {
     width: 98.5%;
-    margin: 10px;
-    padding-bottom: 10px;
+    margin: 1%;
+    padding-bottom: 1%;
     border-bottom: 1px solid black;
 }
 
 .criteria-container .selection-container .toggle-btn {
-    padding: 15px;
-    margin: 5px;
+    padding: 1%;
+    margin: 0.5%;
     border: none;
     cursor: pointer;
-    border-radius: 8px;
     background-color: #6B95BC;
     text-shadow: -1px -1px 0 #364b5e, 1px -1px 0 #364b5e, -1px 1px 0 #364b5e, 1px 1px 0 #364b5e;
 }
 
 .criteria-container .selection-container .toggle-btn .toggle-btn-label {
     display: inline-block;
-    margin-bottom: 5px;
-    font-size: 24px;
+    margin-bottom: 0.5%;
+    font-size: 100%;
     font-family: 'Code Next', sans-serif;
     color: #FFF;
 }
@@ -177,20 +195,20 @@ h2 {
 }
 
 .criteria-container .section .select-category {
-    padding: 15px;
-    margin: 5px;
-    margin-right: 40px;
+    padding: 1%;
+    margin-left: 1vw;
+    margin-right: 125%;
     border: none;
     cursor: pointer;
     display: inline-block;
     font-size: 24px;
     font-family: 'Code Next', sans-serif;
-    border-radius: 8px;
     background-color: #cad9e7;
     color: #3b4044;
     font-family: 'Code Next', sans-serif;
     text-shadow: -1px -1px 0 #c4d5e4, 1px -1px 0 #c4d5e4, -1px 1px 0 #c4d5e4, 1px 1px 0 #c4d5e4;
     border: 2px solid #4e555b;
+    white-space: nowrap;
 }
 
 .criteria-container .section .select-category:hover {
@@ -201,8 +219,8 @@ h2 {
 
 .criteria-container .section label {
     display: inline-block;
-    margin-bottom: 5px;
-    font-size: 24px;
+    margin-bottom: 0.5%;
+    font-size: 125%;
 }
 
 .selected {
