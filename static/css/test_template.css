@@ -20,13 +20,6 @@ header .points {
     display: inline-block;
 }
 
-
-header .line {
-    display: inline-block;
-    width: 30%;
-    border-top: 2px solid black;
-}
-
 .test-name {
     text-align: center;
 }
@@ -40,6 +33,10 @@ main {
     padding: 0 40px 30px 30px;
 }
 
+.question-container {
+    padding-top: 20px;
+    page-break-inside: avoid; /* Prevent page breaks inside question containers */
+}
 
 
 

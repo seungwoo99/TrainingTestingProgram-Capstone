@@ -95,3 +95,8 @@ h1 {
   font-weight: 700;
   margin-bottom: 1%;
 }
+
+.gridview .selected, .gridview tbody .selected {
+  background-color: #6ccbfb;
+  color: #fff;
+}

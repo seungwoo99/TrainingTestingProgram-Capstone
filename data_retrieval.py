@@ -199,21 +199,22 @@ def get_test_questions(test_id):
         # Connect to the database using db.engine.
         with db.engine.connect() as connection:
 
-            # Execute the SQL query to retrieve question texts for the selected test ID
+            # Execute the SQL query to retrieve question data for the selected test ID
             sql_query = text("""
-                    SELECT question_text
+                    SELECT *
                     FROM tests t
                     JOIN test_questions tq ON t.test_id = tq.test_id
                     JOIN questions q ON tq.question_id = q.question_id
                     WHERE t.test_id = :test_id
+                    ORDER BY question_order
                 """)
 
             result = connection.execute(sql_query, test_id=test_id)
 
             # Extract question texts from the result
-            question_texts = [row['question_text'] for row in result]
+            test_questions = [row for row in result]
 
-            return question_texts
+            return test_questions
 
     except Exception as e:
         # Log an error message with exception details.
@@ -227,7 +228,7 @@ def get_tests_temp():
         with db.engine.connect() as connection:
 
             # Execute query to retrieve all tests
-            # Execute the SQL query to retrieve question texts
+            # Execute the SQL query to retrieve all tests
             sql_query = text("""
                         SELECT test_id, test_name
                         FROM tests
@@ -241,7 +242,7 @@ def get_tests_temp():
 
     except Exception as e:
         # Log an error message with exception details.
-        logging.error(f"Error while getting questions: {e}", exc_info=True)
+        logging.error(f"Error while getting test list: {e}", exc_info=True)
 
 def get_test_data(test_id):
 
@@ -250,7 +251,7 @@ def get_test_data(test_id):
         with db.engine.connect() as connection:
 
             # Execute query to retrieve all tests
-            # Execute the SQL query to retrieve question texts
+            # Execute the SQL query to retrieve test data
             sql_query = text("""
                     SELECT * FROM tests
                     WHERE test_id = :test_id
@@ -269,7 +270,7 @@ def get_test_data(test_id):
 
     except Exception as e:
         # Log an error message with exception details.
-        logging.error(f"Error while getting questions: {e}", exc_info=True)
+        logging.error(f"Error while getting test data: {e}", exc_info=True)
         
 # Function that returns test list from the database
 def get_tests():
@@ -315,3 +316,57 @@ def get_tester_list(test_id):
     data = tester_result.fetchall()
 
     return data
+
+def selectSubjectNames():
+    with db.engine.connect() as connection:
+        query = text("SELECT name FROM subjects")
+        result = connection.execute(query).fetchall()
+
+    return result
+
+def selectSubjectDescriptions():
+    with db.engine.connect() as connection:
+        query = text("SELECT description FROM subjects")
+        result = connection.execute(query).fetchall()
+
+    return result
+
+def insertSubject(name, description):
+    with db.engine.connect() as connection:
+        query=text("""INSERT INTO subjects (subject_id,name,description) VALUES (0,:name,:description)""")
+        connection.execute(query,name=name, description=description)
+
+def insertTopic(subject_id, name, description, facility):
+    with db.engine.connect() as connection:
+        query=text("""INSERT INTO topics (topic_id, subject_id, name, description, facility) VALUES (0,:subject_id,:name,:description,:facility)""")
+        connection.execute(query,subject_id=subject_id,name=name, description=description, facility=facility)
+
+
+
+
+def get_all_subjects():
+    with db.engine.connect() as connection:
+        query = text("SELECT * FROM subjects")
+        result = connection.execute(query).fetchall()
+
+    return result
+
+def get_all_topics(subject_id):
+    with db.engine.connect() as connection:
+
+        # Execute the SQL query to retrieve all topics for a subject
+        sql_query = text("""
+                            SELECT * FROM topics 
+                            WHERE subject_id = :subject_id
+                    """)
+        result = connection.execute(sql_query, subject_id=subject_id)
+
+        # get subject name and description
+        sql_query = text("""
+                                    SELECT name, description FROM subjects 
+                                    WHERE subject_id = :subject_id
+                            """)
+        subject_data = connection.execute(sql_query, subject_id=subject_id)
+        subject_data = subject_data.fetchone()
+
+    return result, subject_data

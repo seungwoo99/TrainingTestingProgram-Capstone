@@ -1,8 +1,10 @@
 # Standard library imports
 import os
 import logging
+from logging.handlers import RotatingFileHandler
 from datetime import datetime, timezone, timedelta
 from random import randint
+import re
 
 # Statistics related imports
 from io import BytesIO
@@ -10,7 +12,6 @@ from base64 import urlsafe_b64decode
 import base64
 import numpy as np
 from PIL import Image
-from PyPDF2 import PdfFileMerger
 import matplotlib.pyplot as plt
 
 # Related third-party imports
@@ -29,11 +30,15 @@ from itsdangerous import URLSafeTimedSerializer
 # Local application/library specific imports
 from config import MailConfig
 from db_config import db
-from data_retrieval import (fetch_test_creation_options, get_questions, select_questions, get_user, get_test_questions, 
-                            check_registered, get_test_data, get_tests_temp, get_tests, get_topics, get_subjects, get_tester_list)
+from data_retrieval import (fetch_test_creation_options, get_questions, select_questions, get_user, get_test_questions,
+                            check_registered, get_test_data, get_tests_temp, get_tests, get_topics, get_subjects, get_all_subjects, get_tester_list, selectSubjectNames, selectSubjectDescriptions,insertSubject, get_all_topics, insertTopic)
+
+import data_retrieval
 
 # Load environment variables from a .env file
 load_dotenv()
+
+
 
 #Initialize Flask App
 app = Flask(__name__)
@@ -41,6 +46,12 @@ app = Flask(__name__)
 # Configure Flask app to use SQLAlchemy for a local MySQL database
 app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:@localhost:3306/test_train_db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# Configure logging to write to a file
+handler = RotatingFileHandler('app_errors.log', maxBytes=10000, backupCount=1)
+handler.setLevel(logging.ERROR)
+app.logger.addHandler(handler)
+
 
 # Configure Flask app with a secret key
 app.config["SECRET_KEY"] = 'os.getenv("SECRET_KEY")'
@@ -61,8 +72,8 @@ bcrypt = Bcrypt(app)
 mail = Mail(app)
 
 # Hash the password before storing it in the database
-# hashed_password = bcrypt.generate_password_hash(password,12).decode('utf-8')
-# print("Password: ", hashed_password)
+hashed_password = bcrypt.generate_password_hash('capstone1!',12).decode('utf-8')
+print("Password: ", hashed_password)
 
 #----------Helper functions for OTP and token generation----------
 
@@ -186,13 +197,72 @@ def homepage():
     # Temporary redirect to a different page
     return redirect(url_for('data'))
   
-@app.route('/datahierarchy')
+@app.route('/datahierarchy',methods = ['POST', 'GET'])
 def data():
-    if 'user' not in session or not session['user'].get('is_authenticated', False):
-        flash("Access denied, please login.")
-        return redirect(url_for('trylogin'))
+    #if 'user' not in session or not session['user'].get('is_authenticated', False):
+        #flash("Access denied, please login.")
+        #return redirect(url_for('trylogin'))
+    if request.method == "POST":
+        pData = request.get_json()
+        if pData.get("type") == "add":
+            #insertSubject(pData.get("value1"),pData.get("value2"))
+            name = pData.get("value1")
+            description = pData.get("value2")
 
-    return render_template('datahierarchy.html')
+            insertSubject(name,description)
+            #query = text("""INSERT INTO subjects (name,description) VALUES (:name,:description)""")
+            #db.engine.execute(query, name=name, description=description)
+            logging.debug("adding new data")
+        elif pData.get("type") == "delete":
+            subject_id = pData.get("value1")
+            query = text("""DELETE FROM subjects where subject_id = :subject_id""")
+            db.engine.execute(query, subject_id=subject_id)
+        elif pData.get("type") == "edit":
+            subject_id = pData.get("value1")
+            name = pData.get("value2")
+            description = pData.get("value3")
+            query = text("""UPDATE subjects SET name = :name, description = :description WHERE subject_id = :subject_id""")
+            db.engine.execute(query, subject_id=subject_id, name=name, description=description)
+
+        return jsonify({"category":"SUCCESS"})
+    else:
+        subjects = get_all_subjects()
+        return render_template('datahierarchy.html', subjects=subjects)
+
+@app.route('/datatopichierarchy', methods=['GET', 'POST'])
+def topics():
+
+    # Get the selected subject_id from the query parameters
+    subject_id = request.args.get('subject_id')
+
+    # Use the subject_id to fetch topics
+    topics, subject_data = get_all_topics(subject_id)
+
+    # Check which database function to execute
+    if request.method == "POST":
+        pData = request.get_json()
+        if pData.get("type") == "add":
+            subject_id=pData.get("value1")
+            name = pData.get("value2")
+            description = pData.get("value3")
+            facility = pData.get("value4")
+            insertTopic(subject_id, name, description, facility)
+        elif pData.get("type") == "delete":
+            print()
+
+        elif pData.get("type") == "edit":
+            topic_id = pData.get("value1")
+            name = pData.get("value2")
+            description = pData.get("value3")
+            facility = pData.get("value4")
+            query = text(
+                """UPDATE topics SET name = :name, description = :description, facility=:facility WHERE topic_id = :topic_id""")
+            db.engine.execute(query, topic_id=topic_id, name=name, description=description, facility=facility)
+            print()
+    else:
+        # Pass topics to the template
+        return render_template('datatopichierarchy.html', topics=topics ,subject_id=subject_id, subject_data=subject_data)
+
 
 
 #---------- Routes for the test list page and tester list page ----------
@@ -565,22 +635,38 @@ def process_question():
 
     return redirect(url_for('generate_test'))
 
-# Route to render test questions as a pdf file for export
+# Route to render tests as a html file for export
 @app.route('/generate_test', methods=['POST'])
 def generate_test():
+
     # Get the selected test ID from the form submission
     selected_test_id = request.form.get('test_id')
 
     # Render page
-    return render_template('test_template.html', question_texts=get_test_questions(selected_test_id),
+    return render_template('test_template.html', test_questions=get_test_questions(selected_test_id),
+                           test_data=get_test_data(selected_test_id))
+
+# Route to render test answers as a html file for export
+@app.route('/generate_test_answers', methods=['POST'])
+def generate_test_answers():
+
+    # Get the selected test ID from the form submission
+    selected_test_id = request.form.get('test_id')
+
+    # Render page
+    return render_template('test_answers_template.html', test_questions=get_test_questions(selected_test_id),
                            test_data=get_test_data(selected_test_id))
 
 # Temporary Route to list tests and applicable actions
 @app.route('/tests')
 def tests():
 
+    # Check if user is logged in
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+    
     # Execute query to retrieve all tests
-    # Execute the SQL query to retrieve question texts
     sql_query = text("""
             SELECT test_id, test_name
             FROM tests
@@ -638,12 +724,6 @@ def register():
         input_first_name = request.form.get("first_name")
         input_last_name = request.form.get("last_name")
         input_is_admin = request.form.get("is_admin")
-
-        # Check if passwords match
-        if input_password != input_confirm_password:
-            # Flash failed authentication message and redirect to register page
-            flash("Entered passwords do not match")
-            return redirect(url_for('tryregister'))
 
         row = check_registered(input_username, input_email)
 
@@ -898,5 +978,7 @@ def verify_email(username, user_hash):
 
 #----------Server Configuration and Startup----------
 
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
+

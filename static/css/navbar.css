@@ -4,7 +4,7 @@
     padding: 1% 0.75% !important;
     box-shadow: 0 5px 10px rgba(0,0,0,0.3);
     position: static;
-  }  
+}
   
 .navbar-navigation .nav-links {
     margin: 0 !important; 
@@ -69,4 +69,19 @@
 
 .dropdown:hover .dropdown-content {
     display: block;
+}
+
+.flashes {
+    background-color: rgba(248, 215, 218, 0.75);
+    color: #721c24;
+    padding: 0.75rem 1.25rem;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+    width: 30%;
+    margin: 20px auto 1rem;
+    transition: opacity 0.5s ease;
+}
+
+.hidden {
+    opacity: 0;
 }

@@ -20,7 +20,8 @@
                   <option value="{{ test[0] }}">Test ID: {{ test[0] }} Test Name: {{ test[1] }}</option>
                 {% endfor %}
               </select>
-              <button type="submit" class="btn btn-primary mt-3" formaction="{{ url_for('generate_test') }}">Export</button>
+              <button type="submit" class="btn btn-primary mt-3" formaction="{{ url_for('generate_test') }}">Export Test</button>
+              <button type="submit" class="btn btn-primary mt-3" formaction="{{ url_for('generate_test_answers') }}">Export Answer Key</button>
               <button type="submit" class="btn btn-secondary mt-3" formaction="{{ url_for('modify_test') }}">Modify</button>
               <button type="submit" class="btn btn-secondary mt-3" formaction="{{ url_for('enter_scores') }}">Enter Scores</button>
               <button type="submit" class="btn btn-danger mt-3" formaction="{{ url_for('delete_test') }}">Delete</button>
