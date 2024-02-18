@@ -4,10 +4,10 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-        <link rel = "stylesheet" href = "{{url_for('static', filename='/css/datahierarchy.css')}}">
+        <link rel = "stylesheet" href = "{{url_for('static', filename='/css/datahierarchymodified.css')}}">
         <link rel="stylesheet" href="{{url_for('static', filename='/css/main.css')}}">
         <link rel="stylesheet" href="{{ url_for('static', filename='/css/fonts.css') }}">
-        <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
         <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
         <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
 
@@ -19,8 +19,7 @@
                 <div class="centered-container">
                     <h1>Question Entry</h1>
                 </div>
-                <div class="centered-container">
-                    <form id="form" method="post" target="_blank">
+                <div>
                     <p>Select a learning objective<br></p>
 
                     <select name="obj_id" class="form-select" aria-label="Select Test">
@@ -30,9 +29,9 @@
                     </select>
                     <br>
                     <p>Enter a question description (summary of a question without images, writing lines, and other content.)</p>
-                    <input type="text" name="question_desc" placeholder="Question Description">
-                    <p>Enter the question contents. Displayed as is on tests including any other content. Use template buttons to get started, or start from scratch.</p>
-                    <textarea id="summernote1" name="question"></textarea>
+                    <input type="text" name="question_desc" placeholder="Question Description" style="width: 80%;">
+                    <p><br>Enter the question contents. Displayed as is on tests including any other content. Use template buttons to get started, or start from scratch.</p>
+                    <textarea id="summernote1" name="question_text" class="summernote"></textarea>
                         <!-- Predefined content buttons -->
                     <div id="predefinedContentButtons">
                         <button type="button" class="btn btn-default predefined-content-btn" data-html="
@@ -64,19 +63,20 @@
                         ">True/False</button>
                     </div>
                     <p>Enter the question answer. Displayed as is on test answer keys.</p>
-                    <textarea id="summernote2" name="answer"></textarea>
-                    <p>Enter a question type (mulitple choice, short answer, true / false, etc...)</p>
+                    <textarea id="summernote2" name="question_answer" class="summernote"></textarea>
+                    <p><br>Enter a question type (mulitple choice, short answer, true / false, etc...)</p>
                     <input type="text" name="question_type" placeholder="Question Type">
-                    <p>Optional: Enter a question answer explanation.</p>
-                    <input type="text" name="answer_explanation" placeholder="Question Answer Explanation">
-                    <p>Optional: Enter a question point rubric or definition.</p>
-                    <input type="text" name="points_definition" placeholder="Point Definition">
-                    <p>Enter the max possible points for the question.</p>
-                    <input type="number" name="max_points" placeholder="Points">
-                    <p>Optional: Enter the reference source for the question.</p>
+                    <p><br>Enter the question difficulty (number between 1 and 5)</p>
+                    <input type="number" name="question_difficulty" placeholder="#">
+                    <p><br>Optional: Enter an additional answer explanation.</p>
+                    <input type="text" name="answer_explanation" placeholder="Explanation" style="width: 80%;">
+                    <p><br>Enter the points rubric / definition for the question.</p>
+                    <input type="text" name="points_definition" placeholder="Rubric" style="width: 80%;">
+                    <p><br>Enter the max points for the question</p>
+                    <input type="number" name="max_points" placeholder="#">
+                    <p><br>Optional: Enter the reference source for the question.</p>
                     <input type="text" name="source" placeholder="Source">
-                    <button type="submit" class="btn btn-primary mt-3" formaction="{{ url_for('generate_test') }}">Add question</button>
-                    </form>
+                    <button onclick="addQuestion()">Add Question</button>
                 </div>
             </div>
         </div>
