@@ -47,7 +47,7 @@ load_dotenv()
 app = Flask(__name__)
 
 # Configure Flask app to use SQLAlchemy for a local MySQL database
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:password@localhost:3306/test_train_db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:@localhost:3306/test_train_db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Configure logging to write to a file
@@ -1211,5 +1211,5 @@ def verify_email(username, user_hash):
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5005)
+    app.run(host='0.0.0.0')
 
