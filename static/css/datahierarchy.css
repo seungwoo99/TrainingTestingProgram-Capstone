@@ -113,6 +113,37 @@ td {
   width: 60%;
 }
 
+/* Dropdown Styles */
+.custom-dropdown{
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-toggle{
+  width: 5%;
+  padding: 1%;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.dropdown-content{
+  display: none;
+  position: absolute;
+  background-color: #fff;
+}
+
+.custom-dropdown label{
+  display: block;
+  padding: 5px;
+  cursor: pointer;
+}
+
+.custom-dropdown input[type="checkbox"]{
+  margin-right: 5px;
+}
+
+
+
 /* Button Styles */
 button {
   margin-right: 1%;
