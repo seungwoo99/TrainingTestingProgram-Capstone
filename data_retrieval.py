@@ -359,9 +359,13 @@ def get_test_data(test_id):
         
 # Function that returns test list from the database
 def get_tests():
-    test_query = text("Select *, s.name AS subject_name, tp.name AS topic_name FROM tests t "
-                      + "LEFT JOIN subjects s ON t.subject_id = s.subject_id "
-                      + "LEFT JOIN topics tp ON t.topic_id = tp.topic_id ")
+    test_query = text("SELECT t.test_id, t.test_name, GROUP_CONCAT(DISTINCT s.name) AS subject_name, GROUP_CONCAT(DISTINCT tp.name) AS topic_name, t.creation_date, t.last_modified_date FROM tests t "
+                      + "LEFT JOIN test_questions tq ON t.test_id = tq.test_id "
+                      + "LEFT JOIN questions q ON tq.question_id = q.question_id "
+                      + "LEFT JOIN learning_objectives lo ON q.obj_id = lo.obj_id "
+                      + "LEFT JOIN topics tp ON lo.topic_id = tp.topic_id "
+                      + "LEFT JOIN subjects s ON tp.subject_id = s.subject_id "
+                      + "GROUP BY t.test_id, t.test_name, s.name, t.creation_date, t.last_modified_date")
     test_result = db.engine.execute(test_query)
 
     # fetch all rows of the result
@@ -383,6 +387,7 @@ def get_topics():
     data = topic_result.fetchall()
 
     return data
+
 
 # Function that returns tester list from the database
 def get_tester_list(test_id):
