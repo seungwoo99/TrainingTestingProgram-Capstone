@@ -5,6 +5,8 @@ from logging.handlers import RotatingFileHandler
 from datetime import datetime, timezone, timedelta
 from random import randint
 import re
+import requests
+import random
 
 # Statistics related imports
 from io import BytesIO
@@ -618,18 +620,26 @@ def handle_get_questions():
                 'questions_available_for_selection': questions_available_for_selection,
                 'selected_questions': selected_questions, 
                 'message': "Questions successfully retrieved for manual selection."
-            })
+            }), 200
         else:
-            selected_questions = select_questions(questions_pool, num_questions, test_max_points)
-            questions_chosen_for_test = len(selected_questions)
-            logging.debug(f"Questions chosen for test: {questions_chosen_for_test}")
-
+            selected_questions, total_score = select_questions(questions_pool, num_questions, test_max_points)
+            
+            if len(selected_questions) == 0:
+                return jsonify({'error': 'No questions found that meet the selection criteria.'}), 500
+            
+            max_num = len(selected_questions)
+            order_nums = random.sample(range(1, max_num + 1), max_num)
+            question_order = [
+                {
+                    'question_id': q['question_id'],
+                    'question_order': order
+                }
+                for q, order in zip(selected_questions, order_nums)
+            ]
             return jsonify({
-                'total_questions_in_pool': total_questions_in_pool,
-                'questions_chosen_for_test': questions_chosen_for_test,
-                'selected_questions': [question[0] for question in selected_questions],
-                'message': "Questions successfully retrieved and test created."
-            })
+                'question_order': question_order,
+                'total_score': total_score,
+            }), 200
 
     # Error handling
     except ValueError as ve:
@@ -646,33 +656,60 @@ def handle_get_questions():
 @app.route('/handle_test_creation', methods=['POST'])
 def handle_test_creation():
     try:
+        # Get JSON data from the request
         data = request.get_json()
-        is_active = data.get('isActive')
-        created_by = session.get('username')
-        print(session.get('username'))
-        creation_date = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
-        test_name = data.get('testName')
-        test_description = data.get('testDescription')
-        total_score = data.get('totalScore', 0)
-        question_order = data.get('questionOrder')
+        # Get the test type from the data, defaulting to 'random'
+        test_type = data.get('test_type', 'random')
         
+        # If the test type is 'random', send a request to get questions
+        if test_type == 'random':
+            response = requests.post('http://127.0.0.1:5000/get-questions', json=data)
+            # If the request is successful, extract relevant data
+            if response.status_code == 200:
+                is_active = data.get('is_active')
+                created_by = session.get('username')
+                creation_date = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+                test_name = data.get('test_name')
+                test_description = data.get('test_description')
+                response_data = response.json()
+                total_score = response_data.get('total_score', 0)
+                question_order = response_data.get('question_order')
+            # If no questions are found, return an appropriate message
+            elif response.status_code == 500:
+                return jsonify({'message': 'No questions found that meet the selection criteria.'}), 500
+        # If the test type is not 'random', extract data directly from the request
+        else:
+            is_active = data.get('is_active')
+            created_by = session.get('username')
+            creation_date = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+            test_name = data.get('test_name')
+            test_description = data.get('test_description')
+            total_score = data.get('total_score', 0)
+            question_order = data.get('question_order')
+        
+        # Ensure total score is an integer
         total_score = int(total_score) if isinstance(total_score, int) else 0
         
+        # Create the test using extracted data
         test_message = create_test(is_active, created_by, creation_date, test_name, test_description, total_score, question_order)
 
         logging.info("Received test_message from create_test")
         logging.info(f"test_message content: {test_message}")
 
+        # If there's an error in test creation, log it and return an error response
         if "error" in test_message:
             logging.error(f"Error in test creation: {test_message['error']}")
             return jsonify({"error": test_message["error"]}), 500
         
+        # If the test is created successfully, log it and return a success response
         logging.info("Test created successfully")
         return jsonify({"message": test_message["message"]}), 200
 
     except Exception as e:
+        # Log any unexpected error that occurs during test creation and return an error response
         logging.error("An error occurred while creating the test: %s", str(e), exc_info=True)
         return jsonify({"error": str(e)}), 500
+
 
 @app.route('/create_questions')
 def create_questions():

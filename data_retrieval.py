@@ -159,17 +159,22 @@ def select_questions(questions_pool, num_questions, max_points):
             break
 
     logging.debug(f"Finished question selection. Total selected questions: {len(selected_questions)}, Total points of selected questions: {current_points}")
-    return selected_questions
+    return selected_questions, current_points
 
 def create_test(is_active, created_by, creation_date, test_name, test_description, total_score, question_order):
+    # Log the start of the create_test function
     logging.info("Starting create_test function")
     try:
+        # Convert is_active to integer
         is_active_db = int(is_active)
-        
+        # Log parameters received for creating the test
         logging.info(f"Parameters received: active_status={is_active_db}, created_by={created_by}, test_name={test_name}, ...")
-        
+
+        # Begin a transaction
         with db.engine.begin() as transaction:
+            logging.info("Transaction started")
             logging.info("Attempting to insert into tests table")
+            # Execute SQL query to insert test data into tests table
             result = transaction.execute(
                 text(
                     "INSERT INTO tests (active_status, created_by, creation_date, last_modified_date, modified_by, test_name, test_description, total_score) "
@@ -186,16 +191,48 @@ def create_test(is_active, created_by, creation_date, test_name, test_descriptio
                     "total_score": total_score
                 }
             )
+            # Get the ID of the newly inserted test
             test_id = result.lastrowid
+            # Log successful insertion of the test
             logging.info(f"Successfully inserted test with ID {test_id}")
 
+            # Track the number of successful inserts for questions
+            successful_inserts = 0
+            # Iterate over question order to insert each question into test_questions table
             for order in question_order:
-                if order['questionOrder'] is not None:
-                    logging.info(f"Inserting question order for question ID {order['questionId']}")
+                # Check if question_order is not None
+                if order['question_order'] is not None:
+                    # Convert question_order to integer
+                    question_order_int = int(order['question_order'])
+                    # Execute SQL query to insert question into test_questions table
+                    transaction.execute(
+                        text(
+                            "INSERT INTO test_questions (question_id, question_order, test_id) "
+                            "VALUES (:question_id, :question_order, :test_id)"
+                        ),
+                        {
+                            "question_id": order['question_id'],
+                            "question_order": question_order_int,
+                            "test_id": test_id
+                        }
+                    )
+                    # Increment successful inserts count
+                    successful_inserts += 1
 
-        logging.info(f"Test '{test_name}' created successfully with ID {test_id}")
-        return {"message": f"Test '{test_name}' created successfully with ID {test_id}"}
+            # If not all questions were successfully inserted, raise an error
+            if successful_inserts != len(question_order):
+                raise ValueError("Not all questions were successfully inserted.")
+                
+            # Commit the transaction if everything went well
+            transaction.execute("COMMIT")
+            # Log the commitment of the transaction
+            logging.info("Transaction committed")
+            # Return a success message with the ID of the created test
+            return {"message": f"Test '{test_name}' created successfully with ID {test_id}"}
 
+    except ValueError as e:
+        logging.error("There was a problem inserting the questions: %s", str(e), exc_info=True)
+        return {"error": str(e)}
     except SQLAlchemyError as e:
         logging.error("An error occurred while creating the test in the database", exc_info=True)
         return {"error": str(e)}
