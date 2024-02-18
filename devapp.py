@@ -35,7 +35,7 @@ from data_retrieval import (fetch_test_creation_options, get_questions, select_q
                             check_registered, get_test_data, get_tests_temp, get_tests, get_topics, get_subjects,
                             get_all_subjects, get_tester_list,
                             selectSubjectNames, selectSubjectDescriptions, insertSubject, get_all_topics, insertTopic,
-                            get_all_objectives)
+                            get_all_objectives, get_objs_temp)
 
 # Load environment variables from a .env file
 load_dotenv()
@@ -287,12 +287,7 @@ def objectives():
 @app.route('/dataquestionhierarchy', methods=['GET', 'POST'])
 def questions():
 
-    # Check which database function to execute
-    if request.method == "POST":
-        print()
-    else:
-        # Pass topics to the template
-        return render_template('dataquestionhierarchy.html')
+    return render_template('dataquestionhierarchy.html',objs=get_objs_temp())
 
 
 
