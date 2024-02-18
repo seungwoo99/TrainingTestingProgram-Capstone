@@ -30,9 +30,12 @@ from itsdangerous import URLSafeTimedSerializer
 # Local application/library specific imports
 from config import MailConfig
 from db_config import db
-from data_retrieval import (fetch_test_creation_options, get_questions, select_questions, create_test, get_user, get_test_questions,
-                            check_registered, get_test_data, get_tests_temp, get_tests, get_topics, get_subjects, get_all_subjects, get_tester_list, 
-                            selectSubjectNames, selectSubjectDescriptions,insertSubject, get_all_topics, insertTopic)
+from data_retrieval import (fetch_test_creation_options, get_questions, select_questions, create_test, get_user,
+                            get_test_questions,
+                            check_registered, get_test_data, get_tests_temp, get_tests, get_topics, get_subjects,
+                            get_all_subjects, get_tester_list,
+                            selectSubjectNames, selectSubjectDescriptions, insertSubject, get_all_topics, insertTopic,
+                            get_all_objectives)
 
 # Load environment variables from a .env file
 load_dotenv()
@@ -247,8 +250,6 @@ def topics():
             description = pData.get("value3")
             facility = pData.get("value4")
             insertTopic(subject_id, name, description, facility)
-        elif pData.get("type") == "delete":
-            print()
 
         elif pData.get("type") == "edit":
             topic_id = pData.get("value1")
@@ -259,9 +260,39 @@ def topics():
                 """UPDATE topics SET name = :name, description = :description, facility=:facility WHERE topic_id = :topic_id""")
             db.engine.execute(query, topic_id=topic_id, name=name, description=description, facility=facility)
             print()
+        elif pData.get("type") == "delete":
+            topic_id = pData.get("value1")
+            query = text("""DELETE FROM topics where topic_id = :topic_id""")
+            db.engine.execute(query, topic_id=topic_id)
     else:
         # Pass topics to the template
         return render_template('datatopichierarchy.html', topics=topics ,subject_id=subject_id, subject_data=subject_data)
+
+@app.route('/dataobjhierarchy', methods=['GET', 'POST'])
+def objectives():
+
+    # Get the selected subject_id from the query parameters
+    topic_id = request.args.get('topic_id')
+
+    # Use the subject_id to fetch topics
+    objectives, topic_data = get_all_objectives(topic_id)
+
+    # Check which database function to execute
+    if request.method == "POST":
+        print()
+    else:
+        # Pass topics to the template
+        return render_template('dataobjhierarchy.html', objectives=objectives,topic_id=topic_id, topic_data=topic_data)
+    
+@app.route('/dataquestionhierarchy', methods=['GET', 'POST'])
+def questions():
+
+    # Check which database function to execute
+    if request.method == "POST":
+        print()
+    else:
+        # Pass topics to the template
+        return render_template('dataquestionhierarchy.html')
 
 
 

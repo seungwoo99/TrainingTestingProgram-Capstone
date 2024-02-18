@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+        <link rel = "stylesheet" href = "{{url_for('static', filename='/css/datahierarchy.css')}}">
+        <link rel = "stylesheet" href = "{{url_for('static', filename='/css/main.css')}}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
+        {% include 'navbar.html' %}
+    </head>
+    <body>
+        <div class="wrapper">
+            <div class="main-container">
+                <div class="centered-container">
+                    <h1>{{ topic_data['name'] }} Learning Objectives</h1>
+                </div>
+                <div class="centered-container">
+                    <table class="objectives-table" id="datasTable">
+                        <thead>
+                            <tr>
+                                <th>Objective ID</th>
+                                <th>Description</th>
+                                <th>Bloom</th>
+                                <th>Skill Applicability</th>
+                                <th>Tags</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for objective in objectives %}
+                                <tr onclick="toggleClass(this, 'selected');" onmouseover="this.style.cursor = 'pointer';" onmouseout="this.style.cursor='auto';">
+                                    <td>{{ objective.obj_id }}</td>
+                                    <td>{{ objective.obj_description }}</td>
+                                    <td>{{ objective.blooms_name }}</td>
+                                    <td>
+                                        <div class="custom-dropdown">
+                                            <button class="dropdown-toggle" onclick="toggleDropdown(this)">Select Training Level</button>
+                                            <div class="dropdown-content">
+                                                  <label><input type="checkbox" value="all">Select training levels</label>
+                                                  <label><input type="checkbox" value="applicant" {%  if objective.is_applicant == 1 %} checked {% endif %}>Applicant</label>
+                                                  <label><input type="checkbox" value="apprentice"{%  if objective.is_apprentice == 1 %} checked {% endif %}>Apprentice</label>
+                                                  <label><input type="checkbox" value="journeyman" {%  if objective.is_journeyman == 1 %} checked {% endif %}>Journeyman</label>
+                                                  <label><input type="checkbox" value="senior" {%  if objective.is_senior == 1 %} checked {% endif %}>Senior</label>
+                                                  <label><input type="checkbox" value="chief" {%  if objective.is_chief == 1 %} checked {% endif %}>Chief</label>
+                                                  <label><input type="checkbox" value="coordinator" {%  if objective.is_applicant == 1 %} checked {% endif %}>Coordinator</label>
+                                                  <label><input type="checkbox" value="all">Select all</label>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ objective.tags }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                <div class="textinput-container">
+
+              </div>
+
+                </div>
+                <div>
+                    <button onclick="">New Reference</button>
+                </div>
+                <div class="centered-container">
+                    <!-- Buttons -->
+                    <button onclick="viewQuestions()">View Questions</button>
+                    <button onclick="addTopic()">Add Topic</button>
+                    <button onclick="editTopic()">Edit Topic</button>
+                    <button onclick="deleteTopic()">Delete Topic</button>
+                    <button onclick="Function()">Save Changes</button>
+                    <a href="/datahierarchy"><button>Back</button></a>
+                </div>
+            </div>
+        </div>
+    </body>
+<script>
+        function toggleDropdown(button) {
+            var dropdownContent = button.nextElementSibling;
+            dropdownContent.style.display = (dropdownContent.style.display === 'block') ? 'none' : 'block';
+        }
+
+
+    window.onclick = function (event) {
+        if (!event.target.matches('.dropdown-toggle')) {
+            var dropdowns = document.getElementsByClassName('dropdown-content');
+            for (var i = 0; i < dropdowns.length; i++) {
+                var openDropdown = dropdowns[i];
+                if (openDropdown.style.display === 'block') {
+                    openDropdown.style.display = 'none';
+                }
+            }
+        }
+    }
+</script>
+</html>

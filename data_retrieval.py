@@ -442,3 +442,27 @@ def get_all_topics(subject_id):
         subject_data = subject_data.fetchone()
 
     return result, subject_data
+
+def get_all_objectives(topic_id):
+    with db.engine.connect() as connection:
+
+        # Execute the SQL query to retrieve all topics for a subject
+        sql_query = text("""
+                            SELECT l.obj_id, l.description as obj_description,
+                             name as blooms_name, is_applicant, is_apprentice,
+                              is_journeyman, is_senior, is_chief, is_coordinator,
+                               tags FROM learning_objectives l 
+                            JOIN blooms_tax b ON b.blooms_id = l.blooms_id
+                            WHERE topic_id = :topic_id
+                    """)
+        result = connection.execute(sql_query, topic_id=topic_id)
+
+        # get subject name and description
+        sql_query = text("""
+                                    SELECT name FROM topics
+                                    WHERE topic_id = :topic_id
+                            """)
+        topic_data = connection.execute(sql_query, topic_id=topic_id)
+        topic_data = topic_data.fetchone()
+
+    return result, topic_data
