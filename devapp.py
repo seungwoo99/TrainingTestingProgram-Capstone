@@ -14,6 +14,7 @@ from base64 import urlsafe_b64decode
 import base64
 import numpy as np
 from PIL import Image
+import matplotlib
 import matplotlib.pyplot as plt
 
 # Related third-party imports
@@ -76,6 +77,8 @@ mail = Mail(app)
 hashed_password = bcrypt.generate_password_hash('1234',12).decode('utf-8')
 print("Password: ", hashed_password)
 
+# Set the backend to 'Agg' for Matplotlib
+matplotlib.use('Agg')
 #----------Helper functions for OTP and token generation----------
 
 # Generate a verification otp
@@ -384,15 +387,40 @@ def update_score():
 
 # function to retrieve statistics for a test
 def get_test_statistics(test_id):
+    query = text("""
+        SELECT
+            t.test_id,
+            t.test_name,
+            COUNT(ts.score_id) AS times_taken,
+            SUM(ts.pass_status) AS passed_count,
+            GROUP_CONCAT(ts.total_score) AS scores
+        FROM
+            tests t
+        LEFT JOIN
+            test_scores ts ON t.test_id = ts.test_id
+        WHERE
+            t.test_id = :test_id
+        GROUP BY
+            t.test_id, t.test_name
+    """)
+    result = db.engine.execute(query, test_id=test_id)
 
-    dummy_statistics = {
-        'test_id': test_id,
-        'test_name': "Sample Test",
-        'times_taken': 50,
-        'passed_count': 40,
-        'scores': [87,88,89,22,37,54,66,45,45,50,77,90,99],
-    }
-    return dummy_statistics
+    # Fetch the first row as we expect only one result for a specific test_id
+    row = result.fetchone()
+
+    if row:
+        # Create a dictionary to hold the statistics
+        dummy_statistics = {
+            'test_id': row['test_id'],
+            'test_name': row['test_name'],
+            'times_taken': row['times_taken'] or 0,
+            'passed_count': row['passed_count'] or 0,
+            'scores': [int(score) for score in row['scores'].split(',')] if row['scores'] else [],
+        }
+        #print(dummy_statistics)
+        return dummy_statistics
+    else:
+        return {'error': 'Test not found'}
 
 @app.route('/scoring_metrics')
 def scoring():
@@ -412,6 +440,8 @@ def generate_graphs(statistics):
     graph_images = []
     # score distribution histgram
     scores = statistics['scores']
+    if not statistics['scores']:
+        return graph_images
     # Create histogram
     plt.hist(scores, bins=5, color='skyblue', edgecolor='black')
 
@@ -448,49 +478,53 @@ def generate_pdf_from_statistics(statistics, graph_images):
 
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
-    c.drawString(50, 750, "Test Statistics")
-    c.drawString(50, 730, f"Test Name: {statistics['test_name']}")
-    c.drawString(400, 730, f"Test ID: {statistics['test_id']}")
-    c.drawString(100, 680, f"-    Test taken {statistics['times_taken']} times.")
-    c.drawString(100, 660, f"-    {statistics['times_taken']} test takers have passed.")
-    # Add more statistics here as needed
+    try:
+        c.drawString(50, 750, "Test Statistics")
+        c.drawString(50, 730, f"Test Name: {statistics['test_name']}")
+        c.drawString(400, 730, f"Test ID: {statistics['test_id']}")
+        c.drawString(100, 680, f"-    Test taken {statistics['times_taken']} times.")
+        c.drawString(100, 660, f"-    {statistics['times_taken']} test takers have passed.")
 
-    # Embed graphs into the PDF
-    y_offset = 630
-    for image_path in graph_images:
-        #c.drawString(100, y_offset, "Graph:")
-        # Open the image file and retrieve its dimensions
-        img = Image.open(image_path)
-        img_width, img_height = img.size
 
-        # Set the width and height dynamically based on the image dimensions
-        c.drawImage(image_path, 100, y_offset - (img_height*0.45), width=(img_width*0.45), height=(img_height*0.45))
-        y_offset -= (img_height*0.45) + 50  # Adjust this value based on the spacing between graphs
+        # Embed graphs into the PDF
+        y_offset = 630
+        if graph_images:  # Check if graph_images is not empty
+            for image_path in graph_images:
+                # Open the image file and retrieve its dimensions
+                img = Image.open(image_path)
+                img_width, img_height = img.size
 
-    # Mean
-    mean_score = np.mean(statistics['scores'])
-    mean_str = "{:.2f}".format(mean_score)
-    c.drawString(100, 250, f"Mean: {mean_str}")
-    # High Score
-    high_score = max(statistics['scores'])
-    c.drawString(250, 250, f"High: {high_score}")
-    # Upper Quartile
-    upper_quartile = np.percentile(statistics['scores'], 75)
-    upper_str = "{:.2f}".format(upper_quartile)
-    c.drawString(250, 230, f"Upper Quartile: {upper_str}")
-    # Low Score
-    low_score = min(statistics['scores'])
-    c.drawString(400, 250, f"Low: {low_score}")
-    # Lower Quartile
-    lower_quartile = np.percentile(statistics['scores'], 25)
-    lower_str = "{:.2f}".format(lower_quartile)
-    c.drawString(400, 230, f"Lower Quartile: {lower_str}")
-    # Median
-    median_score = np.median(statistics['scores'])
-    c.drawString(100, 230, f"Median: {median_score}")
-    c.save()
-    pdf_data = buffer.getvalue()
-    buffer.close()
+                # Set the width and height dynamically based on the image dimensions
+                c.drawImage(image_path, 100, y_offset - (img_height*0.45), width=(img_width*0.45), height=(img_height*0.45))
+                y_offset -= (img_height*0.45) + 50  # Adjust this value based on the spacing between graphs
+
+        # Add statistics if statistics['scores'] is not empty
+        if statistics['scores']:
+            # Mean
+            mean_score = np.mean(statistics['scores'])
+            mean_str = "{:.2f}".format(mean_score)
+            c.drawString(100, 250, f"Mean: {mean_str}")
+            # High Score
+            high_score = max(statistics['scores'])
+            c.drawString(250, 250, f"High: {high_score}")
+            # Upper Quartile
+            upper_quartile = np.percentile(statistics['scores'], 75)
+            upper_str = "{:.2f}".format(upper_quartile)
+            c.drawString(250, 230, f"Upper Quartile: {upper_str}")
+            # Low Score
+            low_score = min(statistics['scores'])
+            c.drawString(400, 250, f"Low: {low_score}")
+            # Lower Quartile
+            lower_quartile = np.percentile(statistics['scores'], 25)
+            lower_str = "{:.2f}".format(lower_quartile)
+            c.drawString(400, 230, f"Lower Quartile: {lower_str}")
+            # Median
+            median_score = np.median(statistics['scores'])
+            c.drawString(100, 230, f"Median: {median_score}")
+        c.save()
+        pdf_data = buffer.getvalue()
+    finally:
+        buffer.close()
     return pdf_data
 
 # Route to generate PDF data for a specific test
