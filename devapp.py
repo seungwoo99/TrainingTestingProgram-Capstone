@@ -74,7 +74,7 @@ bcrypt = Bcrypt(app)
 mail = Mail(app)
 
 # Hash the password before storing it in the database
-#hashed_password = bcrypt.generate_password_hash('1234',12).decode('utf-8')
+#hashed_password = bcrypt.generate_password_hash('',12).decode('utf-8')
 #print("Password: ", hashed_password)
 
 # Set the backend to 'Agg' for Matplotlib

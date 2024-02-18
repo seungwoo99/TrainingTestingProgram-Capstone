@@ -16,6 +16,7 @@
         <div class="login form">
           <header class="form-header">Register New Account</header>
           <form name="signupForm" action="{{ url_for('register') }}" method="post" onsubmit="return validateForm()">
+            <input type="text" name="first_name" placeholder="First name">
             <input type="text" name="last_name" placeholder="Last name">
             <input type="text" name="username" placeholder="Enter a username">
             <p style="font-size: 100%;">Username must only contain alphanumeric characters.</p>
