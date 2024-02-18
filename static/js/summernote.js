@@ -33,7 +33,7 @@ $(document).ready(function() {
   // Replace Summernote content with predefined HTML when a button is clicked
   $('.predefined-content-btn').on('click', function() {
     var predefinedHTML = $(this).data('html');
-    $('#summernote').summernote('code', predefinedHTML);
+    $('#summernote1').summernote('code', predefinedHTML);
   });
 });
 
