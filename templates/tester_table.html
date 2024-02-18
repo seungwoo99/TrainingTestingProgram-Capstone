@@ -5,12 +5,13 @@
         <th>Attempt Date</th>
         <th>Score</th>
         <th>Pass Status</th>
+        <th></th>
     </tr>
 </thead>
 <tbody>
     {% for row in tester_data %}
         <tr data-score-id="{{ row.max_score_id }}" data-tester-id="{{ row.tester_id }}" data-test-id="{{ row.test_id }}">
-            <td>{{ loop.index }}</td>
+            <td class="dropdown-history">{{ loop.index }}</td>
             <td>{{ row.testee_name }}</td>
             <td>{{ row.attempt_date }}</td>
             <td class="score-cell">{{ row.total_score }}</td>
@@ -18,14 +19,143 @@
                 {% else %} FAIL
                 {% endif %}
             </td>
+            <td onclick="addRecord('{{ row.score_id }}', '{{ row.test_id }}', '{{ row.tester_id }}', '{{ row.testee_name }}')">
+                    <button id="add-record-button">Add</button>
+            </td>
+        </tr>
+
+        <tr class="dropdown-table">
+            <td colspan="6">
+                <table id="historyData_{{ row.tester_id }}">
+                    {% include 'tester_history_table.html' %}
+                </table>
+            </td>
         </tr>
     {% endfor %}
+
+    <!-- pop up new tester -->
+    <div id="new_tester" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>Add New Tester</p>
+            <div>
+                <label for="testerName">Tester Name: </label>
+                <input id="testerName">
+                <label id="testerNameError" class="error" style="display: none;">Please enter a tester name.</label>
+            </div>
+            <div>
+                <label for="attemptDate">Attempt_Date: </label>
+                <input id="attemptDate" type="datetime-local">
+                <label id="attemptDateError" class="error" style="display: none;">Please select an attempt date.</label>
+            </div>
+            <div>
+                <label for="score">Score: </label>
+                <input id="score" type="number">
+                <label id="scoreError" class="error" style="display: none;">Please enter a score.</label>
+            </div>
+            <div>
+                <button id="addNewScore" data-test-id={{ testId }}>Add</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- pop up add new record page -->
+    <div id="new_record" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="name"></p>
+            <div>
+                <label for="new_attemptDate">Attempt_Date: </label>
+                <input id="new_attemptDate" type="datetime-local">
+                <label id="newAttemptDateError" class="error" style="display: none;">Please select an attempt date.</label>
+            </div>
+            <div>
+                <label for="new_score">Score: </label>
+                <input id="new_score" type="number">
+                <label id="newScoreError" class="error" style="display: none;">Please enter a score.</label>
+            </div>
+            <div>
+                <button id="addNewRecord" data-test-id={{ testId }}>Add</button>
+            </div>
+        </div>
+    </div>
 </tbody>
 <script>
-    /* JS code for editing tester's score */
-    document.addEventListener('DOMContentLoaded', function() {
-    const table = document.querySelector('table');
+    /* add new tester record */
+    function addRecord(score_id, test_id, tester_id, testee_name){
+        const modal = document.getElementById('new_record');
+        modal.style.display = 'block'; // Show the modal when Add button is clicked
 
+        const name = document.getElementById('name');
+        name.textContent = "Add New Record to " + testee_name;
+
+        const addNewRecordBtn = document.getElementById('addNewRecord');
+        addNewRecordBtn.addEventListener('click', function(){
+            const newAttemptDate = document.getElementById('new_attemptDate').value;
+            const score = document.getElementById('new_score').value;
+
+            if(!newAttemptDate.trim()){
+                document.getElementById('newAttemptDateError').style.display = 'block';
+            }else{
+                document.getElementById('newAttemptDateError').style.display = 'none';
+            }
+            if(!score.trim()){
+                document.getElementById('newScoreError').style.display = 'block';
+            }else{
+                document.getElementById('newScoreError').style.display = 'none';
+            }
+
+            if(newAttemptDate.trim() && score.trim()){
+                //send data to flask
+                let xhr = new XMLHttpRequest();
+
+                let json = JSON.stringify({
+                    score_id:score_id, test_id:test_id,tester_id:tester_id, attemptDate:newAttemptDate, score:score
+                });
+                xhr.open("POST", '/add_record')
+                xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+
+                xhr.send(json);
+                xhr.onload = function(event){
+                    window.location.reload();
+                }
+                modal.style.display = 'none';
+
+            }
+        });
+
+    }
+    /* JS code for drop down table list for tester's history */
+document.addEventListener('DOMContentLoaded', function() {
+    const dropdownTriggers = document.querySelectorAll('.dropdown-history');
+
+    dropdownTriggers.forEach(trigger => {
+        trigger.addEventListener('click', function(event) {
+            const selectedRow = this.closest('tr'); // Get the closest parent <tr> element
+            const dropdownTable = selectedRow.nextElementSibling;
+
+            // Toggle visibility of the dropdown table
+            dropdownTable.classList.toggle('show');
+            sendTesterData(selectedRow);
+        });
+    });
+
+    function sendTesterData(selectedRow){
+        const row = selectedRow.closest('tr');
+        var testerId = row.getAttribute('data-tester-id');
+        var testId  = row.getAttribute('data-test-id');
+        let xhr = new XMLHttpRequest();
+        xhr.open('GET', '/display_history?testerId=' + testerId + '&testId=' + testId, true);
+        xhr.onreadystatechange = function() {
+            if(xhr.readyState == 4 && xhr.status == 200){
+                document.getElementById('historyData_'+testerId).innerHTML = xhr.responseText;
+            }
+        };
+        xhr.send();
+    }
+
+    /* JS code for editing tester's score */
+    const table = document.querySelector('table');
     table.addEventListener('click', function(event) {
         const target = event.target;
         const scoreCell = target.closest('.score-cell');
@@ -87,9 +217,9 @@
     //send new score to flask to update
     function sendData(scoreCell, newGrade){
         const row = scoreCell.closest('tr');
-        var scoreId = row.getAttribute('data-score-id');
-        var testerId = row.getAttribute('data-tester-id');
-        var testId  = row.getAttribute('data-test-id');
+        const scoreId = row.getAttribute('data-score-id');
+        const testerId = row.getAttribute('data-tester-id');
+        const testId  = row.getAttribute('data-test-id');
         let xhr = new XMLHttpRequest();
         xhr.open('GET', '/update_score?scoreId=' + scoreId +'&testerId=' + testerId + '&testId=' + testId + '&newGrade=' + newGrade,true);
         xhr.onreadystatechange = function() {
@@ -98,6 +228,90 @@
             }
         };
         xhr.send();
+        location.reload();
     }
+
+    //shows pop up page to insert new tester data
+    const addButton = document.getElementById('addTester');
+    const modal = document.getElementById('new_tester');
+    const closeButton = modal.querySelector('.close');
+
+    addButton.addEventListener('click', function() {
+        modal.style.display = 'block'; // Show the modal when Add button is clicked
+    });
+
+    closeButton.addEventListener('click', function() {
+        modal.style.display = 'none'; // Hide the modal when the close button is clicked
+    });
+
+    // Close the modal if user clicks anywhere outside of it
+    window.addEventListener('click', function(event) {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    });
+
+
+    //when addNewScore button is clicked
+    const addNewScoreBtn = document.getElementById('addNewScore');
+    addNewScoreBtn.addEventListener('click', function(){
+        //get input field values
+        const testerName = document.getElementById('testerName').value;
+        const attemptDate = document.getElementById('attemptDate').value;
+        const score = document.getElementById('score').value;
+        const testId = this.getAttribute('data-test-id');
+
+        if(!testerName.trim()){
+            document.getElementById('testerNameError').style.display = 'block';
+        }else{
+            document.getElementById('testerNameError').style.display = 'none';
+        }
+        if(!attemptDate.trim()){
+            document.getElementById('attemptDateError').style.display = 'block';
+        }else{
+            document.getElementById('attemptDateError').style.display = 'none';
+        }
+        if(!score.trim()){
+            document.getElementById('scoreError').style.display = 'block';
+        }else{
+            document.getElementById('scoreError').style.display = 'none';
+        }
+
+        if(testerName.trim() && attemptDate.trim() && score.trim()){
+            //send data to flask
+            let xhr = new XMLHttpRequest();
+
+            let json = JSON.stringify({
+                testerName:testerName, attemptDate:attemptDate, score:score, testId:testId
+            });
+            xhr.open("POST", '/add_tester')
+            xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+
+            xhr.send(json);
+            xhr.onload = function(event){
+                window.location.reload();
+            }
+            modal.style.display = 'none';
+
+        }
+
+    });
+
+    //shows pop up page to insert new tester record
+    const new_record_page = document.getElementById('new_record');
+    const new_record_close_btn = new_record_page.querySelector('.close');
+
+    new_record_close_btn.addEventListener('click', function() {
+        new_record_page.style.display = 'none'; // Hide the modal when the close button is clicked
+    });
+
+    // Close the modal if user clicks anywhere outside of it
+    window.addEventListener('click', function(event) {
+        if (event.target == new_record_page) {
+            new_record_page.style.display = 'none';
+        }
+    });
+
 });
+
 </script>

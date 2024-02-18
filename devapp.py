@@ -316,6 +316,7 @@ def test_list():
 
     return render_template("test_list.html", data=test_data, subject_data=subject_data, topic_data=topic_data)
 
+
 # Route for showing filtered test list
 @app.route('/filter')
 def filter_data():
@@ -325,44 +326,68 @@ def filter_data():
     end_date = request.args.get('end')
 
     if start_date == '':
-        start_date = '1970-01-01'
+        start_date = '0000-00-00'
     if end_date == '':
         end_date = datetime.now().strftime('%Y-%m-%d')
 
     if subject_id == '' and topic_id == '':
-        test_query = text("Select *, s.name AS subject_name, tp.name AS topic_name FROM tests t "
-                      +"LEFT JOIN subjects s ON t.subject_id = s.subject_id "
-                      +"LEFT JOIN topics tp ON t.topic_id = tp.topic_id "
-                          +"WHERE (creation_date) BETWEEN :start_date AND :end_date")
+        test_query = text("SELECT t.test_id, t.test_name, GROUP_CONCAT(DISTINCT s.name) AS subject_name, GROUP_CONCAT(DISTINCT tp.name) AS topic_name, t.creation_date, t.last_modified_date FROM tests t "
+                        + "LEFT JOIN test_questions tq ON t.test_id = tq.test_id "
+                        + "LEFT JOIN questions q ON tq.question_id = q.question_id "
+                        + "LEFT JOIN learning_objectives lo ON q.obj_id = lo.obj_id "
+                        + "LEFT JOIN topics tp ON lo.topic_id = tp.topic_id "
+                        + "LEFT JOIN subjects s ON tp.subject_id = s.subject_id "
+                        + "WHERE (creation_date) BETWEEN :start_date AND :end_date "
+                        + "GROUP BY t.test_id, t.test_name, s.name, t.creation_date, t.last_modified_date ")
         test_result = db.engine.execute(test_query, start_date=start_date, end_date=end_date)
     elif subject_id != '' and topic_id == '':
-        test_query = text("Select *, s.name AS subject_name, tp.name AS topic_name FROM tests t "
-                          + "LEFT JOIN subjects s ON t.subject_id = s.subject_id "
-                          + "LEFT JOIN topics tp ON t.topic_id = tp.topic_id "
-                          + "WHERE s.subject_id = :subject_id AND (creation_date) BETWEEN :start_date AND :end_date")
+        test_query = text("SELECT t.test_id, t.test_name, GROUP_CONCAT(DISTINCT s.name) AS subject_name, GROUP_CONCAT(DISTINCT tp.name) AS topic_name, t.creation_date, t.last_modified_date FROM tests t "
+                        + "LEFT JOIN test_questions tq ON t.test_id = tq.test_id "
+                        + "LEFT JOIN questions q ON tq.question_id = q.question_id "
+                        + "LEFT JOIN learning_objectives lo ON q.obj_id = lo.obj_id "
+                        + "LEFT JOIN topics tp ON lo.topic_id = tp.topic_id "
+                        + "LEFT JOIN subjects s ON tp.subject_id = s.subject_id "
+                        + "WHERE s.subject_id = :subject_id AND (creation_date) BETWEEN :start_date AND :end_date "
+                        + "GROUP BY t.test_id, t.test_name, s.name, t.creation_date, t.last_modified_date ")
         test_result = db.engine.execute(test_query, subject_id=subject_id, start_date=start_date, end_date=end_date)
     elif subject_id == '' and topic_id != '':
-        test_query = text("Select *, s.name AS subject_name, tp.name AS topic_name FROM tests t "
-                          + "LEFT JOIN subjects s ON t.subject_id = s.subject_id "
-                          + "LEFT JOIN topics tp ON t.topic_id = tp.topic_id "
-                          + "WHERE tp.topic_id = :topic_id AND (creation_date) BETWEEN :start_date AND :end_date")
+        test_query = text(
+            "SELECT t.test_id, t.test_name, GROUP_CONCAT(DISTINCT s.name) AS subject_name, GROUP_CONCAT(DISTINCT tp.name) AS topic_name, t.creation_date, t.last_modified_date FROM tests t "
+            + "LEFT JOIN test_questions tq ON t.test_id = tq.test_id "
+            + "LEFT JOIN questions q ON tq.question_id = q.question_id "
+            + "LEFT JOIN learning_objectives lo ON q.obj_id = lo.obj_id "
+            + "LEFT JOIN topics tp ON lo.topic_id = tp.topic_id "
+            + "LEFT JOIN subjects s ON tp.subject_id = s.subject_id "
+            + "WHERE tp.topic_id = :topic_id AND (creation_date) BETWEEN :start_date AND :end_date "
+            + "GROUP BY t.test_id, t.test_name, s.name, t.creation_date, t.last_modified_date ")
+
         test_result = db.engine.execute(test_query, topic_id=topic_id, start_date=start_date, end_date=end_date)
     else:
-        test_query = text("Select *, s.name AS subject_name, tp.name AS topic_name FROM tests t "
-                          + "LEFT JOIN subjects s ON t.subject_id = s.subject_id "
-                          + "LEFT JOIN topics tp ON t.topic_id = tp.topic_id "
-                          + "WHERE tp.topic_id = :topic_id AND s.subject_id = :subject_id AND (creation_date) BETWEEN :start_date AND :end_date")
-        test_result = db.engine.execute(test_query, topic_id=topic_id, subject_id=subject_id, start_date=start_date, end_date=end_date)
+        test_query = text(
+            "SELECT t.test_id, t.test_name, GROUP_CONCAT(DISTINCT s.name) AS subject_name, GROUP_CONCAT(DISTINCT tp.name) AS topic_name, t.creation_date, t.last_modified_date FROM tests t "
+            + "LEFT JOIN test_questions tq ON t.test_id = tq.test_id "
+            + "LEFT JOIN questions q ON tq.question_id = q.question_id "
+            + "LEFT JOIN learning_objectives lo ON q.obj_id = lo.obj_id "
+            + "LEFT JOIN topics tp ON lo.topic_id = tp.topic_id "
+            + "LEFT JOIN subjects s ON tp.subject_id = s.subject_id "
+            + "WHERE tp.topic_id = :topic_id AND s.subject_id = :subject_id AND (creation_date) BETWEEN :start_date AND :end_date "
+            + "GROUP BY t.test_id, t.test_name, s.name, t.creation_date, t.last_modified_date ")
+
+        test_result = db.engine.execute(test_query, topic_id=topic_id, subject_id=subject_id, start_date=start_date,
+                                        end_date=end_date)
 
     test_list_data = test_result.fetchall()
+
     return render_template("test_table.html", data=test_list_data)
+
 
 # Route for showing tester list of the clicked test
 @app.route('/test/<int:test_id>')
 def tester_list(test_id):
     tester_list_data = get_tester_list(test_id)
 
-    return render_template("tester_list.html", tester_data=tester_list_data)
+    return render_template("tester_list.html", tester_data=tester_list_data, testId=test_id)
+
 
 # Route for updating tester's score
 @app.route('/update_score')
@@ -372,11 +397,90 @@ def update_score():
     test_id = request.args.get('testId')
     new_grade = request.args.get('newGrade')
 
-    update_query = text("UPDATE test_scores SET total_score = :new_grade WHERE test_id = :test_id and score_id = :score_id and tester_id = :tester_id")
+    update_query = text(
+        "UPDATE test_scores SET total_score = :new_grade WHERE test_id = :test_id and score_id = :score_id and tester_id = :tester_id")
+
     db.engine.execute(update_query, new_grade=new_grade, test_id=test_id, score_id=score_id, tester_id=tester_id)
     tester_list_data = get_tester_list(test_id)
 
-    return render_template("tester_table.html",tester_data=tester_list_data)
+    return render_template("tester_table.html", tester_data=tester_list_data, testId=test_id)
+
+
+# Route for displaying tester history records
+@app.route('/display_history')
+def display_history():
+    tester_id = request.args.get('testerId')
+    test_id = request.args.get('testId')
+
+    history_query = text("SELECT ts.score_id, ts.tester_id, ts.test_id, te.testee_name, ts.attempt_date, ts.total_score, ts.pass_status "
+                        + "FROM test_scores ts "
+                        + "LEFT JOIN testee te ON ts.tester_id = te.tester_id "
+                        + "WHERE ts.test_id = :test_id AND ts.tester_id = :tester_id")
+    history_result = db.engine.execute(history_query, test_id=test_id, tester_id=tester_id)
+    tester_history_data = history_result.fetchall()
+
+    return render_template("tester_history_table.html", tester_history_data=tester_history_data)
+
+
+# Add new tester in the tester list table
+@app.route('/add_tester', methods=['POST'])
+def add_tester():
+    new_tester_data = request.get_json()
+    testee_name = new_tester_data.get("testerName")
+    attempt_date = new_tester_data.get("attemptDate")
+    score = new_tester_data.get("score")
+    test_id = new_tester_data.get("testId")
+
+    # insert new tester in the database
+    add_tester_query = text("INSERT INTO testee (testee_name) VALUES (:testee_name)")
+    db.engine.execute(add_tester_query, testee_name=testee_name)
+
+    # get tester id
+    tester_id_query = text("SELECT tester_id FROM testee WHERE testee_name = :testee_name")
+    tester_data_result = db.engine.execute(tester_id_query, testee_name=testee_name)
+    tester_data = tester_data_result.fetchall()
+    tester_id = 0
+    for row in tester_data:
+        tester_id = row['tester_id']
+
+    # insert new score in the database
+    add_tester_score_query = text("INSERT INTO test_scores (test_id, tester_id, attempt_date, total_score, pass_status) "
+                                  +" VALUES (:test_id, :tester_id, :attempt_date, :total_score, 1)")
+    db.engine.execute(add_tester_score_query, test_id=test_id, tester_id=tester_id, attempt_date=attempt_date, total_score=score)
+
+    return ''
+
+
+# delete tester's record
+@app.route('/delete_record', methods=['POST'])
+def delete_record():
+    tester_record = request.get_json()
+    score_id = tester_record.get("score_id")
+    test_id = tester_record.get("test_id")
+    tester_id = tester_record.get("tester_id")
+
+    delete_query = text("DELETE FROM test_scores WHERE score_id = :score_id AND test_id = :test_id AND tester_id = :tester_id")
+    db.engine.execute(delete_query, score_id=score_id, test_id=test_id, tester_id=tester_id)
+
+    return ''
+
+
+# add new record to tester
+@app.route('/add_record', methods=['POST'])
+def add_record():
+    new_record = request.get_json()
+    score_id = new_record.get("score_id")
+    test_id = new_record.get("test_id")
+    tester_id = new_record.get("tester_id")
+    attempt_date = new_record.get("attemptDate")
+    score = new_record.get("score")
+
+    insert_query = text("INSERT INTO test_scores (test_id, tester_id, attempt_date, total_score, pass_status) "
+                        +"VALUES (:test_id, :tester_id, :attempt_date, :score, 1)")
+    db.engine.execute(insert_query, test_id=test_id, tester_id=tester_id, attempt_date=attempt_date, score=score)
+
+    return ''
+
 
 #------ Route for Scoring  Metrics---------
 

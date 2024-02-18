@@ -5,7 +5,6 @@
         <th>Test Name</th>
         <th>Subject</th>
         <th>Topic</th>
-        <th>Training Level</th>
         <th>Created Date</th>
         <th>Modified Date</th>
     </tr>
@@ -17,7 +16,6 @@
             <td>{{ row.test_name }}</td>
             <td>{{ row.subject_name }}</td>
             <td>{{ row.topic_name }}</td>
-            <td>{{ row.training_level }}</td>
             <td>{{ row.creation_date }}</td>
             <td>{{ row.last_modified_date }}</td>
         </tr>
@@ -25,6 +23,6 @@
 </tbody>
 <script>
     function navigateToPage(test_id){
-        window.location.href = "/test/"+test_id;
+        window.location.href = "/test/" + test_id;
     }
 </script>
