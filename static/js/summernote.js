@@ -78,6 +78,7 @@ function addQuestion() {
         },
         success: function(response) {
             console.log(response); // Handle the response from the server
+            alert(response)
         }
     });
 }

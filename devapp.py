@@ -669,10 +669,6 @@ def handle_test_creation():
         logging.error("An error occurred while creating the test: %s", str(e), exc_info=True)
         return jsonify({"error": str(e)}), 500
 
-@app.route('/create_questions')
-def create_questions():
-    return render_template('create_questions.html')
-
 
 @app.route('/process_question', methods=['POST'])
 def process_question():
@@ -695,7 +691,7 @@ def process_question():
     # Execute the query
     db.engine.execute(query, obj_id=obj_id, question_desc=question_desc, question_text=question_text, question_answer=question_answer, question_type=question_type, question_difficulty=question_difficulty, answer_explanation=answer_explanation, points_definition=points_definition, max_points=max_points, source=source)
 
-    return 'Question processed successfully'
+    return 'Question added successfully!'
 
 # Route to render tests as a html file for export
 @app.route('/generate_test', methods=['POST'])
