@@ -37,7 +37,7 @@ from data_retrieval import (fetch_test_creation_options, get_questions, select_q
                             check_registered, get_test_data, get_tests_temp, get_tests, get_topics, get_subjects,
                             get_all_subjects, get_tester_list,
                             selectSubjectNames, selectSubjectDescriptions, insertSubject, get_all_topics, insertTopic,
-                            get_all_objectives)
+                            get_all_objectives, get_objs_temp)
 
 # Load environment variables from a .env file
 load_dotenv()
@@ -73,8 +73,8 @@ bcrypt = Bcrypt(app)
 mail = Mail(app)
 
 # Hash the password before storing it in the database
-hashed_password = bcrypt.generate_password_hash('1234',12).decode('utf-8')
-print("Password: ", hashed_password)
+#hashed_password = bcrypt.generate_password_hash('1234',12).decode('utf-8')
+#print("Password: ", hashed_password)
 
 #----------Helper functions for OTP and token generation----------
 
@@ -289,12 +289,7 @@ def objectives():
 @app.route('/dataquestionhierarchy', methods=['GET', 'POST'])
 def questions():
 
-    # Check which database function to execute
-    if request.method == "POST":
-        print()
-    else:
-        # Pass topics to the template
-        return render_template('dataquestionhierarchy.html')
+    return render_template('dataquestionhierarchy.html',objs=get_objs_temp())
 
 
 
@@ -710,27 +705,28 @@ def handle_test_creation():
         logging.error("An error occurred while creating the test: %s", str(e), exc_info=True)
         return jsonify({"error": str(e)}), 500
 
-
-@app.route('/create_questions')
-def create_questions():
-    return render_template('create_questions.html')
-
 @app.route('/process_question', methods=['POST'])
 def process_question():
-    html_content = request.form['content']
-
-    obj_id = 1
-    question_type = 'multiple choice'
+    obj_id = request.form['obj_id']
+    question_desc = request.form['question_desc']
+    question_text = request.form['question_text']
+    question_answer = request.form['question_answer']
+    question_type = request.form['question_type']
+    question_difficulty = request.form['question_difficulty']
+    answer_explanation = request.form['answer_explanation']
+    points_definition = request.form['points_definition']
+    max_points = request.form['max_points']
+    source = request.form['source']
 
     query = text("""
-        INSERT INTO questions (obj_id, question_text, question_answer, question_type, question_difficulty, answer_explaination, points_definition, max_points)
-        VALUES (:obj_id, :html_content, 'C) Nathan', :question_type, '1', 'None of the other members exist', 'all or nothing', '1')
-    """)
+            INSERT INTO questions (question_id, obj_id, question_desc, question_text, question_answer, question_type, question_difficulty, answer_explanation, points_definition, max_points, source)
+            VALUES (0, :obj_id, :question_desc, :question_text, :question_answer, :question_type, :question_difficulty, :answer_explanation, :points_definition, :max_points, :source)
+        """)
 
     # Execute the query
-    db.engine.execute(query, obj_id=obj_id, html_content=html_content, question_type=question_type)
+    db.engine.execute(query, obj_id=obj_id, question_desc=question_desc, question_text=question_text, question_answer=question_answer, question_type=question_type, question_difficulty=question_difficulty, answer_explanation=answer_explanation, points_definition=points_definition, max_points=max_points, source=source)
 
-    return redirect(url_for('generate_test'))
+    return 'Question added successfully!'
 
 # Route to render tests as a html file for export
 @app.route('/generate_test', methods=['POST'])

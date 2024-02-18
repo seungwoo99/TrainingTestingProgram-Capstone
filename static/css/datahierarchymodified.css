@@ -142,22 +142,6 @@ td {
   margin-right: 5px;
 }
 
-
-
-/* Button Styles */
-button {
-  margin-right: 1%;
-  background-color: #0b80bd;
-  border: none;
-  color: white;
-  cursor: pointer;
-  padding: 1% 2%;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 125%;
-}
-
 button:hover {
   background-color: #0d688f;
   box-shadow: 0 5px 10px rgba(0,0,0,0.3);

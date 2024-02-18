@@ -318,7 +318,7 @@ def get_tests_temp():
                         SELECT test_id, test_name
                         FROM tests
                     """)
-            result = db.engine.execute(sql_query)
+            result = connection.execute(sql_query)
 
             # Extract tests from the result
             test_list = [row for row in result]
@@ -479,3 +479,26 @@ def get_all_objectives(topic_id):
         topic_data = topic_data.fetchone()
 
     return result, topic_data
+
+def get_objs_temp():
+
+    try:
+        # Connect to the database using db.engine.
+        with db.engine.connect() as connection:
+
+            # Execute query to retrieve all tests
+            # Execute the SQL query to retrieve all tests
+            sql_query = text("""
+                        SELECT obj_id, description
+                        FROM learning_objectives
+                    """)
+            result = connection.execute(sql_query)
+
+            # Extract tests from the result
+            obj_list = [row for row in result]
+
+            return obj_list
+
+    except Exception as e:
+        # Log an error message with exception details.
+        logging.error(f"Error while getting test list: {e}", exc_info=True)

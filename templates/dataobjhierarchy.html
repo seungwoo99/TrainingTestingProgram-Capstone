@@ -62,7 +62,8 @@
                 </div>
                 <div class="centered-container">
                     <!-- Buttons -->
-                    <button onclick="viewQuestions()">View Questions</button>
+                   <!-- <button onclick="viewQuestions()">View Questions</button> -->
+                    <a href='{{ url_for('questions') }}'><button>View Questions</button></a>
                     <button onclick="addTopic()">Add Topic</button>
                     <button onclick="editTopic()">Edit Topic</button>
                     <button onclick="deleteTopic()">Delete Topic</button>
