@@ -1,4 +1,7 @@
+// Wait for the DOM content to be fully loaded before executing JavaScript
 document.addEventListener('DOMContentLoaded', (event) => {
+  
+  // Select necessary elements from the DOM
   const mainContainer = document.querySelector(".main-container");
   const sidePanelToggle = document.querySelector(".side-panel-toggle");
   const sidePanel = document.querySelector(".side-panel");
@@ -8,35 +11,45 @@ document.addEventListener('DOMContentLoaded', (event) => {
   const wrapper = document.querySelector(".wrapper");
   const animatedBorder = document.querySelector('.animated-border');
   
+  // Function to adjust the position of the side panel based on scroll
   function adjustPanelPosition() {
     let newTopPosition = mainContainer.scrollTop;
     sidePanel.style.top = `${newTopPosition}px`;
     sidePanelToggle.style.top = `${newTopPosition + 20}px`;
 
+    // Adjust position of animated border if it's being animated
     if(animatedBorder.classList.contains('animate')) {
       adjustAnimatedBorderPosition();
     }
   }
 
+  // Add scroll event listener to main container for adjusting panel position
   mainContainer.addEventListener('scroll', adjustPanelPosition);
 
+  // Add click event listener to side panel toggle button
   if (sidePanelToggle) {
     sidePanelToggle.addEventListener("click", () => {
+      // Toggle class to open/close side panel
       wrapper.classList.toggle("side-panel-open");
+      // Remove animation from animated border
       animatedBorder.classList.remove('animate');
     });
   }
 
+  // Add click event listener to search button
   if (searchButton) {
     searchButton.addEventListener('click', handleSearchButtonClick);
   }
 
+  // Add click event listener to add button
   if (addButton) {
     addButton.addEventListener('click', handleAddButtonClick);
   }
 
+  // Function to handle search button click
   function handleSearchButtonClick(event) {
     event.preventDefault();
+    // Collect form input values
     const bloomsLevelValue = document.getElementById('blooms_level_dropdown').value;
     const subjectValue = document.getElementById('subject_dropdown').value;
     const topicValue = document.getElementById('topic_dropdown').value;
@@ -45,15 +58,16 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const questionDifficultyValue = document.getElementById('question_difficulty_dropdown').value;
     const questionMaxPointValue = document.getElementById('question_max_points_input').value;
     
+    // Validate question max points input
     const questionMaxPointsInput = document.getElementById('question_max_points_input');
     questionMaxPointsInput.classList.remove('error');
-
     if (!questionMaxPointsInput.checkValidity()) {
       questionMaxPointsInput.classList.add('error');
       questionMaxPointsInput.reportValidity();
       return;
     }
 
+    // Create form data object to send via fetch
     const formData = {
       blooms_levels: bloomsLevelValue !== "all" ? [bloomsLevelValue] : [],
       subjects: subjectValue !== "all" ? [subjectValue] : [],
@@ -65,6 +79,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
       test_type: "manual"
     };
 
+    // Send form data to server via fetch
     fetch('/get-questions', {
       method: 'POST',
       headers: {
@@ -75,10 +90,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
     .then(response => response.json())
     .then(data => {
       console.log('Success:', data);
+      // Clear existing table body content
       const resultsTable = document.querySelector(".results-table");
       const tableBody = resultsTable.querySelector("tbody");
       tableBody.innerHTML = "";
 
+      // Populate table with received data or show alert if no data
       if (typeof data.total_questions_in_pool !== 'undefined' && data.selected_questions) {
         data.selected_questions.forEach(question => {
             const row = tableBody.insertRow();
@@ -92,13 +109,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
             checkbox.type = 'checkbox';
             checkbox.name = 'select_question';
             checkbox.value = question.question_id; 
-            console.log(checkbox.value);
             cell3.appendChild(checkbox);
     
             cell1.textContent = question.max_points;
             cell2.textContent = question.question_desc;
         });
-        console.log('----------');
       } else if (data.total_questions_in_pool === 0) {
         alert(data.message || "No questions found that meet the selection criteria.");
       } else {
@@ -112,21 +127,26 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
   }
 
+  // Function to handle add button click
   function handleAddButtonClick() {
+    // Collect selected checkboxes
     const selectedCheckboxes = document.querySelectorAll('.results-table tbody input[type="checkbox"]:checked');
   
     if (selectedCheckboxes.length > 0) {
+      // Add selected questions to selected table
       selectedCheckboxes.forEach(checkbox => {
         addQuestionToSelected(checkbox);
         checkbox.checked = false;
       });
   
+      // Update total points and animate border
       updateTotalPoints()
       animatedBorder.classList.add('animate');
       adjustAnimatedBorderPosition()
     }
   }
   
+  // Function to add a question to the selected table
   function addQuestionToSelected(checkbox) {
     const row = checkbox.closest('tr');
     const questionId = row.dataset.questionId;
@@ -147,7 +167,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     hiddenInput.type = 'hidden';
     hiddenInput.name = 'questionId';
     hiddenInput.value = questionId;
-    console.log(hiddenInput.value);
     newCell1.appendChild(hiddenInput);
 
     newCell2.textContent = row.cells[0].textContent;
@@ -156,6 +175,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     newCell4.appendChild(createRemoveButton(newRow));
   }
   
+  // Function to create a remove button
   function createRemoveButton(row) {
     const removeButton = document.createElement('button');
     removeButton.textContent = 'Remove';
@@ -167,45 +187,48 @@ document.addEventListener('DOMContentLoaded', (event) => {
     return removeButton;
   }
 
+  // Function to update the total points in the selected table
   function updateTotalPoints() {
     let totalPoints = 0;
-  
+    // Calculate total points from selected table rows
     const selectedTableRows = document.querySelectorAll('.selected-table tbody tr');
     selectedTableRows.forEach(row => {
       totalPoints += parseInt(row.cells[1].textContent) || 0;
     });
-  
+    // Update total points display in the UI
     const submitTablePointValueTd = document.querySelector('.submit-table tr td:first-child');
     if (submitTablePointValueTd) {
       submitTablePointValueTd.textContent = totalPoints;
     }
   }
 
+  // Function to calculate and return total points from selected table
   function getTotalPoints() {
     let totalPoints = 0;
-  
+    // Calculate total points from selected table rows
     const selectedTableRows = document.querySelectorAll('.selected-table tbody tr');
     selectedTableRows.forEach(row => {
       totalPoints += parseInt(row.cells[1].textContent) || 0;
     });
-  
     return totalPoints;
   }
 
+  // Function to handle submit button click
   document.getElementById('submit').addEventListener('click', function() {
     const selectedQuestions = document.querySelectorAll('.selected-table tbody tr');
     
+    // Collect question order data
     const questionOrder = Array.from(selectedQuestions).map(row => {
       const input = row.querySelector('input[type="number"]');
       const questionId = row.dataset.questionId;
-      console.log(questionId);
       const orderValue = input ? parseInt(input.value, 10) : null;
       return {
-        questionId: questionId,
-        questionOrder: !isNaN(orderValue) ? orderValue : null
+        question_id: questionId,
+        question_order: !isNaN(orderValue) ? orderValue : null
       };
     });
   
+    // Collect other form data
     const totalScore = parseInt(getTotalPoints(), 10);
     const testName = document.getElementById('test_name_input').value.trim();
     const testDescription = document.getElementById('test_description').value.trim();
@@ -216,14 +239,17 @@ document.addEventListener('DOMContentLoaded', (event) => {
     
     const isActive = document.querySelector('.switch input[type="checkbox"]').checked;
   
+    // Create request data object
     const requestData = {
-      questionOrder: questionOrder, // This array should now have the correct questionId and questionOrder pairs
-      totalScore: totalScore,
-      testName: testName,
-      isActive: isActive,
-      testDescription: testDescription,
+      question_order: questionOrder,
+      total_score: totalScore,
+      test_name: testName,
+      is_active: isActive,
+      test_description: testDescription,
+      test_type: "manual"
     };
   
+    // Send request to server via fetch
     fetch('/handle_test_creation', {
       method: 'POST',
       headers: {
@@ -231,21 +257,34 @@ document.addEventListener('DOMContentLoaded', (event) => {
       },
       body: JSON.stringify(requestData)
     })
-    .then(response => response.json().then(data => ({ status: response.status, body: data })))
+    .then(response => {
+      // Check if response is successful (status code 200-299)
+      if (response.ok) {
+        // Parse response JSON
+        return response.json().then(data => ({ status: response.status, body: data }));
+      } else {
+        // Parse error response JSON
+        return response.json().then(data => Promise.reject({ status: response.status, body: data }));
+      }
+    })
     .then(result => {
+      // Handle successful response
       if (result.status === 200) {
         alert('Test created successfully!');
       } else {
+        // Handle server error
         console.error('Error:', result.body.error);
         alert('An error occurred while creating the test: ' + result.body.error);
       }
     })
     .catch(error => {
+      // Handle fetch error
       console.error('Error:', error);
       alert('An error occurred while processing your request. Please check your network connection and try again.');
     });
   });
 
+  // Function to adjust the position of the animated border
   function adjustAnimatedBorderPosition() {
     const toggleRect = sidePanelToggle.getBoundingClientRect();
     const containerRect = mainContainer.getBoundingClientRect();
