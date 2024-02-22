@@ -35,7 +35,7 @@ from config import MailConfig
 from db_config import db
 from data_retrieval import (fetch_test_creation_options, get_questions, select_questions, create_test, get_user,
                             get_test_questions,
-                            check_registered, get_test_data, get_tests_temp, get_tests, get_topics, get_subjects,
+                            check_registered, get_test_data, get_tests, get_topics, get_subjects,
                             get_all_subjects, get_tester_list,
                             selectSubjectNames, selectSubjectDescriptions, insertSubject, get_all_topics, insertTopic,
                             get_all_objectives, get_objs_temp)
@@ -968,27 +968,6 @@ def generate_test_answers():
     # Render page
     return render_template('test_answers_template.html', test_questions=get_test_questions(selected_test_id),
                            test_data=get_test_data(selected_test_id))
-
-
-# Temporary Route to list tests and applicable actions
-@app.route('/tests')
-def tests():
-    # Check if user is logged in
-    if 'user' not in session or not session['user'].get('is_authenticated', False):
-        flash("Access denied, please login.")
-        return redirect(url_for('trylogin'))
-
-    # Execute query to retrieve all tests
-    sql_query = text("""
-            SELECT test_id, test_name
-            FROM tests
-        """)
-    result = db.engine.execute(sql_query)
-
-    # Extract tests from the result
-    test_list = get_tests_temp()
-    return render_template('tests.html', test_list=test_list)
-
 
 # Routes yet to be implemented
 @app.route('/modify_test', methods=['POST'])
