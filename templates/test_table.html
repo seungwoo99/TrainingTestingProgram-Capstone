@@ -53,6 +53,13 @@
             html: true,
             trigger: 'manual'
         }).popover('toggle');
+
+        // Close popover when clicking outside of it
+        $(document).on('click', function (event) {
+            if (!$(element).is(event.target) && $(element).has(event.target).length === 0 && !$(event.target).closest('.popover').length) {
+                $(element).popover('hide');
+            }
+        });
     }
 
     // Function to handle modify test button click
@@ -64,11 +71,4 @@
     function viewTestScores(test_id) {
         window.location.href = "/test/" + test_id;
     }
-
-    // Close popover when clicking outside of it
-    $(document).on('click', function (event) {
-        if (!$(event.target).closest('.popover').length) {
-            $('[data-toggle="popover"]').popover('hide');
-        }
-    });
 </script>
