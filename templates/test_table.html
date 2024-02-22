@@ -1,3 +1,11 @@
+<style>
+    /* CSS for hover effect */
+    #haspopover:hover {
+        cursor: pointer;
+        background-color: #f0f0f0; /* Change to the desired background color */
+    }
+</style>
+
 <!-- Table that shows test lists -->
 <thead>
     <tr>
@@ -11,7 +19,7 @@
 </thead>
 <tbody>
     {% for row in data %}
-        <tr id="testclick" onclick="showPopover(this, '{{ row.test_id }}', '{{ row.test_name }}')">
+        <tr id="haspopover" data-test-id="{{ row.test_id }}" data-test-name="{{ row.test_name }}">
             <td>{{ loop.index }}</td>
             <td>{{ row.test_name }}</td>
             <td>{{ row.subject_name }}</td>
@@ -42,9 +50,6 @@
             </div>
         `;
 
-        // Hide other popovers before showing this one
-        $('.popover').popover('hide');
-
         // Show popover
         $(element).popover({
             title: test_name,
@@ -71,4 +76,17 @@
     function viewTestScores(test_id) {
         window.location.href = "/test/" + test_id;
     }
+
+    // Initialize Bootstrap popovers
+    $(document).ready(function () {
+        $('[id="haspopover"]').hover(function() {
+            $(this).css('cursor', 'pointer');
+        }).click(function() {
+            var test_id = $(this).attr('data-test-id');
+            var test_name = $(this).attr('data-test-name');
+            showPopover(this, test_id, test_name);
+        });
+        $('[data-toggle="popover"]').popover();
+    });
+
 </script>
