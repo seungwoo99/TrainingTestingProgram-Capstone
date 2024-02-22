@@ -217,9 +217,11 @@ def homepage():
 
 @app.route('/datahierarchy', methods=['POST', 'GET'])
 def data():
-    # if 'user' not in session or not session['user'].get('is_authenticated', False):
-    # flash("Access denied, please login.")
-    # return redirect(url_for('trylogin'))
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     if request.method == "POST":
         pData = request.get_json()
         if pData.get("type") == "add":
@@ -251,6 +253,11 @@ def data():
 
 @app.route('/datatopichierarchy', methods=['GET', 'POST'])
 def topics():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     # Get the selected subject_id from the query parameters
     subject_id = request.args.get('subject_id')
 
@@ -288,6 +295,11 @@ def topics():
 
 @app.route('/dataobjhierarchy', methods=['GET', 'POST'])
 def objectives():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     # Get the selected subject_id from the query parameters
     topic_id = request.args.get('topic_id')
 
@@ -304,6 +316,11 @@ def objectives():
 
 @app.route('/dataquestionhierarchy', methods=['GET', 'POST'])
 def questions():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     return render_template('dataquestionhierarchy.html', objs=get_objs_temp())
 
 
@@ -397,6 +414,11 @@ def filter_data():
 # Route for showing tester list of the clicked test
 @app.route('/test/<int:test_id>')
 def tester_list(test_id):
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     tester_list_data = get_tester_list(test_id)
 
     return render_template("tester_list.html", tester_data=tester_list_data, testId=test_id)
@@ -405,6 +427,11 @@ def tester_list(test_id):
 # Route for updating tester's score
 @app.route('/update_score')
 def update_score():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     score_id = request.args.get('scoreId')
     tester_id = request.args.get('testerId')
     test_id = request.args.get('testId')
@@ -422,6 +449,11 @@ def update_score():
 # Route for displaying tester history records
 @app.route('/display_history')
 def display_history():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     tester_id = request.args.get('testerId')
     test_id = request.args.get('testId')
 
@@ -439,6 +471,11 @@ def display_history():
 # Add new tester in the tester list table
 @app.route('/add_tester', methods=['POST'])
 def add_tester():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     new_tester_data = request.get_json()
     testee_name = new_tester_data.get("testerName")
     attempt_date = new_tester_data.get("attemptDate")
@@ -669,12 +706,22 @@ def generate_pdf(test_id):
 # Route for random test creation page.
 @app.route('/random_test_creation')
 def random_test_creation():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     return show_test_creation_page('random_test_creation.html')
 
 
 # Route for manual test creation page.
 @app.route('/manual_test_creation')
 def manual_test_creation():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     return show_test_creation_page('manual_test_creation.html')
 
 
