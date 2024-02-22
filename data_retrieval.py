@@ -305,30 +305,6 @@ def get_test_questions(test_id):
         # Log an error message with exception details.
         logging.error(f"Error while getting questions: {e}", exc_info=True)
 
-
-def get_tests_temp():
-
-    try:
-        # Connect to the database using db.engine.
-        with db.engine.connect() as connection:
-
-            # Execute query to retrieve all tests
-            # Execute the SQL query to retrieve all tests
-            sql_query = text("""
-                        SELECT test_id, test_name
-                        FROM tests
-                    """)
-            result = connection.execute(sql_query)
-
-            # Extract tests from the result
-            test_list = [row for row in result]
-
-            return test_list
-
-    except Exception as e:
-        # Log an error message with exception details.
-        logging.error(f"Error while getting test list: {e}", exc_info=True)
-
 def get_test_data(test_id):
 
     try:
