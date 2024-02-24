@@ -222,9 +222,29 @@ def data():
             #db.engine.execute(query, name=name, description=description)
             logging.debug("adding new data")
         elif pData.get("type") == "delete":
-            subject_id = pData.get("value1")
-            query = text("""DELETE FROM subjects where subject_id = :subject_id""")
-            db.engine.execute(query, subject_id=subject_id)
+            # Attempt to delete subject
+            try:
+                subject_id = pData.get("value1")
+                query = text("""DELETE FROM subjects where subject_id = :subject_id""")
+                db.engine.execute(query, subject_id=subject_id)
+            except Exception as e:
+
+                # Log an error message with exception details.
+                logging.error(f"Error while attempting subject deletion: {e}", exc_info=True)
+
+                # Get and display any topics that need to be deleted.
+                topics, subject_data = get_all_topics(subject_id)
+
+                # Create alert response
+                alert = ("Unable to delete subject " + subject_data['name'] +
+                         " . The following topics must be deleted first: ")
+                for topic in topics:
+                    alert += topic.name + ", "
+                alert += "."
+
+                response_data = {"category": "FAILURE", 'error_message': alert}
+                return jsonify(response_data)
+
         elif pData.get("type") == "edit":
             subject_id = pData.get("value1")
             name = pData.get("value2")
