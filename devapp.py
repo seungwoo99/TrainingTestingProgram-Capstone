@@ -4,7 +4,6 @@ import logging
 from logging.handlers import RotatingFileHandler
 from datetime import datetime, timezone, timedelta
 from random import randint
-import re
 import requests
 import random
 
@@ -270,7 +269,7 @@ def topics():
     if request.method == "POST":
         pData = request.get_json()
         if pData.get("type") == "add":
-            subject_id=pData.get("value1")
+            subject_id = pData.get("value1")
             name = pData.get("value2")
             description = pData.get("value3")
             facility = pData.get("value4")
@@ -286,9 +285,30 @@ def topics():
             db.engine.execute(query, topic_id=topic_id, name=name, description=description, facility=facility)
             print()
         elif pData.get("type") == "delete":
-            topic_id = pData.get("value1")
-            query = text("""DELETE FROM topics where topic_id = :topic_id""")
-            db.engine.execute(query, topic_id=topic_id)
+            # Attempt to delete subject
+            try:
+                topic_id = pData.get("value1")
+                query = text("""DELETE FROM topics where topic_id = :topic_id""")
+                db.engine.execute(query, topic_id=topic_id)
+            except Exception as e:
+
+                # Log an error message with exception details.
+                logging.error(f"Error while attempting subject deletion: {e}", exc_info=True)
+
+                # Get and display any objectives that need to be deleted.
+                objectives, topic_data = get_all_objectives(topic_id)
+
+                # Create alert response
+                alert = ("Unable to delete topic " + topic_data['name'] +
+                         " . The following learning objectives must be deleted first: ")
+                for obj in objectives:
+                    alert += obj.obj_description + ", "
+                alert += "."
+
+                response_data = {"category": "FAILURE", 'error_message': alert}
+                return jsonify(response_data)
+
+        return jsonify({"category": "SUCCESS"})
     else:
         # Pass topics to the template
         return render_template('datatopichierarchy.html', topics=topics ,subject_id=subject_id, subject_data=subject_data)

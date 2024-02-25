@@ -123,11 +123,26 @@
                 xhr.open("POST", '/datatopichierarchy')
                 xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
 
-                xhr.send(json);
+                xhr.onreadystatechange = function () {
+                            if (xhr.readyState === XMLHttpRequest.DONE) {
+                                if (xhr.status === 200) {
+                                    // Get response
+                                    let response = JSON.parse(xhr.responseText);
 
-                xhr.onload = function(event) {
-                    window.location.reload();
-                }
+                                    // If delete failed, display error message with topic conflicts.
+                                    if (response.category === "FAILURE") {
+                                        alert(response.error_message);
+                                    } else {
+                                        window.location.reload(); // Reload the page to reflect db changes
+                                    }
+                                } else {
+                                    // Handle failed http request
+                                    console.error("Request failed with status:", xhr.status);
+                                }
+                            }
+                        };
+
+                xhr.send(json);
             }
 
             // Function to add data entries
