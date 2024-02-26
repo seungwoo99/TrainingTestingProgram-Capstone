@@ -4,7 +4,6 @@ import logging
 from logging.handlers import RotatingFileHandler
 from datetime import datetime, timezone, timedelta
 from random import randint
-import re
 import requests
 import random
 
@@ -222,9 +221,29 @@ def data():
             #db.engine.execute(query, name=name, description=description)
             logging.debug("adding new data")
         elif pData.get("type") == "delete":
-            subject_id = pData.get("value1")
-            query = text("""DELETE FROM subjects where subject_id = :subject_id""")
-            db.engine.execute(query, subject_id=subject_id)
+            # Attempt to delete subject
+            try:
+                subject_id = pData.get("value1")
+                query = text("""DELETE FROM subjects where subject_id = :subject_id""")
+                db.engine.execute(query, subject_id=subject_id)
+            except Exception as e:
+
+                # Log an error message with exception details.
+                logging.error(f"Error while attempting subject deletion: {e}", exc_info=True)
+
+                # Get and display any topics that need to be deleted.
+                topics, subject_data = get_all_topics(subject_id)
+
+                # Create alert response
+                alert = ("Unable to delete subject " + subject_data['name'] +
+                         " . The following topics must be deleted first: ")
+                for topic in topics:
+                    alert += topic.name + ", "
+                alert += "."
+
+                response_data = {"category": "FAILURE", 'error_message': alert}
+                return jsonify(response_data)
+
         elif pData.get("type") == "edit":
             subject_id = pData.get("value1")
             name = pData.get("value2")
@@ -250,7 +269,7 @@ def topics():
     if request.method == "POST":
         pData = request.get_json()
         if pData.get("type") == "add":
-            subject_id=pData.get("value1")
+            subject_id = pData.get("value1")
             name = pData.get("value2")
             description = pData.get("value3")
             facility = pData.get("value4")
@@ -266,9 +285,30 @@ def topics():
             db.engine.execute(query, topic_id=topic_id, name=name, description=description, facility=facility)
             print()
         elif pData.get("type") == "delete":
-            topic_id = pData.get("value1")
-            query = text("""DELETE FROM topics where topic_id = :topic_id""")
-            db.engine.execute(query, topic_id=topic_id)
+            # Attempt to delete subject
+            try:
+                topic_id = pData.get("value1")
+                query = text("""DELETE FROM topics where topic_id = :topic_id""")
+                db.engine.execute(query, topic_id=topic_id)
+            except Exception as e:
+
+                # Log an error message with exception details.
+                logging.error(f"Error while attempting subject deletion: {e}", exc_info=True)
+
+                # Get and display any objectives that need to be deleted.
+                objectives, topic_data = get_all_objectives(topic_id)
+
+                # Create alert response
+                alert = ("Unable to delete topic " + topic_data['name'] +
+                         " . The following learning objectives must be deleted first: ")
+                for obj in objectives:
+                    alert += obj.obj_description + ", "
+                alert += "."
+
+                response_data = {"category": "FAILURE", 'error_message': alert}
+                return jsonify(response_data)
+
+        return jsonify({"category": "SUCCESS"})
     else:
         # Pass topics to the template
         return render_template('datatopichierarchy.html', topics=topics ,subject_id=subject_id, subject_data=subject_data)
@@ -308,7 +348,6 @@ def test_list():
 
     # Query to fetch data from the tests table
     test_data = get_tests()
-
     # get subject list
     subject_data = get_subjects()
     # get topic list
@@ -317,19 +356,27 @@ def test_list():
     return render_template("test_list.html", data=test_data, subject_data=subject_data, topic_data=topic_data)
 
 
-# Route for showing filtered test list
+# Route for displaying filtered test list
 @app.route('/filter')
 def filter_data():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
+    # Get filtered data from test list page
     subject_id = request.args.get('subject')
     topic_id = request.args.get('topic')
     start_date = request.args.get('start')
     end_date = request.args.get('end')
 
+    # Set default value for start date and end date
     if start_date == '':
         start_date = '0000-00-00'
     if end_date == '':
-        end_date = datetime.now().strftime('%Y-%m-%d')
+        end_date = '9999-12-31'
 
+    # When subject and topic are not selected
     if subject_id == '' and topic_id == '':
         test_query = text("SELECT t.test_id, t.test_name, GROUP_CONCAT(DISTINCT s.name) AS subject_name, GROUP_CONCAT(DISTINCT tp.name) AS topic_name, t.creation_date, t.last_modified_date FROM tests t "
                         + "LEFT JOIN test_questions tq ON t.test_id = tq.test_id "
@@ -340,6 +387,7 @@ def filter_data():
                         + "WHERE (creation_date) BETWEEN :start_date AND :end_date "
                         + "GROUP BY t.test_id, t.test_name, s.name, t.creation_date, t.last_modified_date ")
         test_result = db.engine.execute(test_query, start_date=start_date, end_date=end_date)
+    # When subject is selected
     elif subject_id != '' and topic_id == '':
         test_query = text("SELECT t.test_id, t.test_name, GROUP_CONCAT(DISTINCT s.name) AS subject_name, GROUP_CONCAT(DISTINCT tp.name) AS topic_name, t.creation_date, t.last_modified_date FROM tests t "
                         + "LEFT JOIN test_questions tq ON t.test_id = tq.test_id "
@@ -350,6 +398,7 @@ def filter_data():
                         + "WHERE s.subject_id = :subject_id AND (creation_date) BETWEEN :start_date AND :end_date "
                         + "GROUP BY t.test_id, t.test_name, s.name, t.creation_date, t.last_modified_date ")
         test_result = db.engine.execute(test_query, subject_id=subject_id, start_date=start_date, end_date=end_date)
+    # When topic is selected
     elif subject_id == '' and topic_id != '':
         test_query = text(
             "SELECT t.test_id, t.test_name, GROUP_CONCAT(DISTINCT s.name) AS subject_name, GROUP_CONCAT(DISTINCT tp.name) AS topic_name, t.creation_date, t.last_modified_date FROM tests t "
@@ -362,6 +411,7 @@ def filter_data():
             + "GROUP BY t.test_id, t.test_name, s.name, t.creation_date, t.last_modified_date ")
 
         test_result = db.engine.execute(test_query, topic_id=topic_id, start_date=start_date, end_date=end_date)
+    # When subject and topic are selected
     else:
         test_query = text(
             "SELECT t.test_id, t.test_name, GROUP_CONCAT(DISTINCT s.name) AS subject_name, GROUP_CONCAT(DISTINCT tp.name) AS topic_name, t.creation_date, t.last_modified_date FROM tests t "
@@ -373,49 +423,137 @@ def filter_data():
             + "WHERE tp.topic_id = :topic_id AND s.subject_id = :subject_id AND (creation_date) BETWEEN :start_date AND :end_date "
             + "GROUP BY t.test_id, t.test_name, s.name, t.creation_date, t.last_modified_date ")
 
-        test_result = db.engine.execute(test_query, topic_id=topic_id, subject_id=subject_id, start_date=start_date,
-                                        end_date=end_date)
+        test_result = db.engine.execute(test_query, topic_id=topic_id, subject_id=subject_id, start_date=start_date, end_date=end_date)
 
     test_list_data = test_result.fetchall()
 
     return render_template("test_table.html", data=test_list_data)
 
 
-# Route for showing tester list of the clicked test
+# Route for displaying a list of testers of the clicked test
 @app.route('/test/<int:test_id>')
 def tester_list(test_id):
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
+    # Get a list of testers from database
     tester_list_data = get_tester_list(test_id)
 
-    return render_template("tester_list.html", tester_data=tester_list_data, testId=test_id)
+    # Get all existing tester from database
+    all_tester_query = text("SELECT * FROM testee")
+    all_tester_result = db.engine.execute(all_tester_query)
+    all_tester_data = all_tester_result.fetchall()
+
+    return render_template("tester_list.html", tester_data=tester_list_data, testId=test_id, all_tester_data=all_tester_data)
 
 
 # Route for updating tester's score
 @app.route('/update_score')
 def update_score():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
+    # Get data from tester_table.html
     score_id = request.args.get('scoreId')
     tester_id = request.args.get('testerId')
     test_id = request.args.get('testId')
     new_grade = request.args.get('newGrade')
 
-    update_query = text(
-        "UPDATE test_scores SET total_score = :new_grade WHERE test_id = :test_id and score_id = :score_id and tester_id = :tester_id")
+    # If there is no input for score, set to -1
+    if new_grade == '':
+        new_grade = '-1'
 
+    # Update score
+    update_query = text("UPDATE test_scores SET total_score = :new_grade WHERE test_id = :test_id and score_id = :score_id and tester_id = :tester_id")
     db.engine.execute(update_query, new_grade=new_grade, test_id=test_id, score_id=score_id, tester_id=tester_id)
     tester_list_data = get_tester_list(test_id)
 
-    return render_template("tester_table.html", tester_data=tester_list_data, testId=test_id)
+    # Get all existing tester from database
+    all_tester_query = text("SELECT * FROM testee")
+    all_tester_result = db.engine.execute(all_tester_query)
+    all_tester_data = all_tester_result.fetchall()
+
+    return render_template("tester_table.html", tester_data=tester_list_data, testId=test_id, all_tester_data=all_tester_data)
+
+
+# Route for updating tester's attempt date
+@app.route('/update_date', methods=['POST'])
+def update_date():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
+    # Get data from tester_table.html
+    new_attemptDate_data = request.get_json()
+    score_id = new_attemptDate_data.get('scoreId')
+    tester_id = new_attemptDate_data.get('testerId')
+    test_id = new_attemptDate_data.get('testId')
+    new_date = new_attemptDate_data.get('newDate')
+
+    # Update attempt date
+    update_query = text("UPDATE test_scores SET attempt_date = :new_date WHERE test_id = :test_id and score_id = :score_id and tester_id = :tester_id")
+    db.engine.execute(update_query, new_date=new_date, test_id=test_id, score_id=score_id, tester_id=tester_id)
+    tester_list_data = get_tester_list(test_id)
+
+    # Get all existing tester from database
+    all_tester_query = text("SELECT * FROM testee")
+    all_tester_result = db.engine.execute(all_tester_query)
+    all_tester_data = all_tester_result.fetchall()
+
+    return render_template("tester_table.html", tester_data=tester_list_data, testId=test_id, all_tester_data=all_tester_data)
+
+
+# Route for updating tester's pass status
+@app.route('/update_status', methods=['POST'])
+def update_status():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
+    # Get data from tester_table.html
+    new_status_data = request.get_json()
+    score_id = new_status_data.get('scoreId')
+    tester_id = new_status_data.get('testerId')
+    test_id = new_status_data.get('testId')
+    new_status = new_status_data.get('newStatus')
+
+    # Update pass status
+    update_query = text("UPDATE test_scores SET pass_status = :new_status WHERE test_id = :test_id and score_id = :score_id and tester_id = :tester_id")
+    db.engine.execute(update_query, new_status=new_status, test_id=test_id, score_id=score_id, tester_id=tester_id)
+    tester_list_data = get_tester_list(test_id)
+
+    # Get all existing tester from database
+    all_tester_query = text("SELECT * FROM testee")
+    all_tester_result = db.engine.execute(all_tester_query)
+    all_tester_data = all_tester_result.fetchall()
+
+    return render_template("tester_table.html", tester_data=tester_list_data, testId=test_id, all_tester_data=all_tester_data)
 
 
 # Route for displaying tester history records
 @app.route('/display_history')
 def display_history():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
+    # Get data from tester_table.html
     tester_id = request.args.get('testerId')
     test_id = request.args.get('testId')
 
+    # Query to get tester's all records
     history_query = text("SELECT ts.score_id, ts.tester_id, ts.test_id, te.testee_name, ts.attempt_date, ts.total_score, ts.pass_status "
                         + "FROM test_scores ts "
                         + "LEFT JOIN testee te ON ts.tester_id = te.tester_id "
-                        + "WHERE ts.test_id = :test_id AND ts.tester_id = :tester_id")
+                        + "WHERE ts.test_id = :test_id AND ts.tester_id = :tester_id "
+                        + "ORDER BY ts.attempt_date DESC")
     history_result = db.engine.execute(history_query, test_id=test_id, tester_id=tester_id)
     tester_history_data = history_result.fetchall()
 
@@ -423,19 +561,21 @@ def display_history():
 
 
 # Add new tester in the tester list table
-@app.route('/add_tester', methods=['POST'])
+@app.route('/add_new_tester', methods=['POST'])
 def add_tester():
+    # Get data from tester_list.html
     new_tester_data = request.get_json()
     testee_name = new_tester_data.get("testerName")
     attempt_date = new_tester_data.get("attemptDate")
     score = new_tester_data.get("score")
+    pass_status = new_tester_data.get("passStatus")
     test_id = new_tester_data.get("testId")
 
-    # insert new tester in the database
+    # Insert new tester in the database
     add_tester_query = text("INSERT INTO testee (testee_name) VALUES (:testee_name)")
     db.engine.execute(add_tester_query, testee_name=testee_name)
 
-    # get tester id
+    # Get tester_id for new tester
     tester_id_query = text("SELECT tester_id FROM testee WHERE testee_name = :testee_name")
     tester_data_result = db.engine.execute(tester_id_query, testee_name=testee_name)
     tester_data = tester_data_result.fetchall()
@@ -443,41 +583,71 @@ def add_tester():
     for row in tester_data:
         tester_id = row['tester_id']
 
-    # insert new score in the database
+    # Insert new score in the database
     add_tester_score_query = text("INSERT INTO test_scores (test_id, tester_id, attempt_date, total_score, pass_status) "
-                                  +" VALUES (:test_id, :tester_id, :attempt_date, :total_score, 1)")
-    db.engine.execute(add_tester_score_query, test_id=test_id, tester_id=tester_id, attempt_date=attempt_date, total_score=score)
+                                  +" VALUES (:test_id, :tester_id, :attempt_date, :total_score, :pass_status)")
+    db.engine.execute(add_tester_score_query, test_id=test_id, tester_id=tester_id, attempt_date=attempt_date, total_score=score, pass_status=pass_status)
 
     return ''
 
 
-# delete tester's record
+# Add exist tester data in the tester list table
+@app.route('/add_existing_tester', methods=['POST'])
+def add_existing_tester():
+    # Get data from test_list.html
+    existing_tester_data = request.get_json()
+    tester_id = existing_tester_data.get("testerId")
+    attempt_date = existing_tester_data.get("attemptDate")
+    score = existing_tester_data.get("score")
+    pass_status = existing_tester_data.get("passStatus")
+    test_id = existing_tester_data.get("testId")
+
+    # Insert new score in the database
+    add_tester_score_query = text("INSERT INTO test_scores (test_id, tester_id, attempt_date, total_score, pass_status) "
+                                + " VALUES (:test_id, :tester_id, :attempt_date, :total_score, :pass_status)")
+    db.engine.execute(add_tester_score_query, test_id=test_id, tester_id=tester_id, attempt_date=attempt_date,
+                      total_score=score, pass_status=pass_status)
+
+    return ''
+
+
+# Delete tester's record
 @app.route('/delete_record', methods=['POST'])
 def delete_record():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
+    # Get data from tester_history_table.html
     tester_record = request.get_json()
     score_id = tester_record.get("score_id")
     test_id = tester_record.get("test_id")
     tester_id = tester_record.get("tester_id")
 
+    # Delete tester record
     delete_query = text("DELETE FROM test_scores WHERE score_id = :score_id AND test_id = :test_id AND tester_id = :tester_id")
     db.engine.execute(delete_query, score_id=score_id, test_id=test_id, tester_id=tester_id)
 
     return ''
 
 
-# add new record to tester
+# Add new record to tester
 @app.route('/add_record', methods=['POST'])
 def add_record():
+    # Get data from tester_history_table.html
     new_record = request.get_json()
     score_id = new_record.get("score_id")
     test_id = new_record.get("test_id")
     tester_id = new_record.get("tester_id")
     attempt_date = new_record.get("attemptDate")
     score = new_record.get("score")
+    pass_status = new_record.get("passStatus")
 
+    # Insert new record to database
     insert_query = text("INSERT INTO test_scores (test_id, tester_id, attempt_date, total_score, pass_status) "
-                        +"VALUES (:test_id, :tester_id, :attempt_date, :score, 1)")
-    db.engine.execute(insert_query, test_id=test_id, tester_id=tester_id, attempt_date=attempt_date, score=score)
+                        +"VALUES (:test_id, :tester_id, :attempt_date, :score, :pass_status)")
+    db.engine.execute(insert_query, test_id=test_id, tester_id=tester_id, attempt_date=attempt_date, score=score, pass_status=pass_status)
 
     return ''
 

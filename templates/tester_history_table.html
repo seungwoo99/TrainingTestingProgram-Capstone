@@ -1,12 +1,16 @@
-
+<!-- Table that shows each tester's history records -->
 <tbody id="table-body">
     {% for row in tester_history_data %}
         <tr data-score-id="{{ row.score_id }}" data-tester-id="{{ row.tester_id }}" data-test-id="{{ row.test_id }}">
             <td>{{ loop.index }}</td>
             <td>{{ row.testee_name }}</td>
-            <td>{{ row.attempt_date }}</td>
-            <td class="score-cell">{{ row.total_score }}</td>
-            <td>{% if row.pass_status == 1 %} PASS
+            <td class="attemptDate-cell">{{ row.attempt_date }}</td>
+            <td class="score-cell">
+                {% if row.total_score == -1 %} N/A
+                {% else %}{{ row.total_score }}
+                {% endif %}
+            </td>
+            <td class="passStatus-cell">{% if row.pass_status == 1 %} PASS
             {% else %} FAIL
             {% endif %}
             </td>
@@ -17,7 +21,7 @@
     {% endfor %}
 </tbody>
 <script>
-    /* delete tester record */
+    /* Function that deletes tester record */
     function deleteRecord(score_id, test_id, tester_id){
         //send data to flask
         let xhr = new XMLHttpRequest();

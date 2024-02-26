@@ -1,4 +1,4 @@
-/* DATA HIERARCHY TABLE CSS */
+/* TEST LIST TABLE CSS */
 table {
     margin: 1% auto;
     vertical-align: middle;
@@ -11,7 +11,18 @@ table {
   background-color: #f0f0f0;
   cursor: pointer;
 }
-
+.attemptDate-cell:hover  {
+    background-color: #f0f0f0;
+    cursor: pointer;
+}
+.score-cell:hover {
+    background-color: #f0f0f0;
+    cursor: pointer;
+}
+.passStatus-cell:hover {
+    background-color: #f0f0f0;
+    cursor: pointer;
+}
 th, td {
     border: 1px solid #ddd;
     padding: 8px;
@@ -22,6 +33,7 @@ th {
     background-color: #f2f2f2;
     text-align: center;
 }
+
 
 button {
     margin-right: 1%;
@@ -82,42 +94,37 @@ button{
   margin-bottom: 4%;
 }
 
-/* Container for filtering options */
+/* FILTERING OPTIONS ON test_list.html */
 .filter {
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;
 }
-
 /* filtering options */
 .options {
     display: flex;
     flex-direction: column;
 }
-
 /* labels in each option */
 .options label {
     margin-bottom: 5px;
 }
-
 /* select/input fields in each option */
 .options select,
 .options input[type="date"] {
     width: 150px;
 }
 
-
+/* DROPDOWN TABLE on tester_history_record.html */
 /* Hide dropdown table by default */
 .dropdown-table {
     display: none;
 }
-
 /* Add animation effect */
 .dropdown-table.show {
     display: table-row;
     animation: slideIn 0.5s ease-in-out;
 }
-
 @keyframes slideIn {
     0% {
         opacity: 0;
@@ -129,7 +136,8 @@ button{
     }
 }
 
-/* CSS file */
+/* POP UP PAGE on tester_list.html */
+/* pop up page */
 .modal {
   display: none; /* Hidden by default */
   position: fixed;
@@ -141,25 +149,92 @@ button{
   overflow: auto;
   background-color: rgba(0, 0, 0, 0.4);
 }
-
 .modal-content {
   background-color: #fefefe;
-  margin: 5% auto;
+  margin: 20% auto;
   padding: 20px;
   border: 1px solid #888;
-  width: 80%;
+  width: 50%;
 }
-
 .close {
   color: #aaa;
   float: right;
   font-size: 28px;
   font-weight: bold;
 }
-
 .close:hover,
 .close:focus {
   color: black;
   text-decoration: none;
   cursor: pointer;
+}
+.modal-content p {
+    display: flex;
+    justify-content: center;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+.modal-content > div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px; /* Adjust as needed */
+}
+
+
+/* PASS STATUS CHECKBOX on tester_list.html */
+/* The switch - the box around the slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 25px;
+}
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+input:checked + .slider {
+  background-color: #2196F3;
+}
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+.slider.round:before {
+  border-radius: 50%;
 }

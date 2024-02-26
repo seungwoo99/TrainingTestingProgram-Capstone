@@ -53,31 +53,30 @@
                         </tbody>
                     </table>
                 <div class="textinput-container">
-
               </div>
-
                 </div>
-                <div>
+                <div class="button-container">
                     <button onclick="">New Reference</button>
-                </div>
-                <div class="centered-container">
-                    <!-- Buttons -->
-                   <!-- <button onclick="viewQuestions()">View Questions</button> -->
                     <a href='{{ url_for('questions') }}'><button>View Questions</button></a>
                     <button onclick="addTopic()">Add Topic</button>
                     <button onclick="editTopic()">Edit Topic</button>
                     <button onclick="deleteTopic()">Delete Topic</button>
                     <button onclick="Function()">Save Changes</button>
-                    <a href="/datahierarchy"><button>Back</button></a>
+                    <button id="backButton">Back</button>
                 </div>
             </div>
         </div>
     </body>
 <script>
-        function toggleDropdown(button) {
-            var dropdownContent = button.nextElementSibling;
-            dropdownContent.style.display = (dropdownContent.style.display === 'block') ? 'none' : 'block';
-        }
+    document.getElementById('backButton').addEventListener('click', function() {
+        // Redirect to url when button is clicked
+        window.location.href = '/datahierarchy';
+    });
+
+    function toggleDropdown(button) {
+        var dropdownContent = button.nextElementSibling;
+        dropdownContent.style.display = (dropdownContent.style.display === 'block') ? 'none' : 'block';
+    }
 
 
     window.onclick = function (event) {

@@ -18,7 +18,8 @@
                 <div class="centered-container">
                     <p>{{ subject_data['description'] }}</p>
                 </div>
-                <div class="centered-container">
+            <div class="centered-container">
+                <div class="left-container">
                     <table class="topics-table" id="datasTable">
                         <thead>
                             <tr>
@@ -39,36 +40,45 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                    <div class="button-container">
+                        <button onclick="viewObjectives()">View Learning Objectives</button>
+                        <button onclick="addTopic()">Add Topic</button>
+                        <button onclick="editTopic()">Edit Topic</button>
+                        <button onclick="deleteTopic()">Delete Topic</button>
+                        <button id="backButton">Back</button>
+                    </div>
                 </div>
-                <div>
-                    <h2>Topic Editor</h2>
-                    <p style="display: inline-block; margin-right: 10px;">Topic Name</p>
-                    <input type="text" required minlength="4" maxlength="8"/>
-                </div>
-                <div>
-                    <p style="display: inline-block; margin-right: 10px;">Topic Description</p>
-                    <input type="text" required minlength="4" maxlength="8"/>
-                </div>
-                <div>
-                    <p style="display: inline-block; margin-right: 10px;">References</p>
-                    <input type="text" required minlength="4" maxlength="8"/>
-                </div>
-                <div>
-                    <button onclick="">New Reference</button>
-                </div>
-                <div class="centered-container">
-                    <!-- Buttons -->
-                    <button onclick="viewObjectives()">View Learning Objectives</button>
-                    <button onclick="addTopic()">Add Topic</button>
-                    <button onclick="editTopic()">Edit Topic</button>
-                    <button onclick="deleteTopic()">Delete Topic</button>
-                    <a href="/datahierarchy"><button>Back</button></a>
+
+                <div class="right-container">
+                    <div class="input-container">
+                        <h2>Topic Editor</h2>
+                        <p style="display: inline-block; margin-right: 10px;">Topic Name</p>
+                        <input type="text" required minlength="1"/>
+                    </div>
+                    <div class="input-container">
+                        <p style="display: inline-block; margin-right: 10px;">Topic Description</p>
+                        <input type="text" required minlength="1"/>
+                    </div>
+                    <div class="input-container">
+                        <p style="display: inline-block; margin-right: 10px;">References</p>
+                        <input type="text" required minlength="1"/>
+                    </div>
+                    <div>
+                        <button onclick="">New Reference</button>
+                    </div>
                 </div>
             </div>
+        </div>
         </div>
     </body>
     <script>
         var subject_id =  {{ subject_id | string}};
+
+        document.getElementById('backButton').addEventListener('click', function() {
+        // Redirect to url when button is clicked
+        window.location.href = '/datahierarchy';
+        });
+
         function toggleClass(el, className) {
             var rows = el.parentNode.getElementsByTagName("tr");
 
@@ -123,11 +133,26 @@
                 xhr.open("POST", '/datatopichierarchy')
                 xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
 
-                xhr.send(json);
+                xhr.onreadystatechange = function () {
+                            if (xhr.readyState === XMLHttpRequest.DONE) {
+                                if (xhr.status === 200) {
+                                    // Get response
+                                    let response = JSON.parse(xhr.responseText);
 
-                xhr.onload = function(event) {
-                    window.location.reload();
-                }
+                                    // If delete failed, display error message with topic conflicts.
+                                    if (response.category === "FAILURE") {
+                                        alert(response.error_message);
+                                    } else {
+                                        window.location.reload(); // Reload the page to reflect db changes
+                                    }
+                                } else {
+                                    // Handle failed http request
+                                    console.error("Request failed with status:", xhr.status);
+                                }
+                            }
+                        };
+
+                xhr.send(json);
             }
 
             // Function to add data entries
