@@ -715,7 +715,7 @@ def handle_get_questions():
             test_max_points = int(data.get('test_max_points', 0))
             logging.debug(f"Filter parameters: blooms_taxonomy: {blooms_taxonomy}, subjects: {subjects}, topics: {topics}, question_types: {question_types}, question_difficulties: {question_difficulties}")
             logging.debug(f"Test parameters: num_questions: {num_questions}, test_max_points: {test_max_points}")
-
+            
         questions_pool, status_code = get_questions(test_type, blooms_taxonomy, subjects, topics, question_types, question_difficulties, training_level_conditions, question_max_points)
         
         if status_code == 204:

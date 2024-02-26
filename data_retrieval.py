@@ -187,7 +187,7 @@ def get_questions(test_type, blooms_taxonomy, subjects, topics, question_types, 
                 total_questions_in_pool += len(search_result)
                 
                 if len(search_result) == 0:
-                    return search_result, {'message': 'No questions found that meet the selection criteria. Select new criteria and try again.'}, 204
+                    return search_result, 204
             
             logging.info(f"Queries successfully executed. Total questions in pool: {total_questions_in_pool}")
             return search_result, 200
