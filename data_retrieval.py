@@ -133,6 +133,9 @@ def get_questions(test_type, blooms_taxonomy, subjects, topics, question_types, 
                 
                 # Execute the query and fetch all results.
                 distinct_points = connection.execute(sql, params).fetchall()
+                
+                if len(distinct_points) == 0:
+                    return search_result, 204
     
                 # Iterate over each distinct max_points value fetched from the database.
                 for (max_point,) in distinct_points:
@@ -183,13 +186,11 @@ def get_questions(test_type, blooms_taxonomy, subjects, topics, question_types, 
                 
                 total_questions_in_pool += len(search_result)
                 
-            if len(search_result) == 0:
-                logging.info("No questions found that meet the selection criteria.")
-                return jsonify({'message': 'No questions found that meet the selection criteria. Select new criteria and try again.'}), 204
-            else:
-                logging.info(f"Queries successfully executed. Total questions in pool: {total_questions_in_pool}")
+                if len(search_result) == 0:
+                    return search_result, {'message': 'No questions found that meet the selection criteria. Select new criteria and try again.'}, 204
             
-            return search_result
+            logging.info(f"Queries successfully executed. Total questions in pool: {total_questions_in_pool}")
+            return search_result, 200
 
     except SQLAlchemyError as e:
         logging.error(f"SQLAlchemyError while getting questions: {e}", exc_info=True)

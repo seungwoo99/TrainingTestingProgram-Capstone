@@ -716,11 +716,11 @@ def handle_get_questions():
             logging.debug(f"Filter parameters: blooms_taxonomy: {blooms_taxonomy}, subjects: {subjects}, topics: {topics}, question_types: {question_types}, question_difficulties: {question_difficulties}")
             logging.debug(f"Test parameters: num_questions: {num_questions}, test_max_points: {test_max_points}")
 
-        questions_pool = get_questions(test_type, blooms_taxonomy, subjects, topics, question_types, question_difficulties, training_level_conditions, question_max_points)
+        questions_pool, status_code = get_questions(test_type, blooms_taxonomy, subjects, topics, question_types, question_difficulties, training_level_conditions, question_max_points)
         
-        if "error" in questions_pool:
-            logging.error(questions_pool["error"])
-            return jsonify(questions_pool), 500
+        if status_code == 204:
+            logging.error('No questions found that meet the selection criteria.')
+            return jsonify({}), status_code
         
         if test_type == 'manual':
             selected_questions = sorted(
@@ -742,9 +742,9 @@ def handle_get_questions():
         else:
             return jsonify({
                 'questions_pool': questions_pool,
-                'message': "Questions successfully retrieved for manual selection."
-            })
-
+                'message': "Questions successfully retrieved for random selection."
+            }), 200
+            
     # Error handling
     except ValueError as ve:
         logging.error(f"ValueError: {ve}")
@@ -781,7 +781,7 @@ def handle_select_questions():
             status_code = 412  
         # Check if no valid combination could be found
         elif response.get('error_code') == 'NO_VALID_COMBINATION':
-            status_code = 404
+            status_code = 406
         return jsonify(response), status_code
     
     # Flatten the question pool for easier random access
@@ -869,61 +869,32 @@ def validate_questions_pool(questions_pool, num_questions, test_max_points):
 
     logging.info("Check 1: Validation check passed.")
     logging.info("Check 2: Performing check to see if the questions available in the questions pool can meet the user defined criteria of num_questions and test_max_points")
-    # Initialize a DP table with rows equal to the number of questions to select (num_questions + 1 for indexing from 0)
-    # and columns equal to the maximum point sum allowed (test_max_points + 1 for indexing from 0).
-    # Each cell dp[i][j] represents whether it's possible to select i questions with a total sum of j points.
     dp = [[False] * (test_max_points + 1) for _ in range(num_questions + 1)]
-    # Set the base case: it is always possible to select 0 questions with a total of 0 points.
     dp[0][0] = True
 
-    # Iterate over each distinct max_points value in the questions pool and the corresponding list of questions.
     for max_points, questions in questions_pool.items():
-        # Convert max_points to integer
         max_points = int(max_points)
-        # Get the number of questions available for the current max_points value.
         question_count = len(questions)
-    
-        # Iterate through the number of questions to select (from num_questions down to 1)
-        # and the possible point sums (from test_max_points down to max_points).
-        # This reverse iteration prevents using the same question multiple times.
+
         for n in range(num_questions, 0, -1):
-            for k in range(test_max_points, max_points - 1, -1):
-            
-                # Attempt to use from 1 up to the available number of questions for the current max_points value,
-                # without exceeding the total number of questions to select.
+            for k in range(max_points, test_max_points + 1):  # Adjusted range
                 for q in range(1, min(question_count, n) + 1):
-                    # If it's possible to select (n-q) questions with a total of (k-max_points*q) points,
-                    # then it's also possible to select n questions with a total of k points by including q questions
-                    # of the current max_points value.
-                    if dp[n-q][k-max_points*q]:
+                    # print(f'n: {n}, q: {q}, k: {k}, max_points: {max_points}, dp size: {len(dp)}, {len(dp[0])}')
+                    if k - max_points * q >= 0 and dp[n-q][k-max_points*q]:
                         dp[n][k] = True
 
-                    # If a valid combination is found that uses exactly num_questions questions without exceeding
-                    # test_max_points, return True immediately, indicating success.
-                    if k <= test_max_points and n == num_questions:
-                        return True, {'status': 'success',
-                              'message': 'Both validation checks passed'
-                        }
-
-        # After attempting all combinations, check if there's any valid combination
-        # that uses exactly num_questions questions without exceeding test_max_points.
-        # This final check is necessary in case the early exit condition wasn't triggered,
-        # but a valid combination still exists within the constraints.
-        for points in range(1, test_max_points + 1):
-            if dp[num_questions][points]:
-                # Valid combination found
-                return True, {'status': 'success',
-                              'message': 'Both validation checks passed'
-                }
-
-    # If no valid combination is found by this point, return False, indicating failure.
-    logging.info("Check 2: Validation check failed.")
-    message = f'No valid combination of {num_questions} from the current question pool will result in a test score less then or equal to {test_max_points}. Alter test parameters and try again.'
-    return False, {
-        'status': 'error',
-        'message': message,
-        'error_code': 'NO_VALID_COMBINATION'
-    }
+        if any(dp[num_questions][:test_max_points+1]):
+            print('Validation checks passed!')
+            return True, {'status': 'success', 'message': 'Both validation checks passed'}
+        else:
+            # If no valid combination is found by this point, return False, indicating failure.
+            logging.info("Check 2: Validation check failed.")
+            message = f'No valid combination of {num_questions} from the current question pool will result in a test score less then or equal to {test_max_points}. Alter test parameters and try again.'
+            return False, {
+                'status': 'error',
+                'message': message,
+                'error_code': 'NO_VALID_COMBINATION'
+            }
     
 # Route to handle test creation
 @app.route('/test_creation', methods=['POST'])

@@ -94,7 +94,18 @@ document.addEventListener('DOMContentLoaded', function () {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       })
-      .then(response => response.ok ? response.json() : handleAllErrors(response, {resetUI: resetUI}, handleQuestionSelection))
+      .then(response => {
+        console.log('Response status:', response.status);
+        if (response.status === 204) {
+            console.log('204 code occurred--No questions found');
+            alert('No questions found that meet the selection criteria. Select new criteria and try again.');
+            resetUI();
+            return Promise.resolve();
+        } else if (response.status !== 200) {
+          return handleAllErrors(response, {resetUI: resetUI}, handleQuestionSelection);
+        }
+        return response.json();
+      })
       .then(data => {
         console.log(data.message)
         return handleQuestionSelection(data.questions_pool, numQuestionsValue, testMaxPointValue);
@@ -122,8 +133,7 @@ document.addEventListener('DOMContentLoaded', function () {
         alert('Test created successfully!');
       })
       .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred. Please check the console for details.');
+        console.error(error);
       });
     });
   }
@@ -142,41 +152,52 @@ document.addEventListener('DOMContentLoaded', function () {
         questions_pool, numQuestions, testMaxPoints, resetUI: resetUI
     }))
     .then(data => {
-      console.log("Questions successfully selected.");
+      if (data.message) {
+        console.log(data.message);
+      }
       return data;
     })
     .catch(error => {
-      console.error('Error:', error);
-      alert('An error occurred while selecting questions.');
-      return Promise.reject(error);
+      const errorMessage = `An error occurred while selecting questions: ${error.message}`;
+      const customError = new Error(errorMessage);
+      return Promise.reject(customError);
     });
   }
 
-  function handleAllErrors(response, context = {}, retryCallback) {
-    console.error(`Error occurred with status ${response.status}: ${response.message}`);
+  function handleAllErrors(response, context = {}) {
+    if (response.status === 200) {
+      console.log('Status code 200, no error to handle, terminating handleAllErrors.')
+      return Promise.resolve();
+    }
+    
+    let errorTriggered = false;
+    console.error(`Error occurred with status ${response.status}.`);
     
     response.json().then(data => {
       alert(data.message || 'An error occurred.');
       
       switch (response.status) {
-        case 204:
-          alert('No questions found that meet the selection criteria. Select new criteria and try again.');
-          if (context.resetUI) context.resetUI();
-          return Promise.reject('Process terminated due to no questions found meeting selection criteria.')
         case 409:
-          alert(data.message || 'A conflict occurred. Please try a different name.');
-          if (context.focusElement) document.getElementById(context.focusElement).focus();
+          console.log('409 error occurred--Duplicate name');
+          const element = document.getElementById('test_name');
+          if (element) {
+            element.classList.add("error");
+            element.focus();
+          }
           break;
         case 422:
+          console.log('422 error occurred--Less questions found then requested')
           if (confirm(`Adjust number of questions to the available ${data.total_questions_in_pool}?`)) {
             handleQuestionSelection(context.questions_pool, data.total_questions_in_pool, context.testMaxPoints);
           } else {
             console.log('User terminated the process.');
             if (context.resetUI) context.resetUI();
+            errorTriggered = true;
             return Promise.reject('Process terminated due to user choice.')
           }
           break;
         case 412:
+          console.log('412 error occurred--Less questions found then requested and the available questions exceed the max point allowance')
           if (confirm("Do you want to adjust the number of questions and max points based on the feedback?")) {
             const newNumQuestions = parseInt(prompt(`Enter new number of questions (Available: ${data.total_questions_in_pool}):`, context.numQuestions), 10);
             const newTestMaxPoints = parseInt(prompt("Enter new max points limit:", context.testMaxPoints), 10);
@@ -184,20 +205,33 @@ document.addEventListener('DOMContentLoaded', function () {
           } else {
             console.log('User terminated process.');
             if (context.resetUI) context.resetUI();
+            errorTriggered = true;
             return Promise.reject('Process terminated due to user choice.')
           }
           break;
+        case 406:
+          console.log('406 error occurred--No valid combo')
+          if (context.resetUI) context.resetUI();
+          errorTriggered = true;
+          return Promise.reject('Process terminated due to no valid combination of questions meeting selection criteria.')
         case 500:
+          console.log('500 error occurred')
           alert('An unexpected server error occurred. Please try again later.');
+          errorTriggered = true;
           return Promise.reject('Process terminated due to error.')
         default:
+          console.log('No specified case for error--default')
           alert('An unexpected error occurred.');
+          errorTriggered = true;
           return Promise.reject('Process terminated due to error.')
       }
     }).catch(error => {
-      console.error('Error processing the error response:', error);
-      alert('An error occurred while processing the error response. Please check the console for more details.');
-      return Promise.reject('Process terminated due to error.')
+      if (!errorTriggered) {
+        console.error('Error processing the error response:', error);  
+        return Promise.reject('Process terminated due to unexpected error.'); 
+      } else {
+        return Promise.reject('Process terminated due caught error.');
+      }
     });
   }
 
