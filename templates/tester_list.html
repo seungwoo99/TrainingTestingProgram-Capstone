@@ -22,5 +22,80 @@
 
         </div>
 
+        <!-- pop up page for adding new tester on the list -->
+        <div id="new_tester" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>Add New Tester</p>
+            <div class="tester_option">
+                <label>
+                    <input type="radio" name="option" value="new" id="newTesterRadio" checked>
+                    <span class="option">New Tester</span>
+                </label>
+                <label>
+                    <input type="radio" name="option" value="exist" id="existTesterRadio">
+                    <span class="option">Existing Tester</span>
+                </label>
+            </div>
+            <div class="tester_name_field">
+                <label for="testerName">Tester Name: </label>
+                <input id="testerName">
+                <select id="dropdown" style="display:none;">
+                    <option value="">Tester</option>
+                    {% for row in all_tester_data %}
+                        <option value="{{ row.tester_id }}">{{ row.testee_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <label id="testerNameError" class="error" style="display: none;">Please enter a tester name.</label>
+            <label id="testerIdError" class="error" style="display: none;">Please select one tester.</label>
+            <div>
+                <label for="attemptDate">Attempt_Date: </label>
+                <input id="attemptDate" type="datetime-local">
+                <label id="attemptDateError" class="error" style="display: none;">Please select an attempt date.</label>
+            </div>
+            <div>
+                <label for="score">Score: </label>
+                <input id="score" type="text" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            </div>
+            <div>
+                <label>Pass Status: </label>
+                <label class="switch">
+                    <input id="newPassStatus" type="checkbox">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div>
+                <button id="addNewTester" data-test-id={{ testId }}>Add</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- pop up page for adding new record to tester -->
+    <div id="new_record" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="name"></p>
+            <div>
+                <label for="new_attemptDate">Attempt_Date: </label>
+                <input id="new_attemptDate" type="datetime-local">
+                <label id="newAttemptDateError" class="error" style="display: none;">Please select an attempt date.</label>
+            </div>
+            <div>
+                <label for="new_score">Score: </label>
+                <input id="new_score" type="number">
+            </div>
+            <div>
+                <label>Pass Status: </label>
+                <label class="switch">
+                    <input id="passStatus" type="checkbox">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div>
+                <button id="addNewRecord" data-test-id={{ testId }}>Add</button>
+            </div>
+        </div>
+    </div>
     </body>
 </html>
