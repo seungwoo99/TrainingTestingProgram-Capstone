@@ -332,7 +332,8 @@ def get_test_data(test_id):
     except Exception as e:
         # Log an error message with exception details.
         logging.error(f"Error while getting test data: {e}", exc_info=True)
-        
+
+
 # Function that returns test list from the database
 def get_tests():
     test_query = text("SELECT t.test_id, t.test_name, GROUP_CONCAT(DISTINCT s.name) AS subject_name, GROUP_CONCAT(DISTINCT tp.name) AS topic_name, t.creation_date, t.last_modified_date FROM tests t "
@@ -367,17 +368,16 @@ def get_topics():
 
 # Function that returns tester list from the database
 def get_tester_list(test_id):
-    tester_query = text(
-        "SELECT ts.test_id, max_id.max_score_id, ts.tester_id, te.testee_name, ts.attempt_date, ts.total_score, ts.pass_status "
-        + "FROM test_scores ts "
-        + "INNER JOIN( "
-        + "SELECT MAX(score_id) AS max_score_id, test_id, tester_id "
-        + "FROM test_scores "
-        + "WHERE test_id = :test_id "
-        + "GROUP BY tester_id "
-        + ")max_id ON ts.score_id = max_id.max_score_id AND ts.tester_id = max_id.tester_id "
-        + "LEFT JOIN testee te ON ts.tester_id = te.tester_id "
-        + "WHERE ts.test_id = :test_id ")
+    tester_query = text("SELECT score_id, tester_id, test_id, testee_name, attempt_date, total_score, pass_status "
+                        +"FROM ( "
+                        +"SELECT ts.score_id, ts.tester_id, ts.test_id, te.testee_name, ts.attempt_date, ts.total_score, ts.pass_status, "
+                        +"ROW_NUMBER() OVER (PARTITION BY ts.tester_id ORDER BY ts.attempt_date DESC) AS rn "
+                        +"FROM test_scores ts "
+                        +"LEFT JOIN testee te ON ts.tester_id = te.tester_id "
+                        +"WHERE ts.test_id = :test_id "
+                        +") AS ranked "
+                        +"WHERE rn = 1")
+
     tester_result = db.engine.execute(tester_query, test_id=test_id)
     data = tester_result.fetchall()
 
