@@ -159,17 +159,22 @@ def select_questions(questions_pool, num_questions, max_points):
             break
 
     logging.debug(f"Finished question selection. Total selected questions: {len(selected_questions)}, Total points of selected questions: {current_points}")
-    return selected_questions
+    return selected_questions, current_points
 
 def create_test(is_active, created_by, creation_date, test_name, test_description, total_score, question_order):
+    # Log the start of the create_test function
     logging.info("Starting create_test function")
     try:
+        # Convert is_active to integer
         is_active_db = int(is_active)
-        
+        # Log parameters received for creating the test
         logging.info(f"Parameters received: active_status={is_active_db}, created_by={created_by}, test_name={test_name}, ...")
-        
+
+        # Begin a transaction
         with db.engine.begin() as transaction:
+            logging.info("Transaction started")
             logging.info("Attempting to insert into tests table")
+            # Execute SQL query to insert test data into tests table
             result = transaction.execute(
                 text(
                     "INSERT INTO tests (active_status, created_by, creation_date, last_modified_date, modified_by, test_name, test_description, total_score) "
@@ -186,16 +191,48 @@ def create_test(is_active, created_by, creation_date, test_name, test_descriptio
                     "total_score": total_score
                 }
             )
+            # Get the ID of the newly inserted test
             test_id = result.lastrowid
+            # Log successful insertion of the test
             logging.info(f"Successfully inserted test with ID {test_id}")
 
+            # Track the number of successful inserts for questions
+            successful_inserts = 0
+            # Iterate over question order to insert each question into test_questions table
             for order in question_order:
-                if order['questionOrder'] is not None:
-                    logging.info(f"Inserting question order for question ID {order['questionId']}")
+                # Check if question_order is not None
+                if order['question_order'] is not None:
+                    # Convert question_order to integer
+                    question_order_int = int(order['question_order'])
+                    # Execute SQL query to insert question into test_questions table
+                    transaction.execute(
+                        text(
+                            "INSERT INTO test_questions (question_id, question_order, test_id) "
+                            "VALUES (:question_id, :question_order, :test_id)"
+                        ),
+                        {
+                            "question_id": order['question_id'],
+                            "question_order": question_order_int,
+                            "test_id": test_id
+                        }
+                    )
+                    # Increment successful inserts count
+                    successful_inserts += 1
 
-        logging.info(f"Test '{test_name}' created successfully with ID {test_id}")
-        return {"message": f"Test '{test_name}' created successfully with ID {test_id}"}
+            # If not all questions were successfully inserted, raise an error
+            if successful_inserts != len(question_order):
+                raise ValueError("Not all questions were successfully inserted.")
+                
+            # Commit the transaction if everything went well
+            transaction.execute("COMMIT")
+            # Log the commitment of the transaction
+            logging.info("Transaction committed")
+            # Return a success message with the ID of the created test
+            return {"message": f"Test '{test_name}' created successfully with ID {test_id}"}
 
+    except ValueError as e:
+        logging.error("There was a problem inserting the questions: %s", str(e), exc_info=True)
+        return {"error": str(e)}
     except SQLAlchemyError as e:
         logging.error("An error occurred while creating the test in the database", exc_info=True)
         return {"error": str(e)}
@@ -268,30 +305,6 @@ def get_test_questions(test_id):
         # Log an error message with exception details.
         logging.error(f"Error while getting questions: {e}", exc_info=True)
 
-
-def get_tests_temp():
-
-    try:
-        # Connect to the database using db.engine.
-        with db.engine.connect() as connection:
-
-            # Execute query to retrieve all tests
-            # Execute the SQL query to retrieve all tests
-            sql_query = text("""
-                        SELECT test_id, test_name
-                        FROM tests
-                    """)
-            result = db.engine.execute(sql_query)
-
-            # Extract tests from the result
-            test_list = [row for row in result]
-
-            return test_list
-
-    except Exception as e:
-        # Log an error message with exception details.
-        logging.error(f"Error while getting test list: {e}", exc_info=True)
-
 def get_test_data(test_id):
 
     try:
@@ -322,9 +335,13 @@ def get_test_data(test_id):
         
 # Function that returns test list from the database
 def get_tests():
-    test_query = text("Select *, s.name AS subject_name, tp.name AS topic_name FROM tests t "
-                      + "LEFT JOIN subjects s ON t.subject_id = s.subject_id "
-                      + "LEFT JOIN topics tp ON t.topic_id = tp.topic_id ")
+    test_query = text("SELECT t.test_id, t.test_name, GROUP_CONCAT(DISTINCT s.name) AS subject_name, GROUP_CONCAT(DISTINCT tp.name) AS topic_name, t.creation_date, t.last_modified_date FROM tests t "
+                      + "LEFT JOIN test_questions tq ON t.test_id = tq.test_id "
+                      + "LEFT JOIN questions q ON tq.question_id = q.question_id "
+                      + "LEFT JOIN learning_objectives lo ON q.obj_id = lo.obj_id "
+                      + "LEFT JOIN topics tp ON lo.topic_id = tp.topic_id "
+                      + "LEFT JOIN subjects s ON tp.subject_id = s.subject_id "
+                      + "GROUP BY t.test_id, t.test_name, s.name, t.creation_date, t.last_modified_date")
     test_result = db.engine.execute(test_query)
 
     # fetch all rows of the result
@@ -346,6 +363,7 @@ def get_topics():
     data = topic_result.fetchall()
 
     return data
+
 
 # Function that returns tester list from the database
 def get_tester_list(test_id):
@@ -418,3 +436,50 @@ def get_all_topics(subject_id):
         subject_data = subject_data.fetchone()
 
     return result, subject_data
+
+def get_all_objectives(topic_id):
+    with db.engine.connect() as connection:
+
+        # Execute the SQL query to retrieve all topics for a subject
+        sql_query = text("""
+                            SELECT l.obj_id, l.description as obj_description,
+                             name as blooms_name, is_applicant, is_apprentice,
+                              is_journeyman, is_senior, is_chief, is_coordinator,
+                               tags FROM learning_objectives l 
+                            JOIN blooms_tax b ON b.blooms_id = l.blooms_id
+                            WHERE topic_id = :topic_id
+                    """)
+        result = connection.execute(sql_query, topic_id=topic_id)
+
+        # get subject name and description
+        sql_query = text("""
+                                    SELECT name FROM topics
+                                    WHERE topic_id = :topic_id
+                            """)
+        topic_data = connection.execute(sql_query, topic_id=topic_id)
+        topic_data = topic_data.fetchone()
+
+    return result, topic_data
+
+def get_objs_temp():
+
+    try:
+        # Connect to the database using db.engine.
+        with db.engine.connect() as connection:
+
+            # Execute query to retrieve all tests
+            # Execute the SQL query to retrieve all tests
+            sql_query = text("""
+                        SELECT obj_id, description
+                        FROM learning_objectives
+                    """)
+            result = connection.execute(sql_query)
+
+            # Extract tests from the result
+            obj_list = [row for row in result]
+
+            return obj_list
+
+    except Exception as e:
+        # Log an error message with exception details.
+        logging.error(f"Error while getting test list: {e}", exc_info=True)

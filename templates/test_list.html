@@ -6,59 +6,54 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
         <link rel = "stylesheet" href = "{{url_for('static', filename='/css/test_list.css')}}">
         <link rel="stylesheet" href="{{url_for('static', filename='/css/main.css')}}">
-        <link rel="stylesheet" href="{{url_for('static', filename='/css/fonts.css')}}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='/css/fonts.css') }}">
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
         {% include 'navbar.html' %}
     </head>
     <body>
-        <div class="wrapper">
-            <div class="main-container">
-                <div class="centered-container">
-                    <h1>Test List</h1>
+        <div class="container">
+            <h2>Test List</h2>
+            <!-- Filtering option -->
+            <div class="filter">
+                <!-- subject drop down -->
+                <div class="options">
+                    <label class="subject_label">Subject</label>
+                    <select id="subject-filter">
+                        <option value="">Subjects</option>
+                            {% for row in subject_data %}
+                                <option value="{{ row.subject_id }}">{{ row.name }}</option>
+                            {% endfor %}
+                    </select>
                 </div>
-                <!-- Filtering option -->
-                <div class="centered-container">
-                    <table class="filter-table">
-                        <tr>
-                            <th>Subject</th>
-                            <th>Topic</th>
-                            <th>From</th>
-                            <th>To</th>
-                        </tr>
-                        <tr>
-                            <td>
-                                <select id="subject-filter">
-                                    <option value="">Subjects</option>
-                                        {% for row in subject_data %}
-                                            <option value="{{ row.subject_id }}">{{ row.name }}</option>
-                                        {% endfor %}
-                                </select>
-                            </td>
-                            <td>
-                                <select id="topic-filter">
-                                    <option value="">Topics</option>
-                                        {% for row in topic_data %}
-                                            <option value="{{ row.topic_id }}">{{ row.name }}</option>
-                                        {% endfor %}
-                                </select>
-                            </td>
-                            <td>
-                                <input type="date" id="start_date">
-                            </td>
-                            <td>
-                                <input type="date" id="end_date">
-                            </td>
-                        </tr>
-                    </table>
+                <!-- topic drop down -->
+                <div class="options">
+                    <label class="topic_label">Topic</label>
+                    <select id="topic-filter">
+                        <option value="">Topics</option>
+                            {% for row in topic_data %}
+                                <option value="{{ row.topic_id }}">{{ row.name }}</option>
+                            {% endfor %}
+                    </select>
                 </div>
-                <!-- Test Table View -->
-                <div class="centered-container">
-                    <table class="results-table" id="datasTable">
-                        {% include 'test_table.html' %}
-                    </table>
+                <!-- Starting date input field -->
+                <div class="options">
+                    <label class="from_label">From</label>
+                    <input type="date" id="start_date">
+                </div>
+                <!-- Ending date input field -->
+                <div class="options">
+                    <label class="to_label">To</label>
+                    <input type="date" id="end_date">
                 </div>
             </div>
+            <!-- Test Table View -->
+            <table id="datasTable">
+                {% include 'test_table.html' %}
+            </table>
         </div>
         <!-- JS -->
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
         <script>
             /* JS code for handling filtering options' data */
             let subjectFilter = document.getElementById('subject-filter');

@@ -4,6 +4,9 @@ import logging
 from logging.handlers import RotatingFileHandler
 from datetime import datetime, timezone, timedelta
 from random import randint
+import re
+import requests
+import random
 
 # Statistics related imports
 from io import BytesIO
@@ -11,6 +14,7 @@ from base64 import urlsafe_b64decode
 import base64
 import numpy as np
 from PIL import Image
+import matplotlib
 import matplotlib.pyplot as plt
 
 # Related third-party imports
@@ -29,13 +33,15 @@ from itsdangerous import URLSafeTimedSerializer
 # Local application/library specific imports
 from config import MailConfig
 from db_config import db
-from data_retrieval import (fetch_test_creation_options, get_questions, select_questions, get_user, get_test_questions,
-                            check_registered, get_test_data, get_tests_temp, get_tests, get_topics, get_subjects, get_tester_list, selectSubjectNames, selectSubjectDescriptions)
+from data_retrieval import (fetch_test_creation_options, get_questions, select_questions, create_test, get_user,
+                            get_test_questions,
+                            check_registered, get_test_data, get_tests, get_topics, get_subjects,
+                            get_all_subjects, get_tester_list,
+                            selectSubjectNames, selectSubjectDescriptions, insertSubject, get_all_topics, insertTopic,
+                            get_all_objectives, get_objs_temp)
 
 # Load environment variables from a .env file
 load_dotenv()
-
-
 
 #Initialize Flask App
 app = Flask(__name__)
@@ -67,10 +73,13 @@ bcrypt = Bcrypt(app)
 # Initialize Mail
 mail = Mail(app)
 
-
 # Hash the password before storing it in the database
-# hashed_password = bcrypt.generate_password_hash(password,12).decode('utf-8')
+# hashed_password = bcrypt.generate_password_hash('1234',12).decode('utf-8')
 # print("Password: ", hashed_password)
+
+# Set the backend to 'Agg' for Matplotlib
+matplotlib.use('Agg')
+
 
 # ----------Helper functions for OTP and token generation----------
 
@@ -161,6 +170,10 @@ def login():
             otp_created_time = datetime.now(timezone.utc)
             otp = generate_otp(user['email'], otp_created_time)
 
+            # Set up user session cookie
+            session['user'] = user
+            session['username'] = input_username  # Add username to session
+
             # Send email to user using SMTP - Simple Mail Transfer Protocol
             # Create URL link
             full_url = request.url + 'code'
@@ -202,15 +215,113 @@ def homepage():
     return redirect(url_for('data'))
 
 
-@app.route('/datahierarchy')
+@app.route('/datahierarchy', methods=['POST', 'GET'])
 def data():
+    # Check if user session is inactive
     if 'user' not in session or not session['user'].get('is_authenticated', False):
         flash("Access denied, please login.")
         return redirect(url_for('trylogin'))
 
-    subjectNames = selectSubjectNames()
-    subjectDescriptions = selectSubjectDescriptions()
-    return render_template('datahierarchy.html', subjectNames=subjectNames, subjectDescriptions=subjectDescriptions)
+    if request.method == "POST":
+        pData = request.get_json()
+        if pData.get("type") == "add":
+            # insertSubject(pData.get("value1"),pData.get("value2"))
+            name = pData.get("value1")
+            description = pData.get("value2")
+
+            insertSubject(name, description)
+            # query = text("""INSERT INTO subjects (name,description) VALUES (:name,:description)""")
+            # db.engine.execute(query, name=name, description=description)
+            logging.debug("adding new data")
+        elif pData.get("type") == "delete":
+            subject_id = pData.get("value1")
+            query = text("""DELETE FROM subjects where subject_id = :subject_id""")
+            db.engine.execute(query, subject_id=subject_id)
+        elif pData.get("type") == "edit":
+            subject_id = pData.get("value1")
+            name = pData.get("value2")
+            description = pData.get("value3")
+            query = text(
+                """UPDATE subjects SET name = :name, description = :description WHERE subject_id = :subject_id""")
+            db.engine.execute(query, subject_id=subject_id, name=name, description=description)
+
+        return jsonify({"category": "SUCCESS"})
+    else:
+        subjects = get_all_subjects()
+        return render_template('datahierarchy.html', subjects=subjects)
+
+
+@app.route('/datatopichierarchy', methods=['GET', 'POST'])
+def topics():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
+    # Get the selected subject_id from the query parameters
+    subject_id = request.args.get('subject_id')
+
+    # Use the subject_id to fetch topics
+    topics, subject_data = get_all_topics(subject_id)
+
+    # Check which database function to execute
+    if request.method == "POST":
+        pData = request.get_json()
+        if pData.get("type") == "add":
+            subject_id = pData.get("value1")
+            name = pData.get("value2")
+            description = pData.get("value3")
+            facility = pData.get("value4")
+            insertTopic(subject_id, name, description, facility)
+
+        elif pData.get("type") == "edit":
+            topic_id = pData.get("value1")
+            name = pData.get("value2")
+            description = pData.get("value3")
+            facility = pData.get("value4")
+            query = text(
+                """UPDATE topics SET name = :name, description = :description, facility=:facility WHERE topic_id = :topic_id""")
+            db.engine.execute(query, topic_id=topic_id, name=name, description=description, facility=facility)
+            print()
+        elif pData.get("type") == "delete":
+            topic_id = pData.get("value1")
+            query = text("""DELETE FROM topics where topic_id = :topic_id""")
+            db.engine.execute(query, topic_id=topic_id)
+    else:
+        # Pass topics to the template
+        return render_template('datatopichierarchy.html', topics=topics, subject_id=subject_id,
+                               subject_data=subject_data)
+
+
+@app.route('/dataobjhierarchy', methods=['GET', 'POST'])
+def objectives():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
+    # Get the selected subject_id from the query parameters
+    topic_id = request.args.get('topic_id')
+
+    # Use the subject_id to fetch topics
+    objectives, topic_data = get_all_objectives(topic_id)
+
+    # Check which database function to execute
+    if request.method == "POST":
+        print()
+    else:
+        # Pass topics to the template
+        return render_template('dataobjhierarchy.html', objectives=objectives, topic_id=topic_id, topic_data=topic_data)
+
+
+@app.route('/dataquestionhierarchy', methods=['GET', 'POST'])
+def questions():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
+    return render_template('dataquestionhierarchy.html', objs=get_objs_temp())
 
 
 # ---------- Routes for the test list page and tester list page ----------
@@ -243,51 +354,84 @@ def filter_data():
     end_date = request.args.get('end')
 
     if start_date == '':
-        start_date = '1970-01-01'
+        start_date = '0000-00-00'
     if end_date == '':
         end_date = datetime.now().strftime('%Y-%m-%d')
 
     if subject_id == '' and topic_id == '':
-        test_query = text("Select *, s.name AS subject_name, tp.name AS topic_name FROM tests t "
-                          + "LEFT JOIN subjects s ON t.subject_id = s.subject_id "
-                          + "LEFT JOIN topics tp ON t.topic_id = tp.topic_id "
-                          + "WHERE (creation_date) BETWEEN :start_date AND :end_date")
+        test_query = text(
+            "SELECT t.test_id, t.test_name, GROUP_CONCAT(DISTINCT s.name) AS subject_name, GROUP_CONCAT(DISTINCT tp.name) AS topic_name, t.creation_date, t.last_modified_date FROM tests t "
+            + "LEFT JOIN test_questions tq ON t.test_id = tq.test_id "
+            + "LEFT JOIN questions q ON tq.question_id = q.question_id "
+            + "LEFT JOIN learning_objectives lo ON q.obj_id = lo.obj_id "
+            + "LEFT JOIN topics tp ON lo.topic_id = tp.topic_id "
+            + "LEFT JOIN subjects s ON tp.subject_id = s.subject_id "
+            + "WHERE (creation_date) BETWEEN :start_date AND :end_date "
+            + "GROUP BY t.test_id, t.test_name, s.name, t.creation_date, t.last_modified_date ")
         test_result = db.engine.execute(test_query, start_date=start_date, end_date=end_date)
     elif subject_id != '' and topic_id == '':
-        test_query = text("Select *, s.name AS subject_name, tp.name AS topic_name FROM tests t "
-                          + "LEFT JOIN subjects s ON t.subject_id = s.subject_id "
-                          + "LEFT JOIN topics tp ON t.topic_id = tp.topic_id "
-                          + "WHERE s.subject_id = :subject_id AND (creation_date) BETWEEN :start_date AND :end_date")
+        test_query = text(
+            "SELECT t.test_id, t.test_name, GROUP_CONCAT(DISTINCT s.name) AS subject_name, GROUP_CONCAT(DISTINCT tp.name) AS topic_name, t.creation_date, t.last_modified_date FROM tests t "
+            + "LEFT JOIN test_questions tq ON t.test_id = tq.test_id "
+            + "LEFT JOIN questions q ON tq.question_id = q.question_id "
+            + "LEFT JOIN learning_objectives lo ON q.obj_id = lo.obj_id "
+            + "LEFT JOIN topics tp ON lo.topic_id = tp.topic_id "
+            + "LEFT JOIN subjects s ON tp.subject_id = s.subject_id "
+            + "WHERE s.subject_id = :subject_id AND (creation_date) BETWEEN :start_date AND :end_date "
+            + "GROUP BY t.test_id, t.test_name, s.name, t.creation_date, t.last_modified_date ")
         test_result = db.engine.execute(test_query, subject_id=subject_id, start_date=start_date, end_date=end_date)
     elif subject_id == '' and topic_id != '':
-        test_query = text("Select *, s.name AS subject_name, tp.name AS topic_name FROM tests t "
-                          + "LEFT JOIN subjects s ON t.subject_id = s.subject_id "
-                          + "LEFT JOIN topics tp ON t.topic_id = tp.topic_id "
-                          + "WHERE tp.topic_id = :topic_id AND (creation_date) BETWEEN :start_date AND :end_date")
+        test_query = text(
+            "SELECT t.test_id, t.test_name, GROUP_CONCAT(DISTINCT s.name) AS subject_name, GROUP_CONCAT(DISTINCT tp.name) AS topic_name, t.creation_date, t.last_modified_date FROM tests t "
+            + "LEFT JOIN test_questions tq ON t.test_id = tq.test_id "
+            + "LEFT JOIN questions q ON tq.question_id = q.question_id "
+            + "LEFT JOIN learning_objectives lo ON q.obj_id = lo.obj_id "
+            + "LEFT JOIN topics tp ON lo.topic_id = tp.topic_id "
+            + "LEFT JOIN subjects s ON tp.subject_id = s.subject_id "
+            + "WHERE tp.topic_id = :topic_id AND (creation_date) BETWEEN :start_date AND :end_date "
+            + "GROUP BY t.test_id, t.test_name, s.name, t.creation_date, t.last_modified_date ")
+
         test_result = db.engine.execute(test_query, topic_id=topic_id, start_date=start_date, end_date=end_date)
     else:
-        test_query = text("Select *, s.name AS subject_name, tp.name AS topic_name FROM tests t "
-                          + "LEFT JOIN subjects s ON t.subject_id = s.subject_id "
-                          + "LEFT JOIN topics tp ON t.topic_id = tp.topic_id "
-                          + "WHERE tp.topic_id = :topic_id AND s.subject_id = :subject_id AND (creation_date) BETWEEN :start_date AND :end_date")
+        test_query = text(
+            "SELECT t.test_id, t.test_name, GROUP_CONCAT(DISTINCT s.name) AS subject_name, GROUP_CONCAT(DISTINCT tp.name) AS topic_name, t.creation_date, t.last_modified_date FROM tests t "
+            + "LEFT JOIN test_questions tq ON t.test_id = tq.test_id "
+            + "LEFT JOIN questions q ON tq.question_id = q.question_id "
+            + "LEFT JOIN learning_objectives lo ON q.obj_id = lo.obj_id "
+            + "LEFT JOIN topics tp ON lo.topic_id = tp.topic_id "
+            + "LEFT JOIN subjects s ON tp.subject_id = s.subject_id "
+            + "WHERE tp.topic_id = :topic_id AND s.subject_id = :subject_id AND (creation_date) BETWEEN :start_date AND :end_date "
+            + "GROUP BY t.test_id, t.test_name, s.name, t.creation_date, t.last_modified_date ")
+
         test_result = db.engine.execute(test_query, topic_id=topic_id, subject_id=subject_id, start_date=start_date,
                                         end_date=end_date)
 
     test_list_data = test_result.fetchall()
+
     return render_template("test_table.html", data=test_list_data)
 
 
 # Route for showing tester list of the clicked test
 @app.route('/test/<int:test_id>')
 def tester_list(test_id):
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     tester_list_data = get_tester_list(test_id)
 
-    return render_template("tester_list.html", tester_data=tester_list_data)
+    return render_template("tester_list.html", tester_data=tester_list_data, testId=test_id)
 
 
 # Route for updating tester's score
 @app.route('/update_score')
 def update_score():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     score_id = request.args.get('scoreId')
     tester_id = request.args.get('testerId')
     test_id = request.args.get('testId')
@@ -295,24 +439,141 @@ def update_score():
 
     update_query = text(
         "UPDATE test_scores SET total_score = :new_grade WHERE test_id = :test_id and score_id = :score_id and tester_id = :tester_id")
+
     db.engine.execute(update_query, new_grade=new_grade, test_id=test_id, score_id=score_id, tester_id=tester_id)
     tester_list_data = get_tester_list(test_id)
 
-    return render_template("tester_table.html", tester_data=tester_list_data)
+    return render_template("tester_table.html", tester_data=tester_list_data, testId=test_id)
+
+
+# Route for displaying tester history records
+@app.route('/display_history')
+def display_history():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
+    tester_id = request.args.get('testerId')
+    test_id = request.args.get('testId')
+
+    history_query = text(
+        "SELECT ts.score_id, ts.tester_id, ts.test_id, te.testee_name, ts.attempt_date, ts.total_score, ts.pass_status "
+        + "FROM test_scores ts "
+        + "LEFT JOIN testee te ON ts.tester_id = te.tester_id "
+        + "WHERE ts.test_id = :test_id AND ts.tester_id = :tester_id")
+    history_result = db.engine.execute(history_query, test_id=test_id, tester_id=tester_id)
+    tester_history_data = history_result.fetchall()
+
+    return render_template("tester_history_table.html", tester_history_data=tester_history_data)
+
+
+# Add new tester in the tester list table
+@app.route('/add_tester', methods=['POST'])
+def add_tester():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
+    new_tester_data = request.get_json()
+    testee_name = new_tester_data.get("testerName")
+    attempt_date = new_tester_data.get("attemptDate")
+    score = new_tester_data.get("score")
+    test_id = new_tester_data.get("testId")
+
+    # insert new tester in the database
+    add_tester_query = text("INSERT INTO testee (testee_name) VALUES (:testee_name)")
+    db.engine.execute(add_tester_query, testee_name=testee_name)
+
+    # get tester id
+    tester_id_query = text("SELECT tester_id FROM testee WHERE testee_name = :testee_name")
+    tester_data_result = db.engine.execute(tester_id_query, testee_name=testee_name)
+    tester_data = tester_data_result.fetchall()
+    tester_id = 0
+    for row in tester_data:
+        tester_id = row['tester_id']
+
+    # insert new score in the database
+    add_tester_score_query = text(
+        "INSERT INTO test_scores (test_id, tester_id, attempt_date, total_score, pass_status) "
+        + " VALUES (:test_id, :tester_id, :attempt_date, :total_score, 1)")
+    db.engine.execute(add_tester_score_query, test_id=test_id, tester_id=tester_id, attempt_date=attempt_date,
+                      total_score=score)
+
+    return ''
+
+
+# delete tester's record
+@app.route('/delete_record', methods=['POST'])
+def delete_record():
+    tester_record = request.get_json()
+    score_id = tester_record.get("score_id")
+    test_id = tester_record.get("test_id")
+    tester_id = tester_record.get("tester_id")
+
+    delete_query = text(
+        "DELETE FROM test_scores WHERE score_id = :score_id AND test_id = :test_id AND tester_id = :tester_id")
+    db.engine.execute(delete_query, score_id=score_id, test_id=test_id, tester_id=tester_id)
+
+    return ''
+
+
+# add new record to tester
+@app.route('/add_record', methods=['POST'])
+def add_record():
+    new_record = request.get_json()
+    score_id = new_record.get("score_id")
+    test_id = new_record.get("test_id")
+    tester_id = new_record.get("tester_id")
+    attempt_date = new_record.get("attemptDate")
+    score = new_record.get("score")
+
+    insert_query = text("INSERT INTO test_scores (test_id, tester_id, attempt_date, total_score, pass_status) "
+                        + "VALUES (:test_id, :tester_id, :attempt_date, :score, 1)")
+    db.engine.execute(insert_query, test_id=test_id, tester_id=tester_id, attempt_date=attempt_date, score=score)
+
+    return ''
 
 
 # ------ Route for Scoring  Metrics---------
 
 # function to retrieve statistics for a test
 def get_test_statistics(test_id):
-    dummy_statistics = {
-        'test_id': test_id,
-        'test_name': "Sample Test",
-        'times_taken': 50,
-        'passed_count': 40,
-        'scores': [87, 88, 89, 22, 37, 54, 66, 45, 45, 50, 77, 90, 99],
-    }
-    return dummy_statistics
+    query = text("""
+        SELECT
+            t.test_id,
+            t.test_name,
+            COUNT(ts.score_id) AS times_taken,
+            SUM(ts.pass_status) AS passed_count,
+            GROUP_CONCAT(ts.total_score) AS scores
+        FROM
+            tests t
+        LEFT JOIN
+            test_scores ts ON t.test_id = ts.test_id
+        WHERE
+            t.test_id = :test_id
+        GROUP BY
+            t.test_id, t.test_name
+    """)
+    result = db.engine.execute(query, test_id=test_id)
+
+    # Fetch the first row as we expect only one result for a specific test_id
+    row = result.fetchone()
+
+    if row:
+        # Create a dictionary to hold the statistics
+        dummy_statistics = {
+            'test_id': row['test_id'],
+            'test_name': row['test_name'],
+            'times_taken': row['times_taken'] or 0,
+            'passed_count': row['passed_count'] or 0,
+            'scores': [int(score) for score in row['scores'].split(',')] if row['scores'] else [],
+        }
+        # print(dummy_statistics)
+        return dummy_statistics
+    else:
+        return {'error': 'Test not found'}
 
 
 @app.route('/scoring_metrics')
@@ -334,6 +595,8 @@ def generate_graphs(statistics):
     graph_images = []
     # score distribution histgram
     scores = statistics['scores']
+    if not statistics['scores']:
+        return graph_images
     # Create histogram
     plt.hist(scores, bins=5, color='skyblue', edgecolor='black')
 
@@ -370,50 +633,53 @@ def generate_pdf_from_statistics(statistics, graph_images):
 
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
-    c.drawString(50, 750, "Test Statistics")
-    c.drawString(50, 730, f"Test Name: {statistics['test_name']}")
-    c.drawString(400, 730, f"Test ID: {statistics['test_id']}")
-    c.drawString(100, 680, f"-    Test taken {statistics['times_taken']} times.")
-    c.drawString(100, 660, f"-    {statistics['times_taken']} test takers have passed.")
-    # Add more statistics here as needed
+    try:
+        c.drawString(50, 750, "Test Statistics")
+        c.drawString(50, 730, f"Test Name: {statistics['test_name']}")
+        c.drawString(400, 730, f"Test ID: {statistics['test_id']}")
+        c.drawString(100, 680, f"-    Test taken {statistics['times_taken']} times.")
+        c.drawString(100, 660, f"-    {statistics['times_taken']} test takers have passed.")
 
-    # Embed graphs into the PDF
-    y_offset = 630
-    for image_path in graph_images:
-        # c.drawString(100, y_offset, "Graph:")
-        # Open the image file and retrieve its dimensions
-        img = Image.open(image_path)
-        img_width, img_height = img.size
+        # Embed graphs into the PDF
+        y_offset = 630
+        if graph_images:  # Check if graph_images is not empty
+            for image_path in graph_images:
+                # Open the image file and retrieve its dimensions
+                img = Image.open(image_path)
+                img_width, img_height = img.size
 
-        # Set the width and height dynamically based on the image dimensions
-        c.drawImage(image_path, 100, y_offset - (img_height * 0.45), width=(img_width * 0.45),
-                    height=(img_height * 0.45))
-        y_offset -= (img_height * 0.45) + 50  # Adjust this value based on the spacing between graphs
+                # Set the width and height dynamically based on the image dimensions
+                c.drawImage(image_path, 100, y_offset - (img_height * 0.45), width=(img_width * 0.45),
+                            height=(img_height * 0.45))
+                y_offset -= (img_height * 0.45) + 50  # Adjust this value based on the spacing between graphs
 
-    # Mean
-    mean_score = np.mean(statistics['scores'])
-    mean_str = "{:.2f}".format(mean_score)
-    c.drawString(100, 250, f"Mean: {mean_str}")
-    # High Score
-    high_score = max(statistics['scores'])
-    c.drawString(250, 250, f"High: {high_score}")
-    # Upper Quartile
-    upper_quartile = np.percentile(statistics['scores'], 75)
-    upper_str = "{:.2f}".format(upper_quartile)
-    c.drawString(250, 230, f"Upper Quartile: {upper_str}")
-    # Low Score
-    low_score = min(statistics['scores'])
-    c.drawString(400, 250, f"Low: {low_score}")
-    # Lower Quartile
-    lower_quartile = np.percentile(statistics['scores'], 25)
-    lower_str = "{:.2f}".format(lower_quartile)
-    c.drawString(400, 230, f"Lower Quartile: {lower_str}")
-    # Median
-    median_score = np.median(statistics['scores'])
-    c.drawString(100, 230, f"Median: {median_score}")
-    c.save()
-    pdf_data = buffer.getvalue()
-    buffer.close()
+        # Add statistics if statistics['scores'] is not empty
+        if statistics['scores']:
+            # Mean
+            mean_score = np.mean(statistics['scores'])
+            mean_str = "{:.2f}".format(mean_score)
+            c.drawString(100, 250, f"Mean: {mean_str}")
+            # High Score
+            high_score = max(statistics['scores'])
+            c.drawString(250, 250, f"High: {high_score}")
+            # Upper Quartile
+            upper_quartile = np.percentile(statistics['scores'], 75)
+            upper_str = "{:.2f}".format(upper_quartile)
+            c.drawString(250, 230, f"Upper Quartile: {upper_str}")
+            # Low Score
+            low_score = min(statistics['scores'])
+            c.drawString(400, 250, f"Low: {low_score}")
+            # Lower Quartile
+            lower_quartile = np.percentile(statistics['scores'], 25)
+            lower_str = "{:.2f}".format(lower_quartile)
+            c.drawString(400, 230, f"Lower Quartile: {lower_str}")
+            # Median
+            median_score = np.median(statistics['scores'])
+            c.drawString(100, 230, f"Median: {median_score}")
+        c.save()
+        pdf_data = buffer.getvalue()
+    finally:
+        buffer.close()
     return pdf_data
 
 
@@ -440,12 +706,22 @@ def generate_pdf(test_id):
 # Route for random test creation page.
 @app.route('/random_test_creation')
 def random_test_creation():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     return show_test_creation_page('random_test_creation.html')
 
 
 # Route for manual test creation page.
 @app.route('/manual_test_creation')
 def manual_test_creation():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     return show_test_creation_page('manual_test_creation.html')
 
 
@@ -537,11 +813,12 @@ def handle_get_questions():
                 [
                     {
                         'question_id': q['question_id'],
-                        'question_text': q['question_text']
+                        'max_points': q['max_points'],
+                        'question_desc': q['question_desc']
                     }
                     for q in questions_pool
                 ],
-                key=lambda x: x['question_id']
+                key=lambda x: x['max_points']
             )
             questions_available_for_selection = len(selected_questions)
             logging.debug(f"Questions available for manual selection: {questions_available_for_selection}")
@@ -551,18 +828,26 @@ def handle_get_questions():
                 'questions_available_for_selection': questions_available_for_selection,
                 'selected_questions': selected_questions,
                 'message': "Questions successfully retrieved for manual selection."
-            })
+            }), 200
         else:
-            selected_questions = select_questions(questions_pool, num_questions, test_max_points)
-            questions_chosen_for_test = len(selected_questions)
-            logging.debug(f"Questions chosen for test: {questions_chosen_for_test}")
+            selected_questions, total_score = select_questions(questions_pool, num_questions, test_max_points)
 
+            if len(selected_questions) == 0:
+                return jsonify({'error': 'No questions found that meet the selection criteria.'}), 500
+
+            max_num = len(selected_questions)
+            order_nums = random.sample(range(1, max_num + 1), max_num)
+            question_order = [
+                {
+                    'question_id': q['question_id'],
+                    'question_order': order
+                }
+                for q, order in zip(selected_questions, order_nums)
+            ]
             return jsonify({
-                'total_questions_in_pool': total_questions_in_pool,
-                'questions_chosen_for_test': questions_chosen_for_test,
-                'selected_questions': [question[0] for question in selected_questions],
-                'message': "Questions successfully retrieved and test created."
-            })
+                'question_order': question_order,
+                'total_score': total_score,
+            }), 200
 
     # Error handling
     except ValueError as ve:
@@ -576,30 +861,91 @@ def handle_get_questions():
         return jsonify({'error': "An error occurred while preparing the test creation page."}), 500
 
 
-# Test route to create test questions
-@app.route('/create_questions')
-def create_questions():
-    return render_template('create_questions.html')
+# Route to handle test creation
+@app.route('/handle_test_creation', methods=['POST'])
+def handle_test_creation():
+    try:
+        # Get JSON data from the request
+        data = request.get_json()
+        # Get the test type from the data, defaulting to 'random'
+        test_type = data.get('test_type', 'random')
+
+        # If the test type is 'random', send a request to get questions
+        if test_type == 'random':
+            response = requests.post('http://127.0.0.1:5000/get-questions', json=data)
+            # If the request is successful, extract relevant data
+            if response.status_code == 200:
+                is_active = data.get('is_active')
+                created_by = session.get('username')
+                creation_date = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+                test_name = data.get('test_name')
+                test_description = data.get('test_description')
+                response_data = response.json()
+                total_score = response_data.get('total_score', 0)
+                question_order = response_data.get('question_order')
+            # If no questions are found, return an appropriate message
+            elif response.status_code == 500:
+                return jsonify({'message': 'No questions found that meet the selection criteria.'}), 500
+        # If the test type is not 'random', extract data directly from the request
+        else:
+            is_active = data.get('is_active')
+            created_by = session.get('username')
+            creation_date = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+            test_name = data.get('test_name')
+            test_description = data.get('test_description')
+            total_score = data.get('total_score', 0)
+            question_order = data.get('question_order')
+
+        # Ensure total score is an integer
+        total_score = int(total_score) if isinstance(total_score, int) else 0
+
+        # Create the test using extracted data
+        test_message = create_test(is_active, created_by, creation_date, test_name, test_description, total_score,
+                                   question_order)
+
+        logging.info("Received test_message from create_test")
+        logging.info(f"test_message content: {test_message}")
+
+        # If there's an error in test creation, log it and return an error response
+        if "error" in test_message:
+            logging.error(f"Error in test creation: {test_message['error']}")
+            return jsonify({"error": test_message["error"]}), 500
+
+        # If the test is created successfully, log it and return a success response
+        logging.info("Test created successfully")
+        return jsonify({"message": test_message["message"]}), 200
+
+    except Exception as e:
+        # Log any unexpected error that occurs during test creation and return an error response
+        logging.error("An error occurred while creating the test: %s", str(e), exc_info=True)
+        return jsonify({"error": str(e)}), 500
 
 
-# Test route to process questions created on /create_questions
 @app.route('/process_question', methods=['POST'])
 def process_question():
-    html_content = request.form['content']
+    obj_id = request.form['obj_id']
+    question_desc = request.form['question_desc']
+    question_text = request.form['question_text']
+    question_answer = request.form['question_answer']
+    question_type = request.form['question_type']
+    question_difficulty = request.form['question_difficulty']
+    answer_explanation = request.form['answer_explanation']
+    points_definition = request.form['points_definition']
+    max_points = request.form['max_points']
+    source = request.form['source']
 
-    obj_id = 1
-    question_type = 'multiple choice'
-
-    # SQL query with parameters
     query = text("""
-        INSERT INTO questions (obj_id, question_text, question_answer, question_type, question_difficulty, answer_explaination, points_definition, max_points)
-        VALUES (:obj_id, :html_content, 'C) Nathan', :question_type, '1', 'None of the other members exist', 'all or nothing', '1')
-    """)
+            INSERT INTO questions (question_id, obj_id, question_desc, question_text, question_answer, question_type, question_difficulty, answer_explanation, points_definition, max_points, source)
+            VALUES (0, :obj_id, :question_desc, :question_text, :question_answer, :question_type, :question_difficulty, :answer_explanation, :points_definition, :max_points, :source)
+        """)
 
     # Execute the query
-    db.engine.execute(query, obj_id=obj_id, html_content=html_content, question_type=question_type)
+    db.engine.execute(query, obj_id=obj_id, question_desc=question_desc, question_text=question_text,
+                      question_answer=question_answer, question_type=question_type,
+                      question_difficulty=question_difficulty, answer_explanation=answer_explanation,
+                      points_definition=points_definition, max_points=max_points, source=source)
 
-    return redirect(url_for('generate_test'))
+    return 'Question added successfully!'
 
 
 # Route to render tests as a html file for export
@@ -622,27 +968,6 @@ def generate_test_answers():
     # Render page
     return render_template('test_answers_template.html', test_questions=get_test_questions(selected_test_id),
                            test_data=get_test_data(selected_test_id))
-
-
-# Temporary Route to list tests and applicable actions
-@app.route('/tests')
-def tests():
-    # Check if user is logged in
-    if 'user' not in session or not session['user'].get('is_authenticated', False):
-        flash("Access denied, please login.")
-        return redirect(url_for('trylogin'))
-
-    # Execute query to retrieve all tests
-    sql_query = text("""
-            SELECT test_id, test_name
-            FROM tests
-        """)
-    result = db.engine.execute(sql_query)
-
-    # Extract tests from the result
-    test_list = get_tests_temp()
-    return render_template('tests.html', test_list=test_list)
-
 
 # Routes yet to be implemented
 @app.route('/modify_test', methods=['POST'])
@@ -694,12 +1019,6 @@ def register():
         input_first_name = request.form.get("first_name")
         input_last_name = request.form.get("last_name")
         input_is_admin = request.form.get("is_admin")
-
-        # Check if passwords match
-        if input_password != input_confirm_password:
-            # Flash failed authentication message and redirect to register page
-            flash("Entered passwords do not match")
-            return redirect(url_for('tryregister'))
 
         row = check_registered(input_username, input_email)
 

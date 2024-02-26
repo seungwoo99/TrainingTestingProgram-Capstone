@@ -1,150 +1,165 @@
-body {
-  overflow: hidden;
+/* DATA HIERARCHY TABLE CSS */
+table {
+    margin: 1% auto;
+    vertical-align: middle;
+    border-collapse: collapse;
+    text-align: center;
+    width: 50%;
 }
 
-/* Container styles */
-.main-container {
-  position: relative;
-  top: -4%;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  min-height: 50%;
-  max-height: 82%;
-  min-width: 85%;
-  max-width: 85%;
-  overflow: auto;
-  margin: auto;
-  padding: 1.5%;
+#testclick:hover {
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+    text-align: center;
+}
+
+button {
+    margin-right: 1%;
+    background-color: #0b80bd;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 10px 22px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-family: 'Montserrat';
+    font-size: 16px;
+
+}
+button:hover{background-color: #0d688f}
+button:active {
+  background-color: #040f16;
+  box-shadow: 0 5px #726e60;
+  transform: translateY(4px);
+}
+#navbar-primary.navbar-default {
+  background: transparent;
+  border: none;
+  .navbar-nav {
+    width: 100%;
+    text-align: center;
+    > li {
+      display: inline-block;
+      float: none;
+      > a {
+        padding-left: 30px;
+        padding-right: 30px;
+        }
+    }
+  }
+}
+
+/* Rest of page */
+h2{
+  margin-top: 2%;
+}
+
+.container{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  max-width: 1000px;
+  width: 100%;
   background: #fff;
   border-radius: 7px;
   box-shadow: 0 5px 10px rgba(0,0,0,0.3);
-  overflow-x: hidden;
-}
-
-.centered-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-/* Wrapper styles */
-.wrapper {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
-
-/* Filter table styles */
-.filter-table {
-  width: 90%; 
-  table-layout: fixed; 
-  border-collapse: collapse; 
-  font-family: 'Code Next', sans-serif;
-  box-sizing: border-box;
-  color: black;
-  border: none;
-  background: transparent;
-}
-
-.filter-table th, .filter-table td {
-  text-align: left;
-}
-
-.filter-table th {
-  padding: 0.25%;
-  font-size: 150%;
-}
-
-.filter-table td {
-  padding-left: 0.25%;
-  padding-bottom: 0.125%;
-}
-
-.filter-table th:nth-child(1),
-.filter-table td:nth-child(1),
-.filter-table th:nth-child(2),
-.filter-table td:nth-child(2) {
-  width: 60%;
-}
-
-.filter-table th:nth-child(3),
-.filter-table td:nth-child(3),
-.filter-table th:nth-child(4),
-.filter-table td:nth-child(4) {
-  width: 30%;
-}
-
-/* Results table styling */
-.results-table {
-  margin-top: 2.5%;
-  vertical-align: middle;
-  border-collapse: collapse;
   text-align: center;
-  width: 90%;
-  font-family: 'Code Next', sans-serif;
 }
 
-.results-table th, 
-.results-table td {
-  border: 1px solid #ddd;
-  padding: 1%;
-  text-align: left;
+button{
+  margin-bottom: 4%;
 }
 
-.results-table th {
-  background-color: #f2f2f2;
-  text-align: center;
-  font-size: 150%;
+/* Container for filtering options */
+.filter {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
 }
 
-.results-table td {
-  font-size: 125%;
+/* filtering options */
+.options {
+    display: flex;
+    flex-direction: column;
 }
 
-.results-table th:nth-child(1),
-.results-table td:nth-child(1){
-  width: 5%
+/* labels in each option */
+.options label {
+    margin-bottom: 5px;
 }
 
-.results-table th:nth-child(2),
-.results-table td:nth-child(2),
-.results-table th:nth-child(3),
-.results-table td:nth-child(3),
-.results-table th:nth-child(4),
-.results-table td:nth-child(4),
-.results-table th:nth-child(5),
-.results-table td:nth-child(5),
-.results-table th:nth-child(6),
-.results-table td:nth-child(6),
-.results-table th:nth-child(7),
-.results-table td:nth-child(7) {
-  width: 10%;
+/* select/input fields in each option */
+.options select,
+.options input[type="date"] {
+    width: 150px;
 }
 
-/* Heading Styles */
-h1 {
-  font-size: 225%;
-  font-weight: 700;
-  margin-bottom: 1%;
+
+/* Hide dropdown table by default */
+.dropdown-table {
+    display: none;
 }
 
-/* Input Styles */
-.filter-table select {
-  width: 90%; /* Adjust as needed */
+/* Add animation effect */
+.dropdown-table.show {
+    display: table-row;
+    animation: slideIn 0.5s ease-in-out;
 }
 
-.filter-table select:hover {
-  box-shadow: 0 5px 10px rgba(0,0,0,0.3);
-  border: 2px solid black;
+@keyframes slideIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-50%);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.filter-table[type="date"] {
+/* CSS file */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
   width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4);
 }
 
-/* Hover Effect */
-#testclick:hover {
-  background-color: #f0f0f0;
+.modal-content {
+  background-color: #fefefe;
+  margin: 5% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
   cursor: pointer;
 }

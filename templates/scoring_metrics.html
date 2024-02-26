@@ -1,70 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-        <link rel = "stylesheet" href = "{{url_for('static', filename='/css/scoring.css')}}">
-        <link rel="stylesheet" href="{{url_for('static', filename='/css/main.css')}}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
-        {% include 'navbar.html' %}
-    </head>
-    <body>
-        <div class="wrapper">
-            <div class="main-container">
-                <div class="centered-container">
-                    <h1>Scoring Metrics</h1>
-                </div>
-                <div class="centered-container">
-                    <table id="datasTable">
-                        <thead>
-                            <tr>
-                                <th>Test</th>
-                                <th>Metrics Preview</th> <!-- Added preview column -->
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for test in tests %}
-                                <tr>
-                                    <td>{{ test.test_name }}</td>
-                                    <td>
-                                        <a href="#" onclick="previewPDF({{ test.test_id }})">Preview</a>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    <div id="pdfPreview" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);">
-                        <button onclick="togglePDFPreview()">Close</button>
-                        <iframe id="pdfFrame" width="100%" height="100%" style="border: none;"></iframe>
-                    </div>
-                </div>
-                
-                <script>
-                    function previewPDF(testId) {
-                        // Fetch PDF data dynamically
-                        fetch("/generate_pdf/" + testId)
-                            .then(response => response.blob())
-                            .then(blob => {
-                            // Convert blob to object URL
-                            const url = URL.createObjectURL(blob);
-                            // Display PDF in iframe
-                            document.getElementById('pdfFrame').src = url;
-                            document.getElementById('pdfPreview').style.display = 'block';
-                        })
-                        .catch(error => console.error('Error:', error));
-                    }
-                
-                    function togglePDFPreview() {
-                        const previewDiv = document.getElementById('pdfPreview');
-                        const iframe = document.getElementById('pdfFrame');
-                
-                        // Hide preview and clear iframe src
-                        previewDiv.style.display = 'none';
-                        iframe.src = '';
-                    }
-                </script>
-            </div>
-        </div>
-    </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{url_for('static', filename='/css/scoring.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='/css/main.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='/css/fonts.css') }}">
+    {% include 'navbar.html' %}
+</head>
+
+<body>
+<div class="wrapper">
+
+<div class="main-container">
+    <h2>Scoring Metrics</h2>
+
+    <table id="datasTable">
+        <thead>
+        <tr>
+            <th>Test</th>
+
+            <th>Metrics Preview</th> <!-- Added preview column -->
+        </tr>
+        </thead>
+        <tbody>
+        {% for test in tests %}
+        <tr>
+            <td>{{ test.test_name }}</td>
+
+            <td><a href="#" onclick="previewPDF({{ test.test_id }})">Preview</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <div id="pdfPreview" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);">
+        <button onclick="togglePDFPreview()">Close</button>
+        <iframe id="pdfFrame" width="100%" height="100%" style="border: none;"></iframe>
+    </div>
+
+</div>
+</div>
+
+<script>
+function previewPDF(testId) {
+    // Fetch PDF data dynamically
+    fetch("/generate_pdf/" + testId)
+        .then(response => response.blob())
+        .then(blob => {
+            // Convert blob to object URL
+            const url = URL.createObjectURL(blob);
+            // Open PDF in a new window
+            window.open(url, '_blank', 'title=PDF Preview');
+        })
+        .catch(error => console.error('Error:', error));
+}
+</script>
+
+</body>
 </html>

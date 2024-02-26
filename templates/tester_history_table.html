@@ -1,0 +1,36 @@
+
+<tbody id="table-body">
+    {% for row in tester_history_data %}
+        <tr data-score-id="{{ row.score_id }}" data-tester-id="{{ row.tester_id }}" data-test-id="{{ row.test_id }}">
+            <td>{{ loop.index }}</td>
+            <td>{{ row.testee_name }}</td>
+            <td>{{ row.attempt_date }}</td>
+            <td class="score-cell">{{ row.total_score }}</td>
+            <td>{% if row.pass_status == 1 %} PASS
+            {% else %} FAIL
+            {% endif %}
+            </td>
+            <td id="options-cell" onclick="deleteRecord('{{ row.score_id }}', '{{ row.test_id }}', '{{ row.tester_id }}')">
+                    <button id="delete-button">Delete</button>
+            </td>
+        </tr>
+    {% endfor %}
+</tbody>
+<script>
+    /* delete tester record */
+    function deleteRecord(score_id, test_id, tester_id){
+        //send data to flask
+        let xhr = new XMLHttpRequest();
+
+        let json = JSON.stringify({
+            score_id:score_id, test_id:test_id, tester_id:tester_id
+        });
+        xhr.open("POST", '/delete_record')
+        xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+
+        xhr.send(json);
+        xhr.onload = function(event){
+            window.location.reload();
+        }
+    }
+</script>
