@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
   function handleSearchButtonClick(event) {
     event.preventDefault();
     // Collect form input values
-    const bloomsLevelValue = document.getElementById('blooms_level_dropdown').value;
+    const bloomsTaxonomyValue = document.getElementById('blooms_level_dropdown').value;
     const subjectValue = document.getElementById('subject_dropdown').value;
     const topicValue = document.getElementById('topic_dropdown').value;
     const trainingLevelValue = document.getElementById('training_level_dropdown').value;
@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     // Create form data object to send via fetch
     const formData = {
-      blooms_levels: bloomsLevelValue !== "all" ? [bloomsLevelValue] : [],
+      blooms_levels: bloomsTaxonomyValue !== "all" ? [bloomsTaxonomyValue] : [],
       subjects: subjectValue !== "all" ? [subjectValue] : [],
       topics: topicValue !== "all" ? [topicValue] : [],
       question_types: questionTypeValue !== "all" ? [questionTypeValue] : [],
@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     };
 
     // Send form data to server via fetch
-    fetch('/get-questions', {
+    fetch('/get_questions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -246,11 +246,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
       test_name: testName,
       is_active: isActive,
       test_description: testDescription,
-      test_type: "manual"
     };
   
     // Send request to server via fetch
-    fetch('/handle_test_creation', {
+    fetch('/test_creation', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

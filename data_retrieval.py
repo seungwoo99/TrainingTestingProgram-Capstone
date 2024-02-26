@@ -4,7 +4,8 @@ import logging
 
 # Related third-party imports
 from sqlalchemy import text
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import (SQLAlchemyError, IntegrityError)
+from flask import jsonify
 
 # Local application/library specific imports
 from db_config import db
@@ -36,15 +37,14 @@ def fetch_test_creation_options():
         return options
     
     except SQLAlchemyError as e:
-        logging.error("An error occurred while creating the test", exc_info=True)
-        return {"error": str(e)}, 500
+        logging.error("An error occurred while fetching test creation options", exc_info=True)
+        return jsonify({"error": str(e)}), 500
     except Exception as e:
-        # Log and raise any exceptions that occur during the process.
-        logging.error("An error occurred while fetching test creation options:", exc_info=True)
-        raise
+        logging.error("An unexpected error occurred while fetching test creation options", exc_info=True)
+        return jsonify({"error": "An unexpected error occurred."}), 500
 
 # Function to query the database for questions that match user inputs to create a pool of questions
-def get_questions(blooms_taxonomy, subjects, topics, question_types, question_difficulties, training_level_conditions, max_points=None):
+def get_questions(test_type, blooms_taxonomy, subjects, topics, question_types, question_difficulties, training_level_conditions, max_points=None):
     try:
         # Log that we are connecting to the database.
         logging.info("Connecting to the database.")
@@ -106,60 +106,97 @@ def get_questions(blooms_taxonomy, subjects, topics, question_types, question_di
 
             # Construct the WHERE statement based on the clauses.
             where_statement = ' AND '.join(where_clauses)
+            
+            total_questions_in_pool = 0
 
-            # Define the SQL query with placeholders.
-            sql = text(f"""
-                SELECT q.question_id, q.question_desc, q.max_points
-                FROM questions q
-                INNER JOIN learning_objectives lo ON q.obj_id = lo.obj_id
-                INNER JOIN blooms_tax b ON lo.blooms_id = b.blooms_id
-                INNER JOIN topics t ON lo.topic_id = t.topic_id
-                INNER JOIN subjects s ON t.subject_id = s.subject_id
-                WHERE {where_statement}
-            """)
+            # Check if the test type is 'random'. This condition could be part of a larger function
+            # where 'test_type' determines the kind of query or operation to be performed on the database.
+            if test_type == 'random':
+                # Initialize a dictionary to store the search results.
+                search_result = {}
+    
+                # Prepare a SQL query to select distinct max_points for all questions that
+                # meet the filters defined by the user in the 'where_statement'.
+                sql = text(f"""
+                    SELECT DISTINCT q.max_points
+                    FROM questions q
+                    INNER JOIN learning_objectives lo ON q.obj_id = lo.obj_id
+                    INNER JOIN blooms_tax b ON lo.blooms_id = b.blooms_id
+                    INNER JOIN topics t ON lo.topic_id = t.topic_id
+                    INNER JOIN subjects s ON t.subject_id = s.subject_id
+                    WHERE {where_statement}
+                """)
+    
+                # Log the generated SQL query and parameters.
+                logging.debug(f"Generated SQL Query: {sql}")
+                logging.debug(f"Parameters: {params}")
+                
+                # Execute the query and fetch all results.
+                distinct_points = connection.execute(sql, params).fetchall()
+    
+                # Iterate over each distinct max_points value fetched from the database.
+                for (max_point,) in distinct_points:
+                    # Prepare a SQL query to select all questions that meet the filters
+                    # defined by the user in the 'where_statement' for each distinct max_point
+                    sql = text(f"""
+                        SELECT q.question_id
+                        FROM questions q
+                        INNER JOIN learning_objectives lo ON q.obj_id = lo.obj_id
+                        INNER JOIN blooms_tax b ON lo.blooms_id = b.blooms_id
+                        INNER JOIN topics t ON lo.topic_id = t.topic_id
+                        INNER JOIN subjects s ON t.subject_id = s.subject_id
+                        WHERE {where_statement} AND q.max_points = {max_point}
+                    """)
+                    
+                    # Log the generated SQL query and parameters.
+                    logging.debug(f"Generated SQL Query: {sql}")
+                    logging.debug(f"Parameters: {params}")
+                    
+                    # For each max_points value, execute the query to fetch all questions
+                    # that meet the filters.
+                    questions = connection.execute(sql, params).fetchall()
+                    
+                    total_questions_in_pool += len(questions)
+        
+                    # Add the fetched question details to the 'search_result' dictionary under the
+                    # constructed key.
+                    search_result[max_point] = [question[0] for question in questions]
+      
+            else:    
+                # Define the SQL query with placeholders.
+                sql = text(f"""
+                    SELECT q.question_id, q.question_desc, q.max_points
+                    FROM questions q
+                    INNER JOIN learning_objectives lo ON q.obj_id = lo.obj_id
+                    INNER JOIN blooms_tax b ON lo.blooms_id = b.blooms_id
+                    INNER JOIN topics t ON lo.topic_id = t.topic_id
+                    INNER JOIN subjects s ON t.subject_id = s.subject_id
+                    WHERE {where_statement}
+                """)
 
-            # Execute the SQL query with the provided parameters.
-            result = connection.execute(sql, params).fetchall()
-
-            # Log the generated SQL query and parameters.
-            logging.debug(f"Generated SQL Query: {sql}")
-            logging.debug(f"Parameters: {params}")
-
-            # Log a success message.
-            logging.info("Query executed successfully.")
-
-            # Return the result of the SQL query.
-            return result
+                # Log the generated SQL query and parameters.
+                logging.debug(f"Generated SQL Query: {sql}")
+                logging.debug(f"Parameters: {params}")
+                
+                # Execute the SQL query with the provided parameters.
+                search_result = connection.execute(sql, params).fetchall()
+                
+                total_questions_in_pool += len(search_result)
+                
+            if len(search_result) == 0:
+                logging.info("No questions found that meet the selection criteria.")
+                return jsonify({'message': 'No questions found that meet the selection criteria. Select new criteria and try again.'}), 204
+            else:
+                logging.info(f"Queries successfully executed. Total questions in pool: {total_questions_in_pool}")
+            
+            return search_result
 
     except SQLAlchemyError as e:
-        logging.error("An error occurred while creating the test", exc_info=True)
-        return {"error": str(e)}, 500
+        logging.error(f"SQLAlchemyError while getting questions: {e}", exc_info=True)
+        return {"error": "A database error occurred while fetching questions."}
     except Exception as e:
-        logging.error(f"Error while getting questions: {e}", exc_info=True)
-        return None
-
-# Function to select questions from a pool based on user preferences.
-def select_questions(questions_pool, num_questions, max_points):
-    logging.info("Selecting questions from the pool.")
-    logging.debug(f"Starting question selection. Total questions in pool: {len(questions_pool)}, Requested number of questions: {num_questions}, Max points allowed: {max_points}")
-
-    random.shuffle(questions_pool)
-    selected_questions = []
-    current_points = 0
-
-    for question in questions_pool:
-        question_points = int(question[2])
-        if current_points + question_points > max_points:
-            logging.debug(f"Skipping question ID: {question[0]} due to exceeding max points. Question points: {question_points}, Current total points: {current_points}, Max points: {max_points}")
-            continue
-        logging.debug(f"Selecting question ID: {question[0]}. Question points: {question_points}, Current total points before selection: {current_points}")
-        selected_questions.append(question)
-        current_points += question_points
-        if len(selected_questions) == num_questions:
-            break
-
-    logging.debug(f"Finished question selection. Total selected questions: {len(selected_questions)}, Total points of selected questions: {current_points}")
-    return selected_questions, current_points
+        logging.error(f"Unexpected error while getting questions: {e}", exc_info=True)
+        return {"error": "An unexpected error occurred while fetching questions."}
 
 def create_test(is_active, created_by, creation_date, test_name, test_description, total_score, question_order):
     # Log the start of the create_test function
@@ -228,17 +265,21 @@ def create_test(is_active, created_by, creation_date, test_name, test_descriptio
             # Log the commitment of the transaction
             logging.info("Transaction committed")
             # Return a success message with the ID of the created test
-            return {"message": f"Test '{test_name}' created successfully with ID {test_id}"}
-
+        return jsonify({"message": f"Test '{test_name}' created successfully with ID {test_id}"}), 201
+    
     except ValueError as e:
-        logging.error("There was a problem inserting the questions: %s", str(e), exc_info=True)
-        return {"error": str(e)}
+        logging.error("Validation error: %s", str(e), exc_info=True)
+        return jsonify({"error": str(e)}), 400  
+    except IntegrityError as e:
+        if "Duplicate entry" in str(e):
+            return jsonify({"error": "A test with this name already exists. Please choose a different name."}), 409
+        return jsonify({"error": "Database integrity error."}), 500
     except SQLAlchemyError as e:
-        logging.error("An error occurred while creating the test in the database", exc_info=True)
-        return {"error": str(e)}
+        logging.error("Database error: %s", str(e), exc_info=True)
+        return jsonify({"error": "Database error occurred."}), 500
     except Exception as e:
-        logging.error("Unexpected error while creating the test", exc_info=True)
-        return {"error": "An unexpected error occurred while creating the test."}
+        logging.error("Unexpected error: %s", str(e), exc_info=True)
+        return jsonify({"error": "An unexpected error occurred."}), 500
     
 # Function to get user from database
 def get_user(input_user):
