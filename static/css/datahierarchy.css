@@ -20,6 +20,9 @@ body {
   border-radius: 7px;
   box-shadow: 0 5px 10px rgba(0,0,0,0.3);
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  grid-template-columns: 1fr 1fr;
 }
 
 .centered-container {
@@ -32,6 +35,8 @@ body {
 .wrapper {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   height: 100vh;
 }
 
@@ -68,9 +73,12 @@ td {
   font-size: 125%;
 }
 
-.subject-table td:nth-child(1), 
+
+
+
+.subject-table td:nth-child(1),
 .subject-table td:nth-child(2),
-.topics-table td:nth-child(1), 
+.topics-table td:nth-child(1),
 .topics-table td:nth-child(2),
 .topics-table td:nth-child(4) {
   text-align: center;
@@ -81,36 +89,51 @@ td {
   text-align: left;
 }
 
-.subject-table td:nth-child(1), 
+.subject-table td:nth-child(1),
 .subject-table th:nth-child(1) {
-  width: 10%;
+  width: 15vw;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  min-width: 15vw;
 }
 
-.subject-table td:nth-child(2), 
+.subject-table td:nth-child(2),
 .subject-table th:nth-child(2) {
-  width: 30%;
+  width: 30vw;
+  text-overflow: ellipsis;
+  min-width: 15vw;
 }
 
-.subject-table td:nth-child(3), 
+.subject-table td:nth-child(3),
 .subject-table th:nth-child(3) {
-  width: 60%;
+  width: 50vw;
+  text-overflow: ellipsis;
 }
 
-.topics-table td:nth-child(1), 
+.topics-table td:nth-child(1),
 .topics-table th:nth-child(1) {
-  width: 10%;
+  width: 5vw;
+  text-overflow: ellipsis;
 }
 
-.topics-table td:nth-child(2), 
+.topics-table td:nth-child(2),
 .topics-table th:nth-child(2),
-.topics-table td:nth-child(4), 
+.topics-table td:nth-child(4),
 .topics-table th:nth-child(4) {
-  width: 15%;
+  width: 10vw;
+  text-overflow: ellipsis;
 }
 
-.topics-table td:nth-child(3), 
+.topics-table td:nth-child(3),
 .topics-table th:nth-child(3) {
-  width: 60%;
+  width: 30vw;
+  text-overflow: ellipsis;
+}
+
+.topics-table td:nth-child(4),
+.topics-table th:nth-child(4) {
+  width: 10vw;
+  text-overflow: ellipsis;
 }
 
 /* Dropdown Styles */
@@ -120,8 +143,8 @@ td {
 }
 
 .dropdown-toggle{
-  width: 5%;
-  padding: 1%;
+  width: 100%;
+  padding: 5px;
   cursor: pointer;
   font-size: 15px;
 }
@@ -130,6 +153,9 @@ td {
   display: none;
   position: absolute;
   background-color: #fff;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
 }
 
 .custom-dropdown label{
@@ -142,10 +168,53 @@ td {
   margin-right: 5px;
 }
 
+/* Container styling for topics */
+.left-container{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 70%;
+  font-size: 80%;
+  padding-right: 2%;
+  box-sizing: border-box;
+}
 
+.right-container{
+  display: inline-block;
+  width: 30%;
+  box-sizing: border-box;
+  vertical-align: top;
+}
+
+.input-container {
+  margin-bottom: 10px;
+}
+
+label {
+  display: inline-block;
+  margin-right: 10px;
+}
+
+input {
+  display: inline-block;
+  width: 100%;
+}
+
+.button-container{
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 2%;
+}
+
+.button-container button{
+  margin: 0 1%;
+  margin-bottom: 1%;
+}
 
 /* Button Styles */
-button {
+button{
   margin-right: 1%;
   background-color: #0b80bd;
   border: none;
@@ -156,14 +225,15 @@ button {
   text-decoration: none;
   display: inline-block;
   font-size: 125%;
+  height: auto;
 }
 
-button:hover {
+button:hover{
   background-color: #0d688f;
   box-shadow: 0 5px 10px rgba(0,0,0,0.3);
 }
 
-button:active {
+button:active{
   background-color: #040f16;
   box-shadow: 0 5px #726e60;
   transform: translateY(4px);
