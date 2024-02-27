@@ -37,7 +37,7 @@ from data_retrieval import (fetch_test_creation_options, get_questions, select_q
                             check_registered, get_test_data, get_tests, get_topics, get_subjects,
                             get_all_subjects, get_tester_list,
                             selectSubjectNames, selectSubjectDescriptions, insertSubject, get_all_topics, insertTopic,
-                            get_all_objectives, get_objs_temp)
+                            get_all_objectives, get_objs_temp,insertLearningObjective)
 
 # Load environment variables from a .env file
 load_dotenv()
@@ -324,7 +324,75 @@ def objectives():
 
     # Check which database function to execute
     if request.method == "POST":
-        print()
+        pData = request.get_json()
+        if pData.get("type") == "add":
+            topic_id = pData.get("value1")
+            description = pData.get("value2")
+            bloom = pData.get("value3")
+            skills = pData.get("value4")
+            tags = pData.get("value5")
+            if "1" in skills:
+                applicant = 1
+            else:
+                applicant = 0
+            if "2" in skills:
+                apprentice = 1
+            else:
+                apprentice = 0
+            if "3" in skills:
+                journeyman = 1
+            else:
+                journeyman = 0
+            if "4" in skills:
+                senior = 1
+            else:
+                senior = 0
+            if "5" in skills:
+                chief = 1
+            else:
+                chief = 0
+            if "6" in skills:
+                coordinator = 1
+            else:
+                coordinator = 0
+            insertLearningObjective(topic_id, description, bloom, applicant, apprentice, journeyman, senior, chief, coordinator, tags)
+        if pData.get("type") == "edit":
+            objId = pData.get("value1")
+            topic_id = pData.get("value2")
+            description = pData.get("value3")
+            bloom = pData.get("value4")
+            skills = pData.get("value5")
+            tags = pData.get("value6")
+            if "1" in skills:
+                applicant = 1
+            else:
+                applicant = 0
+            if "2" in skills:
+                apprentice = 1
+            else:
+                apprentice = 0
+            if "3" in skills:
+                journeyman = 1
+            else:
+                journeyman = 0
+            if "4" in skills:
+                senior = 1
+            else:
+                senior = 0
+            if "5" in skills:
+                chief = 1
+            else:
+                chief = 0
+            if "6" in skills:
+                coordinator = 1
+            else:
+                coordinator = 0
+            query = text(
+                """UPDATE learning_objectives SET topic_id = :topic_id, description = :description, blooms_id=:bloom, is_applicant=:applicant,is_apprentice = :apprentice, 
+                is_journeyman=:journeyman, is_senior=:senior, is_chief=:chief, is_coordinator=:coordinator, tags=:tags WHERE obj_id = :objId""")
+            db.engine.execute(query, topic_id=topic_id, description=description, bloom=bloom,applicant=applicant, apprentice=apprentice, journeyman=journeyman, senior=senior, chief=chief, coordinator=coordinator, tags=tags,objId=objId)
+        return jsonify({"category": "SUCCESS"})
+
     else:
         # Pass topics to the template
         return render_template('dataobjhierarchy.html', objectives=objectives,topic_id=topic_id, topic_data=topic_data)
