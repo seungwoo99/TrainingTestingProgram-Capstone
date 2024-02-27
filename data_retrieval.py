@@ -483,3 +483,8 @@ def get_objs_temp():
     except Exception as e:
         # Log an error message with exception details.
         logging.error(f"Error while getting test list: {e}", exc_info=True)
+
+def insertLearningObjective(topic_id, description, blooms_id, applicant, apprentice, journeyman, senior, chief, coordinator, tags):
+    with db.engine.connect() as connection:
+        query=text("""INSERT INTO learning_objectives (obj_id, topic_id, description, blooms_id, is_applicant, is_apprentice, is_journeyman, is_senior, is_chief, is_coordinator, tags) VALUES (0,:topic_id,:description,:blooms_id,:applicant,:apprentice,:journeyman,:senior,:chief,:coordinator,:tags)""")
+        connection.execute(query,topic_id=topic_id, description=description, blooms_id=blooms_id, applicant=applicant, apprentice=apprentice, journeyman=journeyman, senior=senior, chief=chief, coordinator=coordinator, tags=tags)

@@ -58,16 +58,17 @@
                 <div class="button-container">
                     <button onclick="">New Reference</button>
                     <a href='{{ url_for('questions') }}'><button>View Questions</button></a>
-                    <button onclick="addTopic()">Add Topic</button>
-                    <button onclick="editTopic()">Edit Topic</button>
-                    <button onclick="deleteTopic()">Delete Topic</button>
-                    <button onclick="Function()">Save Changes</button>
+                    <button onclick="addObjective()">Add Objective</button>
+                    <button onclick="editObjective()">Edit Objective</button>
+                    <button onclick="deleteObjective()">Delete Objective</button>
                     <button id="backButton">Back</button>
                 </div>
             </div>
         </div>
     </body>
 <script>
+    var topic_id =  {{ topic_id | string}};
+
     document.getElementById('backButton').addEventListener('click', function() {
         // Redirect to url when button is clicked
         window.location.href = '/datahierarchy';
@@ -88,6 +89,127 @@
                     openDropdown.style.display = 'none';
                 }
             }
+        }
+    }
+
+    function toggleClass(el, className) {
+        var rows = el.parentNode.getElementsByTagName("tr");
+
+        for (var i = 0; i < rows.length; i++){
+            // Remove class from all other rows that aren't selected
+            if(rows[i] !== el){
+                rows[i].classList.remove(className);
+            }
+        }
+        //Toggle the class of selected row
+        if(el.classList.contains(className)){
+            // If class is selected, remove
+            el.classList.remove(className);
+        }else{
+            // if not selected, select
+            el.classList.add(className);
+        }
+    }
+
+    function xhrSend(type,value1,value2,value3,value4,value5,value6) {
+        let xhr = new XMLHttpRequest();
+
+        let json = JSON.stringify({
+            type: type,
+            value1: value1,
+            value2: value2,
+            value3:value3,
+            value4:value4,
+            value5:value5,
+            value6:value6
+        });
+
+        xhr.open("POST", '/dataobjhierarchy')
+        xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    // Get response
+                    let response = JSON.parse(xhr.responseText);
+
+                    // If delete failed, display error message with topic conflicts.
+                    if (response.category === "FAILURE") {
+                        alert(response.error_message);
+                    } else {
+                        window.location.reload(); // Reload the page to reflect db changes
+                    }
+                } else {
+                    // Handle failed http request
+                    console.error("Request failed with status:", xhr.status);
+                }
+            }
+        };
+
+        xhr.send(json);
+    }
+
+    // Function to add data entries
+    function addObjective() {
+        const newDesc = prompt('Enter the new objective description:');
+        const newTax = prompt('Enter the Blooms Taxonomy number(1:Remember,2:Understand,3:Apply,4:Analyze,5:Evaluate,6:Create):');
+        const newSkill = prompt('Enter a comma separated list of skill levels(1:Applicant,2:Apprentice,3:Journeyman,4:Senior,5:Chief,6:Coordinator');
+        let newTags = prompt('Enter a comma separated list of tags (okay to leave blank)');
+        if(newTags == null)
+        {
+            newTags = "";
+        }
+
+        if(newDesc != null && newTax != null && newSkill != null) {
+            xhrSend("add",""+topic_id,""+newDesc,""+newTax,""+newSkill,""+newTags,"");
+        }
+        else
+        {
+            alert("A field was left blank.");
+        }
+    }
+
+    function editObjective() {
+        // Get all the table rows
+        var rows = document.querySelectorAll('tbody tr');
+
+        // Initialize a variable to store the selected subject_id
+        var rowIndex = null;
+        var currentDescription = null;
+        var currentTags = null;
+
+        // Iterate over each row to find the selected one
+        rows.forEach(function(row) {
+            // Check if the row has the 'selected' class
+            if (row.classList.contains('selected')) {
+                // Get the first cell (subject_id cell) content
+                rowIndex = row.cells[0].textContent;
+                currentDescription = row.cells[1].textContent;
+                currentTags = row.cells[4].textContent;
+            }
+        });
+
+        const newDesc = prompt('Enter the new objective description:',currentDescription);
+        const newTax = prompt('Enter the Blooms Taxonomy number(1:Remember,2:Understand,3:Apply,4:Analyze,5:Evaluate,6:Create):');
+        const newSkill = prompt('Enter a comma separated list of skill levels(1:Applicant,2:Apprentice,3:Journeyman,4:Senior,5:Chief,6:Coordinator');
+        let newTags = prompt('Enter a comma separated list of tags (okay to leave blank)',currentTags);
+        if(newTags == null)
+        {
+            newTags = "";
+        }
+
+        if(rowIndex != null) {
+            if(newSkill != null) {
+                xhrSend("edit", ""+rowIndex,"" + topic_id, "" + newDesc, "" + newTax, "" + newSkill, "" + newTags);
+            }
+            else
+            {
+                alert("Error: A field was left blank.")
+            }
+        }
+        else
+        {
+            alert("Please select a learning objective");
         }
     }
 </script>
