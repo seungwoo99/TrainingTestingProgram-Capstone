@@ -461,6 +461,25 @@ def get_all_objectives(topic_id):
 
     return result, topic_data
 
+def get_all_questions(obj_id):
+    with db.engine.connect() as connection:
+        # Execute the SQL query to retrieve all questions for a learning objective
+        sql_query = text("""
+                            SELECT * FROM questions
+                            WHERE obj_id = :obj_id
+                    """)
+        result = connection.execute(sql_query, obj_id=obj_id)
+
+        # get objective description
+        sql_query = text("""
+                            SELECT description FROM learning_objectives
+                            WHERE obj_id = :obj_id
+                        """)
+        obj_data = connection.execute(sql_query, obj_id=obj_id)
+        obj_data = obj_data.fetchone()
+
+    return result, obj_data
+
 def get_objs_temp():
 
     try:

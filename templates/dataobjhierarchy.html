@@ -212,5 +212,27 @@
             alert("Please select a learning objective");
         }
     }
+
+    function deleteObjective()
+        {
+             // Get all the table rows
+            var rows = document.querySelectorAll('tbody tr');
+
+            // Initialize a variable to store the selected subject_id
+            var rowIndex = null;
+
+            // Iterate over each row to find the selected one
+            rows.forEach(function(row) {
+                // Check if the row has the 'selected' class
+                if (row.classList.contains('selected')) {
+                    // Get the first cell (subject_id cell) content
+                    rowIndex = row.cells[0].textContent;
+                }
+            });
+            if(rowIndex != null) {
+                xhrSend("delete", "" + rowIndex, "", "", "", "", "");
+            }
+            else{alert("Please select a learning objective");}
+        }
 </script>
 </html>
