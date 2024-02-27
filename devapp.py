@@ -37,7 +37,7 @@ from data_retrieval import (fetch_test_creation_options, get_questions, select_q
                             check_registered, get_test_data, get_tests, get_topics, get_subjects,
                             get_all_subjects, get_tester_list,
                             selectSubjectNames, selectSubjectDescriptions, insertSubject, get_all_topics, insertTopic,
-                            get_all_objectives, get_objs_temp,insertLearningObjective)
+                            get_all_objectives, get_objs_temp, insertLearningObjective, get_all_questions)
 
 # Load environment variables from a .env file
 load_dotenv()
@@ -236,10 +236,9 @@ def data():
 
                 # Create alert response
                 alert = ("Unable to delete subject " + subject_data['name'] +
-                         " . The following topics must be deleted first: ")
+                         " . The following topics must be deleted first: \n")
                 for topic in topics:
-                    alert += topic.name + ", "
-                alert += "."
+                    alert += "\u2022 " + topic.name + "\n"
 
                 response_data = {"category": "FAILURE", 'error_message': alert}
                 return jsonify(response_data)
@@ -293,17 +292,16 @@ def topics():
             except Exception as e:
 
                 # Log an error message with exception details.
-                logging.error(f"Error while attempting subject deletion: {e}", exc_info=True)
+                logging.error(f"Error while attempting topic deletion: {e}", exc_info=True)
 
                 # Get and display any objectives that need to be deleted.
                 objectives, topic_data = get_all_objectives(topic_id)
 
                 # Create alert response
                 alert = ("Unable to delete topic " + topic_data['name'] +
-                         " . The following learning objectives must be deleted first: ")
+                         " . The following learning objectives must be deleted first: \n")
                 for obj in objectives:
-                    alert += obj.obj_description + ", "
-                alert += "."
+                    alert += "\u2022 " + obj.obj_description + "\n"
 
                 response_data = {"category": "FAILURE", 'error_message': alert}
                 return jsonify(response_data)
@@ -391,7 +389,30 @@ def objectives():
                 """UPDATE learning_objectives SET topic_id = :topic_id, description = :description, blooms_id=:bloom, is_applicant=:applicant,is_apprentice = :apprentice, 
                 is_journeyman=:journeyman, is_senior=:senior, is_chief=:chief, is_coordinator=:coordinator, tags=:tags WHERE obj_id = :objId""")
             db.engine.execute(query, topic_id=topic_id, description=description, bloom=bloom,applicant=applicant, apprentice=apprentice, journeyman=journeyman, senior=senior, chief=chief, coordinator=coordinator, tags=tags,objId=objId)
+        elif pData.get("type") == "delete":
+            # Attempt to delete objective
+            try:
+                obj_id = pData.get("value1")
+                query = text("""DELETE FROM learning_objectives where obj_id = :obj_id""")
+                db.engine.execute(query, obj_id=obj_id)
+            except Exception as e:
+
+                # Log an error message with exception details.
+                logging.error(f"Error while attempting learning objective deletion: {e}", exc_info=True)
+
+                # Get and display any objectives that need to be deleted.
+                questions, obj_data = get_all_questions(obj_id)
+
+                # Create alert response
+                alert = ("Unable to delete learning objective " + obj_data['description'] +
+                         " . The following questions must be deleted first: \n")
+                for question in questions:
+                    alert += "\u2022 " + question.question_desc + "\n"
+
+                response_data = {"category": "FAILURE", 'error_message': alert}
+                return jsonify(response_data)
         return jsonify({"category": "SUCCESS"})
+
 
     else:
         # Pass topics to the template
