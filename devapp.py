@@ -47,7 +47,7 @@ load_dotenv()
 app = Flask(__name__)
 
 # Configure Flask app to use SQLAlchemy for a local MySQL database
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:1234@localhost:3306/test_train_db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:@localhost:3306/test_train_db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Configure logging to write to a file
@@ -687,7 +687,7 @@ def handle_get_questions():
     try:
         data = request.json
         test_type = data.get('test_type', 'random')
-        logging.debug(f"Received data: {data}")
+        # logging.debug(f"Received data: {data}")
 
         blooms_taxonomy = data.get('blooms_taxonomy', [])
         subjects = data.get('subjects', [])
@@ -715,12 +715,20 @@ def handle_get_questions():
             test_max_points = int(data.get('test_max_points', 0))
             logging.debug(f"Filter parameters: blooms_taxonomy: {blooms_taxonomy}, subjects: {subjects}, topics: {topics}, question_types: {question_types}, question_difficulties: {question_difficulties}")
             logging.debug(f"Test parameters: num_questions: {num_questions}, test_max_points: {test_max_points}")
-            
-        questions_pool, status_code = get_questions(test_type, blooms_taxonomy, subjects, topics, question_types, question_difficulties, training_level_conditions, question_max_points)
+
+        response, status_code = get_questions(test_type, blooms_taxonomy, subjects, topics, question_types, question_difficulties, training_level_conditions, question_max_points)
         
-        if status_code == 204:
-            logging.error('No questions found that meet the selection criteria.')
-            return jsonify({}), status_code
+        status = response.get('status')
+        message = response.get('message')
+        
+        if status == 'error':
+            logging.error('Error in question retrieval occurred.')
+            return jsonify({
+                'status': status,
+                'message': message,
+            }), status_code
+        else:
+            questions_pool = response.get('search_result')
         
         if test_type == 'manual':
             selected_questions = sorted(
@@ -736,29 +744,41 @@ def handle_get_questions():
             )
 
             return jsonify({
-                'selected_questions': selected_questions, 
-                'message': "Questions successfully retrieved for manual selection."
+                'status': 'success',
+                'message': 'Questions successfully retrieved for manual selection.',
+                'selected_questions': selected_questions
             }), 200
         else:
             return jsonify({
-                'questions_pool': questions_pool,
-                'message': "Questions successfully retrieved for random selection."
+                'status': 'success',
+                'message': "Questions successfully retrieved for random selection.",
+                'questions_pool': questions_pool
             }), 200
             
     # Error handling
     except ValueError as ve:
         logging.error(f"ValueError: {ve}")
-        return jsonify({'error': str(ve), 'selected_questions': []}), 400
+        return jsonify({
+            'status': 'error',
+            'message': str(ve), 
+            'selected_questions': []
+        }), 400
     except SQLAlchemyError as sae:
         logging.error(f"SQLAlchemyError: {sae}")
-        return jsonify({'error': "A database error occurred."}), 500
+        return jsonify({
+            'status': 'error',
+            'message': 'A database error occurred.'
+        }), 500
     except Exception as e:
         logging.error(f"Unhandled exception: {e}", exc_info=True)
-        return jsonify({'error': "An error occurred while preparing the test creation page."}), 500
+        return jsonify({
+            'status': 'error',
+            'message': 'An unhandled exception occurred while retrieving questions from the database.'
+        }), 500
     
 # Route to handle question selection from available pool for random test creation
 @app.route('/select_questions', methods=['POST'])
-def handle_select_questions():
+def select_questions():
     logging.info("Executing handle_select_questions function.")
     data = request.json
     questions_pool = data['questions_pool']
@@ -773,16 +793,20 @@ def handle_select_questions():
     if not valid:
         # Initialize a default status code for general validation failures
         status_code = 400
-        # Check if the issue is due to fewer available questions than requested
-        if 'total_questions_in_pool' in response and response['total_questions_in_pool'] < num_questions:
-            status_code = 422  
-         # Check if the issue is because the sum of max points exceeds the limit
-        elif 'total_max_points' in response and response['total_max_points'] > test_max_points:
-            status_code = 412  
+        # Check if the issue is because the sum of max points exceeds the limit and there are fewer available questions than requested
+        if 'total_questions_in_pool' in response and 'total_max_points' in response:
+            status_code = 412
+        # Check if the issue is because the sum of max points exceeds the limit
+        elif 'total_questions_in_pool' in response and not 'total_max_points' in response:
+            status_code = 422 
         # Check if no valid combination could be found
         elif response.get('error_code') == 'NO_VALID_COMBINATION':
             status_code = 406
+        logging.info(f"Response: {response}")
+        logging.info(f"Status code: {status_code}")
         return jsonify(response), status_code
+    
+    logging.info("Proceeding to question selection process.")
     
     # Flatten the question pool for easier random access
     flattened_questions = [
@@ -814,6 +838,8 @@ def handle_select_questions():
             
             if len(selected_questions_info) == num_questions:
                 break  # Exit the loop once we've selected enough questions
+            
+        logging.info("Questions selection finished, giving selected questions order.")
         
         if len(selected_questions_info) == num_questions:
             # If successfully selected, assign order numbers
@@ -825,8 +851,10 @@ def handle_select_questions():
                 } for question_info, order in zip(selected_questions_info, order_nums)
             ]
             
+            logging.info("Process finished and questions ready for test creation.")
             # Return the structured response with question_order and total_score
             return jsonify({
+                'status': 'success',
                 'question_order': question_order,
                 'total_score': total_score,
                 'message': "Questions successfully selected based on criteria."
@@ -858,14 +886,27 @@ def validate_questions_pool(questions_pool, num_questions, test_max_points):
 
     logging.info("Check 1: Performing check to see if the number of questions available in the pool can meet the requirements of the requested number of questions and maximum point total.")
     # Perform initial checks for the number of questions and total max points
+    logging.info(f"{total_questions_in_pool} < {num_questions}")
     if total_questions_in_pool < num_questions:
-        message = f'Fewer questions available than requested. Available questions: {total_questions_in_pool}. '
+        message = f'Fewer questions available than requested (Available questions: {total_questions_in_pool}). '
+        response = {
+            'status': 'error',
+            'message': message,
+            'total_questions_in_pool': total_questions_in_pool
+        }
+        logging.info(f"{total_max_points} > {test_max_points}")
         if total_max_points > test_max_points:
-            message += f'The sum of max points of available questions ({total_max_points}) is greater than the specified limit.'
+            message = f'Fewer questions available than requested (Available questions: {total_questions_in_pool}) and the sum of max points of available questions ({total_max_points}) is greater than the specified limit of {test_max_points}.'
+            response = {
+            'status': 'error',
+            'message': message,
+            'total_questions_in_pool': total_questions_in_pool,
+            'total_max_points': total_max_points
+            }
         
         # If failing any initial check, return error details for the frontend to use
         logging.info("Check 1: Validation check failed.")
-        return False, {'status': 'error', 'message': message, 'available_questions': total_questions_in_pool, 'total_max_points': total_max_points}
+        return False, response
 
     logging.info("Check 1: Validation check passed.")
     logging.info("Check 2: Performing check to see if the questions available in the questions pool can meet the user defined criteria of num_questions and test_max_points")
@@ -886,15 +927,15 @@ def validate_questions_pool(questions_pool, num_questions, test_max_points):
         if any(dp[num_questions][:test_max_points+1]):
             print('Validation checks passed!')
             return True, {'status': 'success', 'message': 'Both validation checks passed'}
-        else:
-            # If no valid combination is found by this point, return False, indicating failure.
-            logging.info("Check 2: Validation check failed.")
-            message = f'No valid combination of {num_questions} from the current question pool will result in a test score less then or equal to {test_max_points}. Alter test parameters and try again.'
-            return False, {
-                'status': 'error',
-                'message': message,
-                'error_code': 'NO_VALID_COMBINATION'
-            }
+    
+    # If no valid combination is found by this point, return False, indicating failure.
+    logging.info("Check 2: Validation check failed.")
+    message = f'No valid combination of {num_questions} from the current question pool will result in a test score less then or equal to {test_max_points}. Alter test parameters and try again.'
+    return False, {
+        'status': 'error',
+        'message': message,
+        'error_code': 'NO_VALID_COMBINATION'
+    }
     
 # Route to handle test creation
 @app.route('/test_creation', methods=['POST'])
@@ -915,19 +956,21 @@ def handle_test_creation():
         total_score = int(total_score) if isinstance(total_score, int) else 0
         
         # Create the test using extracted data
-        test_message = create_test(is_active, created_by, creation_date, test_name, test_description, total_score, question_order)
+        response, status_code = create_test(is_active, created_by, creation_date, test_name, test_description, total_score, question_order)
 
-        logging.info("Received test_message from create_test")
-        logging.info(f"test_message content: {test_message}")
+        logging.info("Received response from create_test")
+        logging.info(f"Response content: {response}")
 
         # If there's an error in test creation, log it and return an error response
-        if "error" in test_message:
-            logging.error(f"Error in test creation: {test_message['error']}")
-            return jsonify({"error": test_message["error"]}), 500
+        if 'error' in response:
+            error_message = response["error"]
+            logging.error(f"Error in test creation: {error_message}")
+            return jsonify({"error": error_message}), status_code
         
         # If the test is created successfully, log it and return a success response
+        logging.info(f"Test creation message: {response.get('message', '')}")
         logging.info("Test created successfully")
-        return test_message
+        return jsonify(response), status_code
 
     except Exception as e:
         logging.error("An error occurred while processing the request: %s", str(e), exc_info=True)
@@ -1298,7 +1341,6 @@ def verify_email(username, user_hash):
     return redirect(url_for('trylogin'))
 
 #----------Server Configuration and Startup----------
-
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')

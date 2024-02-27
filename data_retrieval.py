@@ -38,10 +38,16 @@ def fetch_test_creation_options():
     
     except SQLAlchemyError as e:
         logging.error("An error occurred while fetching test creation options", exc_info=True)
-        return jsonify({"error": str(e)}), 500
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
     except Exception as e:
         logging.error("An unexpected error occurred while fetching test creation options", exc_info=True)
-        return jsonify({"error": "An unexpected error occurred."}), 500
+        return jsonify({
+            'status': 'error',
+            'message': 'An unexpected error occurred.'
+        }), 500
 
 # Function to query the database for questions that match user inputs to create a pool of questions
 def get_questions(test_type, blooms_taxonomy, subjects, topics, question_types, question_difficulties, training_level_conditions, max_points=None):
@@ -128,14 +134,17 @@ def get_questions(test_type, blooms_taxonomy, subjects, topics, question_types, 
                 """)
     
                 # Log the generated SQL query and parameters.
-                logging.debug(f"Generated SQL Query: {sql}")
-                logging.debug(f"Parameters: {params}")
+                # logging.debug(f"Generated SQL Query: {sql}")
+                # logging.debug(f"Parameters: {params}")
                 
                 # Execute the query and fetch all results.
                 distinct_points = connection.execute(sql, params).fetchall()
                 
                 if len(distinct_points) == 0:
-                    return search_result, 204
+                    return {'status': 'error',
+                            'message': 'No questions found that meet the selection criteria. Select new criteria and try again.',
+                            'search_result': search_result
+                    }, 204
     
                 # Iterate over each distinct max_points value fetched from the database.
                 for (max_point,) in distinct_points:
@@ -152,8 +161,8 @@ def get_questions(test_type, blooms_taxonomy, subjects, topics, question_types, 
                     """)
                     
                     # Log the generated SQL query and parameters.
-                    logging.debug(f"Generated SQL Query: {sql}")
-                    logging.debug(f"Parameters: {params}")
+                    # logging.debug(f"Generated SQL Query: {sql}")
+                    # logging.debug(f"Parameters: {params}")
                     
                     # For each max_points value, execute the query to fetch all questions
                     # that meet the filters.
@@ -178,8 +187,8 @@ def get_questions(test_type, blooms_taxonomy, subjects, topics, question_types, 
                 """)
 
                 # Log the generated SQL query and parameters.
-                logging.debug(f"Generated SQL Query: {sql}")
-                logging.debug(f"Parameters: {params}")
+                # logging.debug(f"Generated SQL Query: {sql}")
+                # logging.debug(f"Parameters: {params}")
                 
                 # Execute the SQL query with the provided parameters.
                 search_result = connection.execute(sql, params).fetchall()
@@ -187,17 +196,29 @@ def get_questions(test_type, blooms_taxonomy, subjects, topics, question_types, 
                 total_questions_in_pool += len(search_result)
                 
                 if len(search_result) == 0:
-                    return search_result, 204
-            
+                    return {'status': 'error',
+                            'message': 'No questions found that meet the selection criteria. Select new criteria and try again.',
+                            'search_result': search_result
+                    }, 204
+                
             logging.info(f"Queries successfully executed. Total questions in pool: {total_questions_in_pool}")
-            return search_result, 200
+            return {
+                'status': 'success',
+                "search_result": search_result
+            }, 200
 
     except SQLAlchemyError as e:
         logging.error(f"SQLAlchemyError while getting questions: {e}", exc_info=True)
-        return {"error": "A database error occurred while fetching questions."}
+        return {
+            "status": "error",
+            "message": "A database error occurred while fetching questions."
+        }
     except Exception as e:
         logging.error(f"Unexpected error while getting questions: {e}", exc_info=True)
-        return {"error": "An unexpected error occurred while fetching questions."}
+        return {
+            "status": "error",
+            "message": "An unexpected error occurred while fetching questions."
+        }
 
 def create_test(is_active, created_by, creation_date, test_name, test_description, total_score, question_order):
     # Log the start of the create_test function
@@ -266,21 +287,41 @@ def create_test(is_active, created_by, creation_date, test_name, test_descriptio
             # Log the commitment of the transaction
             logging.info("Transaction committed")
             # Return a success message with the ID of the created test
-        return jsonify({"message": f"Test '{test_name}' created successfully with ID {test_id}"}), 201
-    
+        
+        return {
+            "status": "success", 
+            "message": f"Test '{test_name}' created successfully with ID {test_id}"
+        }, 201
+        
     except ValueError as e:
         logging.error("Validation error: %s", str(e), exc_info=True)
-        return jsonify({"error": str(e)}), 400  
+        return {
+            "status": "error",
+            "message": str(e)
+        }, 400  
     except IntegrityError as e:
         if "Duplicate entry" in str(e):
-            return jsonify({"error": "A test with this name already exists. Please choose a different name."}), 409
-        return jsonify({"error": "Database integrity error."}), 500
+            logging.error("Duplicate entry error detected.")
+            return {
+                "status": "error",
+                "message": "A test with this name already exists. Please choose a different name."
+            }, 409
+        return {
+            "status": "error",
+            "message": "Database integrity error."
+        }, 500
     except SQLAlchemyError as e:
         logging.error("Database error: %s", str(e), exc_info=True)
-        return jsonify({"error": "Database error occurred."}), 500
+        return {
+            "status": "error",
+            "message": "Database error occurred."
+        }, 500
     except Exception as e:
         logging.error("Unexpected error: %s", str(e), exc_info=True)
-        return jsonify({"error": "An unexpected error occurred."}), 500
+        return {
+            "status": "error",
+            "message": "An unexpected error occurred."
+        }, 500
     
 # Function to get user from database
 def get_user(input_user):
