@@ -182,28 +182,34 @@
         
                     // Function to delete data
                     function deleteData() {
-                         // Get all the table rows
-                        var rows = document.querySelectorAll('tbody tr');
 
-                         // Initialize a variable to store the selected subject_id
-                        var rowIndex = null;
+                        var confirmation = confirm("Are you sure you want to delete the selected record?");
 
-                        // Iterate over each row to find the selected one
-                        rows.forEach(function(row) {
-                            // Check if the row has the 'selected' class
-                            if (row.classList.contains('selected')) {
-                                // Get the first cell (subject_id cell) content
-                                rowIndex = row.cells[0].textContent;
+                        if (confirmation) {
+                             // Get all the table rows
+                            var rows = document.querySelectorAll('tbody tr');
+
+                             // Initialize a variable to store the selected subject_id
+                            var rowIndex = null;
+
+                            // Iterate over each row to find the selected one
+                            rows.forEach(function(row) {
+                                // Check if the row has the 'selected' class
+                                if (row.classList.contains('selected')) {
+                                    // Get the first cell (subject_id cell) content
+                                    rowIndex = row.cells[0].textContent;
+                                }
+                            });
+                            if (rowIndex != null) {
+
+                                xhrSend("delete", "" + rowIndex, "", "");
                             }
-                        });
-                        if (rowIndex != null) {
+                            else
+                            {
+                                alert('Please select a subject');
+                            }
+                        }
 
-                            xhrSend("delete", "" + rowIndex, "", "");
-                        }
-                        else
-                        {
-                            alert('Please select a subject');
-                        }
                     }
         
                     // Function to clear table

@@ -213,9 +213,11 @@
         }
     }
 
-    function deleteObjective()
-        {
-             // Get all the table rows
+    function deleteObjective() {
+        var confirmation = confirm("Are you sure you want to delete the selected record?");
+
+        if (confirmation) {
+            // Get all the table rows
             var rows = document.querySelectorAll('tbody tr');
 
             // Initialize a variable to store the selected subject_id
@@ -233,6 +235,8 @@
                 xhrSend("delete", "" + rowIndex, "", "", "", "", "");
             }
             else{alert("Please select a learning objective");}
-        }
+            }
+
+    }
 </script>
 </html>
