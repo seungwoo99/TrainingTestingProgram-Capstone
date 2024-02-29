@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // Function to update the selection status of checkboxes within a category
   function updateSelection(category, isChecked) {
     // Select all checkboxes with the specified category attribute
-    document.querySelectorAll(`.toggle-btn input[data-category="${category}"]`).forEach(function (checkbox) {
+    document.querySelectorAll(`.toggle-btn input[data-category='${category}']`).forEach(function (checkbox) {
       // Update checkbox status
       checkbox.checked = isChecked;
       // Update the data-selected attribute and class of the parent div
@@ -75,35 +75,35 @@ document.addEventListener('DOMContentLoaded', function () {
 
       // Collect form input values
       const numQuestionsValue = parseInt(document.getElementById('number_of_questions').value, 10);
-      const testMaxPointValue = parseInt(document.getElementById('test_point_value').value, 10);
-      const trainingLevelValue = document.getElementById('training_level_dropdown').value;
+      const testMaxPointsValue = parseInt(document.getElementById('test_max_points').value, 10);
+      const trainingLevelValue = document.getElementById('training_level').value;
       const testNameValue = document.getElementById('test_name').value.trim();
       const testDescriptionValue = document.getElementById('test_description').value.trim();
       const isActiveValue = document.querySelector('.switch input[type="checkbox"]').checked;
 
       // Create form data object to send via fetch
-      const formData = {
+      const questionQueryData = {
         blooms_taxonomy: selectedData.blooms_taxonomy,
         subjects: selectedData.subjects,
         topics: selectedData.topics,
         question_types: selectedData.question_types,
         question_difficulties: selectedData.question_difficulties,
         num_questions: numQuestionsValue,
-        test_max_points: testMaxPointValue,
+        test_max_points: testMaxPointsValue,
         training_level: trainingLevelValue,
-        test_type: "random"
+        test_type: 'random'
       };
 
       console.log('Attempting question retrieval.');
       fetch('/get_questions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(questionQueryData)
       })
       .then(response => {
         console.log('Response status:', response.status);
         if (response.status === 204) {
-          error = '204 code occurred--No questions found.'
+          const error = '204 code occurred--No questions found.'
           console.log(error);
           alert('No questions found that meet the selection criteria. Select new criteria and try again.');
           resetUI();
@@ -117,21 +117,21 @@ document.addEventListener('DOMContentLoaded', function () {
       })
       .then(({data, status_code}) => {
         if (data.status === 'error') {
-          console.log("Error in question retrieval occurred.");
+          console.log('Error in question retrieval occurred.');
           console.log('Data status:', data.status);
           console.log(`${status_code}: ${data.message}`);
           return handleAllErrors({status_code: status_code, json: () => Promise.resolve(data)});
         }
       
         console.log(data.message);
-        return handleQuestionSelection(data.questions_pool, numQuestionsValue, testMaxPointValue);
+        return handleQuestionSelection(data.questions_pool, numQuestionsValue, testMaxPointsValue);
       })
       .then(selectionData => {
         if (!selectionData || !selectionData.question_order) {
-          throw new Error('Error selecting questions');
+          throw new Error('Error selecting questions.');
         }
       
-        const thirdRequestData = {
+        const testCreationData = {
           question_order: selectionData.question_order,
           total_score: selectionData.total_score,
           test_name: testNameValue,
@@ -143,12 +143,12 @@ document.addEventListener('DOMContentLoaded', function () {
         return fetch('/test_creation', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(thirdRequestData)
+          body: JSON.stringify(testCreationData)
         }).then(response => response.json().then(data => ({data, status_code: response.status})));
       })
       .then(({data, status_code}) => {
         if (data.status === 'error') {
-          console.log("Error in test creation occurred.");
+          console.log('Error in test creation occurred.');
           console.log(`${status_code}: ${data.message}`);
           return handleAllErrors({status_code: status_code, json: () => Promise.resolve(data)}, {focusElement: 'test_name'});
         }
@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }))
       .then(({data, status_code}) => {
         if (data.status === 'error') {
-          console.log("Error in question selection occurred.");
+          console.log('Error in question selection occurred.');
           console.log(`${status_code}: ${data.message}`);
           return handleAllErrors({status_code: status_code, json: () => Promise.resolve(data)}, {
             questions_pool, numQuestions, testMaxPoints
@@ -213,7 +213,7 @@ document.addEventListener('DOMContentLoaded', function () {
           console.log('409 error occurred--Duplicate name');
           const element = document.getElementById('test_name');
           if (element) {
-            element.classList.add("error");
+            element.classList.add('error');
             element.focus();
           }
           return Promise.reject('Process terminated so user can choose a different name.')
@@ -229,7 +229,7 @@ document.addEventListener('DOMContentLoaded', function () {
           }
         case 412:
           console.log('412 error occurred--Less questions found then requested and the available questions exceed the max point allowance')
-          if (confirm("Do you want to adjust the number of questions and max points based on the feedback?")) {
+          if (confirm('Do you want to adjust the number of questions and max points based on the feedback?')) {
             const newNumQuestions = parseInt(prompt(`Enter new number of questions (Available: ${data.total_questions_in_pool}).`, context.numQuestions), 10);
             const newTestMaxPoints = parseInt(prompt(`Enter new max points limit (Current maximum available: ${data.total_max_points}).`, context.testMaxPoints), 10);
             return handleQuestionSelection(context.questions_pool, newNumQuestions, newTestMaxPoints)
@@ -287,10 +287,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('number_of_questions').value = '';
     document.getElementById('test_point_value').value = '';
-    document.getElementById('training_level_dropdown').selectedIndex = 0; 
+    document.getElementById('training_level').selectedIndex = 0; 
     document.getElementById('test_name').value = '';
     document.getElementById('test_description').value = '';
     document.querySelector('.switch input[type="checkbox"]').checked = false; 
   }
-
 });

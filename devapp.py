@@ -79,6 +79,7 @@ mail = Mail(app)
 
 # Set the backend to 'Agg' for Matplotlib
 matplotlib.use('Agg')
+
 #----------Helper functions for OTP and token generation----------
 
 # Generate a verification otp
@@ -633,7 +634,7 @@ def generate_pdf(test_id):
 
     return response
 
-#------ Route for Test Creation ---------
+#------ Routes for Test Creation ---------
 
 # Route for random test creation page.
 @app.route('/random_test_creation')

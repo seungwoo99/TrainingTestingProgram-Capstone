@@ -50,31 +50,30 @@ document.addEventListener('DOMContentLoaded', (event) => {
   function handleSearchButtonClick(event) {
     event.preventDefault();
     // Collect form input values
-    const bloomsTaxonomyValue = document.getElementById('blooms_level_dropdown').value;
-    const subjectValue = document.getElementById('subject_dropdown').value;
-    const topicValue = document.getElementById('topic_dropdown').value;
-    const trainingLevelValue = document.getElementById('training_level_dropdown').value;
-    const questionTypeValue = document.getElementById('question_type_dropdown').value;
-    const questionDifficultyValue = document.getElementById('question_difficulty_dropdown').value;
-    const questionMaxPointValue = document.getElementById('question_max_points_input').value;
+    const bloomsTaxonomyValue = document.getElementById('blooms_taxonomy').value;
+    const subjectValue = document.getElementById('subject').value;
+    const topicValue = document.getElementById('topic').value;
+    const trainingLevelValue = document.getElementById('training_level').value;
+    const questionTypeValue = document.getElementById('question_type').value;
+    const questionDifficultyValue = document.getElementById('question_difficulty').value;
     
     // Validate question max points input
-    const questionMaxPointsInput = document.getElementById('question_max_points_input');
-    questionMaxPointsInput.classList.remove('error');
-    if (!questionMaxPointsInput.checkValidity()) {
-      questionMaxPointsInput.classList.add('error');
-      questionMaxPointsInput.reportValidity();
+    const questionMaxPointsValue = document.getElementById('question_max_points');
+    questionMaxPointsValue.classList.remove('error');
+    if (!questionMaxPointsValue.checkValidity()) {
+      questionMaxPointsValue.classList.add('error');
+      questionMaxPointsValue.reportValidity();
       return;
     }
 
     // Create form data object to send via fetch
-    const formData = {
-      blooms_levels: bloomsTaxonomyValue !== "all" ? [bloomsTaxonomyValue] : [],
+    const questionQueryFormData = {
+      blooms_taxonomy: bloomsTaxonomyValue !== "all" ? [bloomsTaxonomyValue] : [],
       subjects: subjectValue !== "all" ? [subjectValue] : [],
       topics: topicValue !== "all" ? [topicValue] : [],
       question_types: questionTypeValue !== "all" ? [questionTypeValue] : [],
       question_difficulties: questionDifficultyValue !== "all" ? [questionDifficultyValue] : [],
-      question_max_points: questionMaxPointValue,
+      question_max_points: questionMaxPointsValue.value,
       training_level: trainingLevelValue !== "all" ? trainingLevelValue : undefined,
       test_type: "manual"
     };
@@ -85,45 +84,60 @@ document.addEventListener('DOMContentLoaded', (event) => {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(formData)
+      body: JSON.stringify(questionQueryFormData)
     })
-    .then(response => response.json())
-    .then(data => {
-      console.log('Success:', data);
+    .then(response => {
+      console.log('Response status:', response.status);
+      if (response.status === 204) {
+        const error = '204 code occurred--No questions found.'
+        console.log(error);
+        alert('No questions found that meet the selection criteria. Select new criteria and try again.');
+        resetUI();
+        return Promise.reject(new Error(error));
+      } else {
+        return response.json().then(data => ({
+            data,
+            status_code: response.status
+        }));
+      }
+    })
+    .then(({data, status_code}) => {
+      if (data.status === 'error') {
+        console.log("Error in question retrieval occurred.");
+        console.log('Data status:', data.status);
+        console.log(`${status_code}: ${data.message}`);
+        return handleAllErrors({status_code: status_code, json: () => Promise.resolve(data)});
+      }
+    
+      console.log(data.message);
+      return {data, status_code};
+    })
+    .then(({data}) => {
       // Clear existing table body content
       const resultsTable = document.querySelector(".results-table");
       const tableBody = resultsTable.querySelector("tbody");
       tableBody.innerHTML = "";
-
-      // Populate table with received data or show alert if no data
-      if (typeof data.total_questions_in_pool !== 'undefined' && data.selected_questions) {
-        data.selected_questions.forEach(question => {
-            const row = tableBody.insertRow();
-            row.dataset.questionId = question.question_id;
+      
+      data.selected_questions.forEach(question => {
+        const row = tableBody.insertRow();
+        row.dataset.questionId = question.question_id;
     
-            const cell1 = row.insertCell(0);
-            const cell2 = row.insertCell(1);
-            const cell3 = row.insertCell(2);
+        const cell1 = row.insertCell(0);
+        const cell2 = row.insertCell(1);
+        const cell3 = row.insertCell(2);
     
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.name = 'select_question';
-            checkbox.value = question.question_id; 
-            cell3.appendChild(checkbox);
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.name = 'select_question';
+        checkbox.value = question.question_id; 
+        cell3.appendChild(checkbox);
     
-            cell1.textContent = question.max_points;
-            cell2.textContent = question.question_desc;
-        });
-      } else if (data.total_questions_in_pool === 0) {
-        alert(data.message || "No questions found that meet the selection criteria.");
-      } else {
-        console.error('Error: Missing data from server response.');
-        alert('An error occurred while processing your request. Please try again.');
-      }
+        cell1.textContent = question.max_points;
+        cell2.textContent = question.question_desc;
+      });
     })
     .catch(error => {
-      console.error('Error:', error);
-      alert('An error occurred while processing your request. Please check your network connection and try again.');
+      console.error('Error in question retrieval occurred: ', error.message || error);
     });
   }
 
@@ -216,7 +230,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
   // Function to handle submit button click
   document.getElementById('submit').addEventListener('click', function() {
     const selectedQuestions = document.querySelectorAll('.selected-table tbody tr');
-    
+  
     // Collect question order data
     const questionOrder = Array.from(selectedQuestions).map(row => {
       const input = row.querySelector('input[type="number"]');
@@ -227,61 +241,90 @@ document.addEventListener('DOMContentLoaded', (event) => {
         question_order: !isNaN(orderValue) ? orderValue : null
       };
     });
-  
+
     // Collect other form data
     const totalScore = parseInt(getTotalPoints(), 10);
-    const testName = document.getElementById('test_name_input').value.trim();
+    const testName = document.getElementById('test_name').value.trim();
     const testDescription = document.getElementById('test_description').value.trim();
     if (!testName || isNaN(totalScore) || !testDescription) {
       alert('Please fill in all the required fields correctly.');
-      return;
+      return; // Stop execution if validation fails
     }
-    
-    const isActive = document.querySelector('.switch input[type="checkbox"]').checked;
   
+    const isActive = document.querySelector('.switch input[type="checkbox"]').checked;
+
     // Create request data object
-    const requestData = {
+    const testCreationData = {
       question_order: questionOrder,
       total_score: totalScore,
       test_name: testName,
       is_active: isActive,
       test_description: testDescription,
     };
-  
+
     // Send request to server via fetch
+    console.log('Attempting test creation.');
     fetch('/test_creation', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestData)
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(testCreationData)
+    }).then(response => {
+      return response.json().then(data => ({data, status_code: response.status}));
     })
-    .then(response => {
-      // Check if response is successful (status code 200-299)
-      if (response.ok) {
-        // Parse response JSON
-        return response.json().then(data => ({ status: response.status, body: data }));
-      } else {
-        // Parse error response JSON
-        return response.json().then(data => Promise.reject({ status: response.status, body: data }));
+    .then(({data, status_code}) => {
+      if (data.status === 'error') {
+        console.log('Error in test creation occurred.');
+        console.log(`${status_code}: ${data.message}`);
+        return handleAllErrors({status_code: status_code, json: () => Promise.resolve(data)}, {focusElement: 'test_name'});
       }
-    })
-    .then(result => {
-      // Handle successful response
-      if (result.status === 200) {
-        alert('Test created successfully!');
-      } else {
-        // Handle server error
-        console.error('Error:', result.body.error);
-        alert('An error occurred while creating the test: ' + result.body.error);
-      }
+      alert('Test created successfully!');
     })
     .catch(error => {
-      // Handle fetch error
-      console.error('Error:', error);
-      alert('An error occurred while processing your request. Please check your network connection and try again.');
+      console.error('Error occurred in test creation process: ', error.message || error);
     });
   });
+
+  function handleAllErrors(response, context = {}) {
+    if (response.status === 200) {
+      console.log('Status code 200, no error to handle, terminating handleAllErrors.')
+      return Promise.resolve();
+    }
+    
+    let errorTriggered = false;
+    console.error(`Error occurred with status ${response.status_code}.`);
+    
+    return response.json().then(data => {
+      alert(data.message || 'An error occurred.');
+      
+      switch (response.status_code) {
+        case 409:
+          console.log('409 error occurred--Duplicate name');
+          const element = document.getElementById('test_name');
+          if (element) {
+            element.classList.add("error");
+            element.focus();
+          }
+          return Promise.reject('Process terminated so user can choose a different name.')
+        case 500:
+          console.log('500 error occurred')
+          alert('An unexpected server error occurred. Please try again later.');
+          errorTriggered = true;
+          return Promise.reject('Process terminated due to error.')
+        default:
+          console.log('No specified case for error--default')
+          alert('An unexpected error occurred.');
+          errorTriggered = true;
+          return Promise.reject('Process terminated due to error.')
+      }
+    }).catch(error => {
+      if (!errorTriggered) {
+        console.error('Error processing the error response:', error);  
+        return Promise.reject('Process terminated due to unexpected error.'); 
+      } else {
+        return Promise.reject('Process terminated due caught error.');
+      }
+    });
+  }
 
   // Function to adjust the position of the animated border
   function adjustAnimatedBorderPosition() {
