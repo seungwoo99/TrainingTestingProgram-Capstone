@@ -78,7 +78,12 @@ function addQuestion(input_obj_id) {
         },
         success: function(response) {
             console.log(response); // Handle the response from the server
-            alert(response)
+            alert(response);
+            window.onbeforeunload = function() {
+                if (window.opener && !window.opener.closed) {
+                    window.opener.refreshParent(); // Call the refreshParent function in the parent window
+                }
+            };
             window.close();
         }
     });
@@ -127,7 +132,12 @@ function editQuestion(input_obj_id,input_question_id) {
         },
         success: function(response) {
             console.log(response); // Handle the response from the server
-            alert(response)
+            alert(response);
+            window.onbeforeunload = function() {
+                if (window.opener && !window.opener.closed) {
+                    window.opener.refreshParent(); // Call the refreshParent function in the parent window
+                }
+            };
             window.close();
         }
     });

@@ -43,12 +43,21 @@
                     </table>
                 </div>
                 <!-- Buttons -->
-                <div class="centered-container">
+                <div class="button-container">
                     <button onclick="addQuestion()">Add</button>
                     <button onclick="editQuestion()">Edit</button>
                     <button onclick="deleteQuestion()">Delete</button>
+                    <button id="backButton">Back</button>
                 </div>
                 <script>
+                    var topic_id = {{ topic_id | string}};
+                    var subject_id = {{ subject_id | string }};
+
+                    document.getElementById('backButton').addEventListener('click', function() {
+                    // Redirect to url when button is clicked
+                    window.location.replace('/dataobjhierarchy?topic_id='+topic_id+'&subject_id='+subject_id);
+                    });
+
                     let data = [];
 
                     function toggleClass(el, className) {
@@ -166,7 +175,6 @@
                                 }
                             });
                             if (rowIndex != null) {
-                                alert(rowIndex);
                                 xhrSend("delete", "" + rowIndex, "", "");
                             }
                             else
@@ -182,6 +190,10 @@
                         while (tableBody.firstChild) {
                             tableBody.removeChild(tableBody.firstChild);
                         }
+                    }
+
+                    function refreshParent() {
+                        window.location.reload(); // Reloads the current window
                     }
                 </script>
             </div>

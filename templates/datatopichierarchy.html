@@ -19,7 +19,6 @@
                     <p>{{ subject_data['description'] }}</p>
                 </div>
             <div class="centered-container">
-                <div class="left-container">
                     <table class="topics-table" id="datasTable">
                         <thead>
                             <tr>
@@ -46,18 +45,6 @@
                         <button onclick="editTopic()">Edit Topic</button>
                         <button onclick="deleteTopic()">Delete Topic</button>
                         <button id="backButton">Back</button>
-                    </div>
-                </div>
-
-                <div class="right-container">
-                    <div class="input-container">
-                        <h2>Topic Editor</h2>
-                        <p style="display: inline-block; margin-right: 10px;">Topic Name</p>
-                        <input type="text" required minlength="1"/>
-                    </div>
-                    <div class="input-container">
-                        <p style="display: inline-block; margin-right: 10px;">Topic Description</p>
-                        <input type="text" required minlength="1"/>
                     </div>
                 </div>
             </div>
@@ -109,7 +96,7 @@
                 });
                 // Check if a subject is selected
                 if (selectedTopicId) {
-                    window.location.href = '/dataobjhierarchy?topic_id=' + selectedTopicId;
+                    window.location.href = '/dataobjhierarchy?topic_id=' + selectedTopicId+'&subject_id='+subject_id;
                 } else {
                     alert('Please select a topic')
                 }

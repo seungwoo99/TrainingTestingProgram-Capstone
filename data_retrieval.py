@@ -550,6 +550,31 @@ def get_question_by_id(question_id):
         # Log an error message with exception details.
         logging.error(f"Error while getting question: {e}", exc_info=True)
 
+
+def get_test_question_conflicts(question_id):
+    try:
+        # Connect to the database using db.engine.
+        with db.engine.connect() as connection:
+
+            # Execute the SQL query to retrieve question data for the selected test ID
+            sql_query = text("""
+                    SELECT t.test_id, t.test_name
+                    FROM tests t
+                    JOIN test_questions tq ON t.test_id = tq.test_id
+                    WHERE tq.question_id = :question_id
+                    ORDER BY t.test_id
+                """)
+
+            result = connection.execute(sql_query, question_id=question_id)
+
+            tests = result.fetchall()
+
+            return tests
+
+    except Exception as e:
+        # Log an error message with exception details.
+        logging.error(f"Error while getting questions: {e}", exc_info=True)
+
 def insertLearningObjective(topic_id, description, blooms_id, applicant, apprentice, journeyman, senior, chief, coordinator, tags):
     with db.engine.connect() as connection:
         query=text("""INSERT INTO learning_objectives (obj_id, topic_id, description, blooms_id, is_applicant, is_apprentice, is_journeyman, is_senior, is_chief, is_coordinator, tags) VALUES (0,:topic_id,:description,:blooms_id,:applicant,:apprentice,:journeyman,:senior,:chief,:coordinator,:tags)""")

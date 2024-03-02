@@ -67,10 +67,11 @@
     </body>
 <script>
     var topic_id =  {{ topic_id | string}};
+    var subject_id = {{ subject_id | string }};
 
     document.getElementById('backButton').addEventListener('click', function() {
         // Redirect to url when button is clicked
-        window.location.href = '/datahierarchy';
+        window.location.replace('/datatopichierarchy?subject_id='+subject_id);
     });
 
     function toggleDropdown(button) {
@@ -166,7 +167,7 @@
         });
         // Check if a subject is selected
         if (selectedObjId) {
-            window.location.href = '/dataquestionhierarchy?obj_id=' + selectedObjId;
+            window.location.href = '/dataquestionhierarchy?obj_id=' + selectedObjId+'&topic_id='+topic_id+'&subject_id='+subject_id;
         } else {
             alert('Please select a learning objective');
         }

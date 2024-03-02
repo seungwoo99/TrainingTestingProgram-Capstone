@@ -38,7 +38,7 @@ from data_retrieval import (fetch_test_creation_options, get_questions, select_q
                             get_all_subjects, get_tester_list,
                             selectSubjectNames, selectSubjectDescriptions, insertSubject, get_all_topics, insertTopic,
                             get_all_objectives, get_objs_temp, insertLearningObjective, get_all_questions, get_obj_desc,
-                            get_question_by_id)
+                            get_question_by_id, get_test_question_conflicts)
 
 # Load environment variables from a .env file
 load_dotenv()
@@ -317,6 +317,7 @@ def objectives():
 
     # Get the selected subject_id from the query parameters
     topic_id = request.args.get('topic_id')
+    subject_id = request.args.get('subject_id')
 
     # Use the subject_id to fetch topics
     objectives, topic_data = get_all_objectives(topic_id)
@@ -405,7 +406,7 @@ def objectives():
                 questions, obj_data = get_all_questions(obj_id)
 
                 # Create alert response
-                alert = ("Unable to delete learning objective " + obj_data['description'] +
+                alert = ("Unable to delete learning objective " + obj_data +
                          " . The following questions must be deleted first: \n")
                 for question in questions:
                     alert += "\u2022 " + question.question_desc + "\n"
@@ -417,17 +418,47 @@ def objectives():
 
     else:
         # Pass topics to the template
-        return render_template('dataobjhierarchy.html', objectives=objectives,topic_id=topic_id, topic_data=topic_data)
+        return render_template('dataobjhierarchy.html', objectives=objectives,topic_id=topic_id, topic_data=topic_data,subject_id=subject_id)
     
 @app.route('/dataquestionhierarchy', methods=['GET', 'POST'])
 def questions():
+    # Check which database function to execute
+    if request.method == "POST":
+        pData = request.get_json()
+        if pData.get("type") == "delete":
+            # Attempt to delete question
+            try:
+                question_id = pData.get("value1")
+                query = text("""DELETE FROM questions where question_id = :question_id""")
+                db.engine.execute(query, question_id=question_id)
+            except Exception as e:
+
+                # Log an error message with exception details.
+                logging.error(f"Error while attempting question deletion: {e}", exc_info=True)
+
+                # Get all conflicting tests
+                tests = get_test_question_conflicts(question_id);
+
+                # Create alert response
+                alert = ("Unable to delete question id " + question_id +
+                         " . The following tests must be deleted first: \n")
+                for test in tests:
+                    alert += "\u2022 " + test.test_name + "\n"
+
+                response_data = {"category": "FAILURE", 'error_message': alert}
+                return jsonify(response_data)
+            return jsonify({"category": "SUCCESS"})
+
+
 
     # Get the selected subject_id from the query parameters
     obj_id = request.args.get('obj_id')
+    topic_id = request.args.get('topic_id')
+    subject_id = request.args.get('subject_id')
 
     questions, obj_data = get_all_questions(obj_id)
 
-    return render_template('dataquestionhierarchy.html', questions=questions, obj_id=obj_id, obj_data=obj_data)
+    return render_template('dataquestionhierarchy.html', questions=questions, obj_id=obj_id, obj_data=obj_data,topic_id=topic_id,subject_id=subject_id)
 
 @app.route('/addquestion')
 def addquestion():
@@ -1310,6 +1341,7 @@ def register():
             mail.send(msg)
 
             # Return to homepage
+            flash("Account registered, please check your email for a verification link.")
             return redirect(url_for('homepage'))
 
 # Action when the given link is clicked
