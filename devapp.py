@@ -727,6 +727,19 @@ def add_tester():
     pass_status = new_tester_data.get("passStatus")
     test_id = new_tester_data.get("testId")
 
+    try:
+        # check testee name is already exist in the database
+        check_testee_name_query = text("SELECT * FROM testee WHERE testee_name = :testee_name")
+        result = db.engine.execute(check_testee_name_query, testee_name=testee_name)
+        exist = result.fetchone()
+
+        if exist:
+            response_data = {"Category": "invalid"}
+            return jsonify(response_data)
+    except Exception as e:
+        response_data = {"Category": "invalid"}
+        return jsonify(response_data)
+
     # Insert new tester in the database
     add_tester_query = text("INSERT INTO testee (testee_name) VALUES (:testee_name)")
     db.engine.execute(add_tester_query, testee_name=testee_name)
@@ -744,8 +757,8 @@ def add_tester():
                                   +" VALUES (:test_id, :tester_id, :attempt_date, :total_score, :pass_status)")
     db.engine.execute(add_tester_score_query, test_id=test_id, tester_id=tester_id, attempt_date=attempt_date, total_score=score, pass_status=pass_status)
 
-    return ''
-
+    response_data = {"Category": "valid"}
+    return jsonify(response_data)
 
 # Add exist tester data in the tester list table
 @app.route('/add_existing_tester', methods=['POST'])
@@ -806,6 +819,42 @@ def add_record():
     db.engine.execute(insert_query, test_id=test_id, tester_id=tester_id, attempt_date=attempt_date, score=score, pass_status=pass_status)
 
     return ''
+
+
+# Routes for deleting selected test
+@app.route('/delete_test/<int:test_id>')
+def delete_test_validation(test_id):
+    try:
+        # Check testers' scores exist for the test
+        check_tester_query = text("SELECT * FROM test_scores WHERE test_id = :test_id")
+        result = db.engine.execute(check_tester_query, test_id=test_id)
+        exist = result.fetchone()
+
+        # If testers' scores exist
+        if exist:
+            delete_test_query = text("DELETE FROM tests WHERE test_id = :test_id")
+            db.engine.execute(delete_test_query, test_id=test_id)
+        else:
+            # Delete the questions on the test
+            delete_test_questions = text("DELETE FROM test_questions WHERE test_id = :test_id")
+            db.engine.execute(delete_test_questions, test_id=test_id)
+
+        # Delete the test
+        delete_test_query = text("DELETE FROM tests WHERE test_id = :test_id")
+        db.engine.execute(delete_test_query, test_id=test_id)
+
+        # Send data
+        alert = "Successfully deleted"
+        response_data = {"Category": "Success", 'Message': alert}
+
+        return jsonify(response_data)
+    except Exception as e:
+        # If testers' scores or questions for the test are not completely deleted
+        # Create alert response
+        alert = "Unable to delete the test. All the testers' records must be deleted first."
+        response_data = {"Category": "Failure", 'error_message': alert}
+
+        return jsonify(response_data)
 
 
 #------ Route for Scoring  Metrics---------
