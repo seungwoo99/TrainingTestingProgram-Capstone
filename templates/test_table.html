@@ -8,7 +8,7 @@
 
 <!-- Table that shows test lists -->
 <thead>
-    <tr>
+    <tr class="test_table">
         <th>No.</th>
         <th>Test Name</th>
         <th>Subject</th>
@@ -17,9 +17,9 @@
         <th>Modified Date</th>
     </tr>
 </thead>
-<tbody>
+<tbody class="scrollable">
     {% for row in data %}
-        <tr id="haspopover" data-test-id="{{ row.test_id }}" data-test-name="{{ row.test_name }}">
+        <tr id="haspopover" class="test_table" data-test-id="{{ row.test_id }}" data-test-name="{{ row.test_name }}">
             <td>{{ loop.index }}</td>
             <td>{{ row.test_name }}</td>
             <td>{{ row.subject_name }}</td>
@@ -46,6 +46,7 @@
                     </form>
                     <button class="btn btn-primary" onclick="viewTestScores('${test_id}')">Test Scores</button>
                     <button class="btn btn-primary" onclick="modifyTest('${test_id}')">Modify Test</button>
+                    <button class="btn btn-danger" onclick="deleteTest('${test_id}')">Delete Test</button>
                 </div>
             </div>
         `;
@@ -75,6 +76,31 @@
     // Function to handle view test scores button click
     function viewTestScores(test_id) {
         window.location.href = "/test/" + test_id;
+    }
+
+    // Function to handle delete test button click
+    function deleteTest(test_id) {
+        //Confirmation message
+        var confirmation = confirm('Are you sure you want to delete the selected test?');
+        if(confirmation){
+            //Send AJAX request to Flask route for checking validation
+            fetch(`/delete_test/${test_id}`)
+            .then(response => {
+                if(!response.ok){
+                    throw new Error("Network was not ok");
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.Category === 'Success') {
+                    alert(data.Message);
+                    window.location.reload();
+                } else if (data.Category === 'Failure') {
+                    alert("Failure: " + data.error_message);
+                }
+            });
+        }
+
     }
 
     // Initialize Bootstrap popovers

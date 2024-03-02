@@ -1,6 +1,7 @@
 <!-- Table that shows a list of tester -->
 <thead>
-    <tr>
+    <tr class="tester_table">
+        <th>/</th>
         <th>No.</th>
         <th>Tester Name</th>
         <th>Attempt Date</th>
@@ -9,10 +10,11 @@
         <th></th>
     </tr>
 </thead>
-<tbody>
+<tbody class="scrollable">
     {% for row in tester_data %}
-        <tr data-score-id="{{ row.score_id }}" data-tester-id="{{ row.tester_id }}" data-test-id="{{ row.test_id }}">
-            <td class="dropdown-history">{{ loop.index }}</td>
+        <tr class="tester_table" data-score-id="{{ row.score_id }}" data-tester-id="{{ row.tester_id }}" data-test-id="{{ row.test_id }}">
+            <td id="testclick" class="dropdown-history"><a>&#8964;</a></td>
+            <td>{{ loop.index }}</td>
             <td>{{ row.testee_name }}</td>
             <td class="attemptDate-cell">{{ row.attempt_date }}</td>
             <td class="score-cell">
@@ -25,7 +27,7 @@
                 {% endif %}
             </td>
             <td onclick="addRecord('{{ row.test_id }}', '{{ row.tester_id }}', '{{ row.testee_name }}')">
-                    <button id="add-record-button">Add</button>
+                    <button id="add-record-button">Add New Record</button>
             </td>
         </tr>
 
