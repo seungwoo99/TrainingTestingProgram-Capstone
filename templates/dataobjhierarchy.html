@@ -57,7 +57,7 @@
                 </div>
                 <div class="button-container">
                     <button onclick="">New Reference</button>
-                    <a href='{{ url_for('questions') }}'><button>View Questions</button></a>
+                    <button onclick="viewQuestions()">View Questions</button>
                     <button onclick="addObjective()">Add Objective</button>
                     <button onclick="editObjective()">Edit Objective</button>
                     <button onclick="deleteObjective()">Delete Objective</button>
@@ -147,6 +147,30 @@
         };
 
         xhr.send(json);
+    }
+
+    function viewQuestions() {
+        // Get all the table rows
+        var rows = document.querySelectorAll('tbody tr');
+
+        // Initialize a variable to store the selected subject_id
+        var selectedObjId = null;
+
+        // Iterate over each row to find the selected one
+
+        rows.forEach(function(row) {
+            // Check if the row has the 'selected' class
+            if (row.classList.contains('selected')) {
+                // Get the first cell (subject_id cell) content
+                selectedObjId = row.cells[0].textContent;
+            }
+        });
+        // Check if a subject is selected
+        if (selectedObjId) {
+            window.location.href = '/dataquestionhierarchy?obj_id=' + selectedObjId;
+        } else {
+            alert('Please select a learning objective');
+        }
     }
 
     // Function to add data entries

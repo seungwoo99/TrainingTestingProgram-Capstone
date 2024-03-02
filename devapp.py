@@ -37,7 +37,8 @@ from data_retrieval import (fetch_test_creation_options, get_questions, select_q
                             check_registered, get_test_data, get_tests, get_topics, get_subjects,
                             get_all_subjects, get_tester_list,
                             selectSubjectNames, selectSubjectDescriptions, insertSubject, get_all_topics, insertTopic,
-                            get_all_objectives, get_objs_temp, insertLearningObjective, get_all_questions)
+                            get_all_objectives, get_objs_temp, insertLearningObjective, get_all_questions, get_obj_desc,
+                            get_question_by_id)
 
 # Load environment variables from a .env file
 load_dotenv()
@@ -421,7 +422,42 @@ def objectives():
 @app.route('/dataquestionhierarchy', methods=['GET', 'POST'])
 def questions():
 
-    return render_template('dataquestionhierarchy.html',objs=get_objs_temp())
+    # Get the selected subject_id from the query parameters
+    obj_id = request.args.get('obj_id')
+
+    questions, obj_data = get_all_questions(obj_id)
+
+    return render_template('dataquestionhierarchy.html', questions=questions, obj_id=obj_id, obj_data=obj_data)
+
+@app.route('/addquestion')
+def addquestion():
+
+    # Get the selected subject_id from the query parameters
+    obj_id = request.args.get('obj_id')
+
+    # Get the objective desc
+    obj_desc = get_obj_desc(obj_id)
+
+
+    return render_template('addquestion.html', obj_id=obj_id, obj_desc=obj_desc)
+
+@app.route('/editquestion')
+def editquestion():
+
+    # Get the selected subject_id from the query parameters
+    obj_id = request.args.get('obj_id')
+
+    # Get the selected question_id from the query parameters
+    question_id = request.args.get('question_id')
+
+    # Get the objective desc
+    obj_desc = get_obj_desc(obj_id)
+
+    # Get the selected question
+    question = get_question_by_id(question_id)
+
+    return render_template('editquestion.html', obj_id=obj_id, obj_desc=obj_desc, question=question)
+
 
 
 
@@ -1125,6 +1161,40 @@ def process_question():
 
     return 'Question added successfully!'
 
+@app.route('/modify_question', methods=['POST'])
+def modify_question():
+    obj_id = request.form['obj_id']
+    question_id = request.form['question_id']
+    question_desc = request.form['question_desc']
+    question_text = request.form['question_text']
+    question_answer = request.form['question_answer']
+    question_type = request.form['question_type']
+    question_difficulty = request.form['question_difficulty']
+    answer_explanation = request.form['answer_explanation']
+    points_definition = request.form['points_definition']
+    max_points = request.form['max_points']
+    source = request.form['source']
+
+    query = text("""
+            UPDATE questions 
+            SET obj_id = :obj_id, 
+                question_desc = :question_desc, 
+                question_text = :question_text, 
+                question_answer = :question_answer, 
+                question_type = :question_type, 
+                question_difficulty = :question_difficulty, 
+                answer_explanation = :answer_explanation, 
+                points_definition = :points_definition, 
+                max_points = :max_points, 
+                source = :source
+            WHERE question_id = :question_id
+        """)
+
+    # Execute the query
+    db.engine.execute(query, obj_id=obj_id, question_desc=question_desc, question_text=question_text, question_answer=question_answer, question_type=question_type, question_difficulty=question_difficulty, answer_explanation=answer_explanation, points_definition=points_definition, max_points=max_points, source=source, question_id=question_id)
+
+    return 'Question updated successfully!'
+
 # Route to render tests as a html file for export
 @app.route('/generate_test', methods=['POST'])
 def generate_test():
@@ -1146,19 +1216,6 @@ def generate_test_answers():
     # Render page
     return render_template('test_answers_template.html', test_questions=get_test_questions(selected_test_id),
                            test_data=get_test_data(selected_test_id))
-
-# Routes yet to be implemented
-@app.route('/modify_test', methods=['POST'])
-def modify_test():
-    return "Under Construction"
-
-@app.route('/delete_test', methods=['POST'])
-def delete_test():
-    return "Under Construction"
-
-@app.route('/enter_scores', methods=['POST'])
-def enter_scores():
-    return "Under Construction"
 
 #----------Routes for registration and verification----------
 
