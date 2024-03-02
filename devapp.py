@@ -406,7 +406,7 @@ def objectives():
                 questions, obj_data = get_all_questions(obj_id)
 
                 # Create alert response
-                alert = ("Unable to delete learning objective " + obj_data['description'] +
+                alert = ("Unable to delete learning objective " + obj_data +
                          " . The following questions must be deleted first: \n")
                 for question in questions:
                     alert += "\u2022 " + question.question_desc + "\n"
