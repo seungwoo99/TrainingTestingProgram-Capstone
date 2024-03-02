@@ -1226,32 +1226,6 @@ def modify_question():
 
     return 'Question updated successfully!'
 
-@app.route('/delete_test', methods=['POST'])
-def delete_test():
-    test_id = request.form['test_id']
-
-    try:
-        # Delete any linked test scores
-        delete = text("""DELETE FROM test_scores where test_id = :test_id""")
-        db.engine.execute(delete, test_id=test_id)
-
-        # Delete the linked test_questions
-        delete = text("""DELETE FROM test_questions where test_id = :test_id""")
-        db.engine.execute(delete, test_id=test_id)
-
-        # Delete the linked test_questions
-        delete = text("""DELETE FROM tests where test_id = :test_id""")
-        db.engine.execute(delete, test_id=test_id)
-
-    except Exception as e:
-
-        # Log an error message with exception details.
-        logging.error(f"Error while attempting test: {e}", exc_info=True)
-        return 'Error: ' + str(e)
-
-
-    return 'Test deleted successfully!'
-
 # Route to render tests as a html file for export
 @app.route('/generate_test', methods=['POST'])
 def generate_test():
