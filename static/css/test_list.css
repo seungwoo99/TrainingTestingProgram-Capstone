@@ -91,6 +91,17 @@ h2{
 }
 
 button{
+  margin-right: 1%;
+  background-color: #0b80bd;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 1% 2%;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 125%;
+  height: auto;
   margin-bottom: 4%;
 }
 
