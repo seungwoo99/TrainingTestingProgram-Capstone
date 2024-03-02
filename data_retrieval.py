@@ -477,6 +477,7 @@ def get_all_questions(obj_id):
                         """)
         obj_data = connection.execute(sql_query, obj_id=obj_id)
         obj_data = obj_data.fetchone()
+        obj_data = obj_data['description']
 
     return result, obj_data
 
@@ -502,6 +503,52 @@ def get_objs_temp():
     except Exception as e:
         # Log an error message with exception details.
         logging.error(f"Error while getting test list: {e}", exc_info=True)
+
+
+def get_obj_desc(obj_id):
+
+    try:
+        # Connect to the database using db.engine.
+        with db.engine.connect() as connection:
+
+            # Execute query to retrieve all tests
+            # Execute the SQL query to retrieve all tests
+            sql_query = text("""
+                        SELECT description
+                        FROM learning_objectives
+                        WHERE obj_id=:obj_id
+                    """)
+            result = connection.execute(sql_query, obj_id=obj_id)
+
+            desc = result.fetchone()
+
+            return desc['description']
+
+    except Exception as e:
+        # Log an error message with exception details.
+        logging.error(f"Error while getting objective description: {e}", exc_info=True)
+
+
+def get_question_by_id(question_id):
+
+    try:
+        # Connect to the database using db.engine.
+        with db.engine.connect() as connection:
+
+            # Execute query to retrieve all tests
+            # Execute the SQL query to retrieve all tests
+            sql_query = text("""
+                        SELECT *
+                        FROM questions
+                        WHERE question_id=:question_id
+                    """)
+            result = connection.execute(sql_query, question_id=question_id)
+
+            return result.fetchone()
+
+    except Exception as e:
+        # Log an error message with exception details.
+        logging.error(f"Error while getting question: {e}", exc_info=True)
 
 def insertLearningObjective(topic_id, description, blooms_id, applicant, apprentice, journeyman, senior, chief, coordinator, tags):
     with db.engine.connect() as connection:

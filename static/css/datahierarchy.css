@@ -73,7 +73,14 @@ td {
   font-size: 125%;
 }
 
-
+/*table{*/
+/*display:block;*/
+/*}*/
+/*tbody{*/
+/* display:block;*/
+/* overflow-y:scroll;*/
+/* height:400px;*/
+/*}*/
 
 
 .subject-table td:nth-child(1),
