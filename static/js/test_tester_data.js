@@ -55,7 +55,6 @@ function addRecord(test_id, tester_id, testee_name){
 
 // Wait for the DOM content to be fully loaded before executing JavaScript
 document.addEventListener('DOMContentLoaded', function() {
-
     /* JS code for drop down table that displays tester's history */
     const dropdownTriggers = document.querySelectorAll('.dropdown-history');
     dropdownTriggers.forEach(trigger => {
@@ -111,6 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const inputField = document.createElement('input');
             inputField.type = 'number';
             inputField.value = scoreCell.textContent.trim();
+            inputField.style.width = '100%';
             scoreCell.textContent = '';
             scoreCell.appendChild(inputField);
             inputField.focus();
@@ -118,6 +118,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Show the edit button
             const editBtn = document.createElement('button');
             editBtn.textContent = 'Edit';
+            editBtn.style.fontSize = '10px';
             editBtn.addEventListener('click', function(){
                 // Send modified score data
                 updateScore(scoreCell);
@@ -136,6 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
             //Add input field to get attempt date data
             const dateInputField = document.createElement('input');
             dateInputField.type = 'datetime-local';
+            dateInputField.style.width = '100%';
             dateInputField.value = attemptDateCell.textContent.trim();
             attemptDateCell.textContent = '';
             attemptDateCell.appendChild(dateInputField);
@@ -186,6 +188,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Show the edit button
             const statusEditBtn = document.createElement('button');
             statusEditBtn.textContent = 'Edit';
+            statusEditBtn.style.fontSize = '10px';
             statusEditBtn.addEventListener('click', function(){
                 // Send modified pass status data
                 updateStatus(passStatusCell);
@@ -320,13 +323,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Hide the pop-up page when the close button is clicked
     closeButton.addEventListener('click', function() {
         modal.style.display = 'none';
-        window.location.reload();
+        window.location.href = window.location.href;
     });
     // Close the modal if user clicks anywhere outside of it
     window.addEventListener('click', function(event) {
         if (event.target === modal) {
             modal.style.display = 'none';
-            window.location.reload();
+            window.location.href = window.location.href;
         }
     });
 
@@ -381,6 +384,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Displays error messages if there is no input
         if(!testerName.trim() && !existChecked.checked){
+            document.getElementById('testerNameError').textContent = 'Please enter a tester name.'
             document.getElementById('testerNameError').style.display = 'block';
         }else{
             document.getElementById('testerNameError').style.display = 'none';
@@ -414,14 +418,25 @@ document.addEventListener('DOMContentLoaded', function() {
             let json = JSON.stringify({
                 testerName:testerName, attemptDate:attemptDate, score:score, passStatus:passStatus, testId:testId
             });
-            xhr.open("POST", '/add_new_tester')
-            xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
-
-            xhr.send(json);
-            xhr.onload = function(event){
-                window.location.reload();
-            }
-            modal.style.display = 'none';
+            // Send AJAX request to Flask route
+            fetch('/add_new_tester', {
+                method: 'POST',
+                headers: { 'Content-Type' : 'application/json'},
+                body: json
+            }).then(response => {
+                if(response.ok){
+                    return response.json();
+                }
+                throw new Error('Network response was not ok.');
+            }).then(data => {
+                if(data.Category === 'valid'){
+                    window.location.reload();
+                    modal.style.display = 'none';
+                }else if(data.Category === 'invalid'){
+                    document.getElementById('testerNameError').textContent = 'The test name is already stored. Try another name.';
+                    document.getElementById('testerNameError').style.display = 'block';
+                }
+            })
 
         // When user selects existing tester check box
         }else if(testerId !== '' && attemptDate.trim() && score.trim() && existChecked.checked){
@@ -449,11 +464,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Close the page when close button is clicked
     new_record_close_btn.addEventListener('click', function() {
         new_record_page.style.display = 'none'; // Hide the modal when the close button is clicked
+        window.location.href = window.location.href;
     });
     // Close the page if user clicks anywhere outside of it
     window.addEventListener('click', function(event) {
         if (event.target == new_record_page) {
             new_record_page.style.display = 'none';
+            window.location.href = window.location.href;
         }
     });
 });
