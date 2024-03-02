@@ -1,5 +1,9 @@
 body {
   overflow: hidden;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 /* Container Styles */
@@ -73,16 +77,20 @@ td {
   font-size: 125%;
 }
 
-/*table{*/
-/*display:block;*/
-/*}*/
-/*tbody{*/
-/* display:block;*/
-/* overflow-y:scroll;*/
-/* height:400px;*/
-/*}*/
+table{
+display:block;
+}
 
+tbody{
+  display:block;
+  overflow-y:scroll;
+  height:400px;
+}
 
+.objectives-table td:nth-child(1),
+.objectives-table td:nth-child(3),
+.objectives-table td:nth-child(4),
+.objectives-table td:nth-child(5),
 .subject-table td:nth-child(1),
 .subject-table td:nth-child(2),
 .topics-table td:nth-child(1),
@@ -91,6 +99,7 @@ td {
   text-align: center;
 }
 
+.objectives-table td:nth-child(2),
 .subject-table td:nth-child(3),
 .topics-table td:nth-child(3) {
   text-align: left;
@@ -142,6 +151,24 @@ td {
   width: 10vw;
   text-overflow: ellipsis;
 }
+
+.objectives-table td:nth-child(3){
+  width: 10vw;
+}
+
+.objectives-table td:nth-child(4){
+  width: 12vw;
+}
+
+.objectives-table td:nth-child(5){
+  width: 5vw;
+  text-overflow: ellipsis;
+}
+
+.objectives-table td:nth-child(1){
+  width: 7vw;
+}
+
 
 /* Dropdown Styles */
 .custom-dropdown{
