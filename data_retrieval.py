@@ -43,7 +43,6 @@ def fetch_test_creation_options():
         logging.error("An error occurred while fetching test creation options:", exc_info=True)
         raise
 
-
 def get_questions_for_modify(test_id):
     try:
         # Log that we are connecting to the database.
@@ -80,7 +79,6 @@ def get_questions_for_modify(test_id):
     except Exception as e:
         logging.error(f"Error executing query: {e}")
         raise
-
 # Function to query the database for questions that match user inputs to create a pool of questions
 def get_questions(blooms_taxonomy, subjects, topics, question_types, question_difficulties, training_level_conditions, max_points=None):
     try:
@@ -278,6 +276,7 @@ def create_test(is_active, created_by, creation_date, test_name, test_descriptio
         logging.error("Unexpected error while creating the test", exc_info=True)
         return {"error": "An unexpected error occurred while creating the test."}
 
+
 def create_test_for_modify(is_active, modified_by, last_modified_date, test_name, test_description, total_score, question_order, test_id):
     # Log the start of the update_test function
     logging.info("Starting update_test function")
@@ -363,6 +362,8 @@ def create_test_for_modify(is_active, modified_by, last_modified_date, test_name
     except Exception as e:
         logging.error("Unexpected error while updating the test", exc_info=True)
         return {"error": "An unexpected error occurred while updating the test."}
+
+
 # Function to get user from database
 def get_user(input_user):
 
@@ -600,6 +601,7 @@ def get_all_questions(obj_id):
                         """)
         obj_data = connection.execute(sql_query, obj_id=obj_id)
         obj_data = obj_data.fetchone()
+        obj_data = obj_data['description']
 
     return result, obj_data
 
@@ -625,6 +627,77 @@ def get_objs_temp():
     except Exception as e:
         # Log an error message with exception details.
         logging.error(f"Error while getting test list: {e}", exc_info=True)
+
+
+def get_obj_desc(obj_id):
+
+    try:
+        # Connect to the database using db.engine.
+        with db.engine.connect() as connection:
+
+            # Execute query to retrieve all tests
+            # Execute the SQL query to retrieve all tests
+            sql_query = text("""
+                        SELECT description
+                        FROM learning_objectives
+                        WHERE obj_id=:obj_id
+                    """)
+            result = connection.execute(sql_query, obj_id=obj_id)
+
+            desc = result.fetchone()
+
+            return desc['description']
+
+    except Exception as e:
+        # Log an error message with exception details.
+        logging.error(f"Error while getting objective description: {e}", exc_info=True)
+
+
+def get_question_by_id(question_id):
+
+    try:
+        # Connect to the database using db.engine.
+        with db.engine.connect() as connection:
+
+            # Execute query to retrieve all tests
+            # Execute the SQL query to retrieve all tests
+            sql_query = text("""
+                        SELECT *
+                        FROM questions
+                        WHERE question_id=:question_id
+                    """)
+            result = connection.execute(sql_query, question_id=question_id)
+
+            return result.fetchone()
+
+    except Exception as e:
+        # Log an error message with exception details.
+        logging.error(f"Error while getting question: {e}", exc_info=True)
+
+
+def get_test_question_conflicts(question_id):
+    try:
+        # Connect to the database using db.engine.
+        with db.engine.connect() as connection:
+
+            # Execute the SQL query to retrieve question data for the selected test ID
+            sql_query = text("""
+                    SELECT t.test_id, t.test_name
+                    FROM tests t
+                    JOIN test_questions tq ON t.test_id = tq.test_id
+                    WHERE tq.question_id = :question_id
+                    ORDER BY t.test_id
+                """)
+
+            result = connection.execute(sql_query, question_id=question_id)
+
+            tests = result.fetchall()
+
+            return tests
+
+    except Exception as e:
+        # Log an error message with exception details.
+        logging.error(f"Error while getting questions: {e}", exc_info=True)
 
 def insertLearningObjective(topic_id, description, blooms_id, applicant, apprentice, journeyman, senior, chief, coordinator, tags):
     with db.engine.connect() as connection:
