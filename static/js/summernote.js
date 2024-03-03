@@ -49,6 +49,40 @@ function addQuestion(input_obj_id) {
     var max_points = $('input[name="max_points"]').val();
     var source = $('input[name="source"]').val();
 
+    //validation
+    if (question_desc === "") {
+        alert("Question description must be entered.");
+        return;
+    }
+
+    if (question_text === "<p><br></p>" || question_text === "<br>") {
+        alert("Question text must be entered.");
+        return;
+    }
+
+    if (question_type === "") {
+        alert("Question type must be entered.");
+        return;
+    }
+
+    question_difficulty = parseInt(question_difficulty);
+    if (!(question_difficulty <= 5 && question_difficulty >= 1 && question_difficulty !== "")) {
+        alert("Question difficulty must be entered and be a whole number between 1 - 5");
+        return;
+    }
+
+    if (points_definition === "") {
+        alert("points rubric must be entered.");
+        return;
+    }
+
+    max_points = parseInt(max_points);
+
+    if (!(max_points > 0)) {
+        alert("Max points must be entered, larger than 0, and a whole integer");
+        return;
+    }
+
     console.log('Objective ID:', obj_id);
     console.log('Question Description:', question_desc);
     console.log('Question Text:', question_text);
@@ -101,6 +135,40 @@ function editQuestion(input_obj_id,input_question_id) {
     var points_definition = $('input[name="points_definition"]').val();
     var max_points = $('input[name="max_points"]').val();
     var source = $('input[name="source"]').val();
+
+    //validation
+    if (question_desc === "") {
+        alert("Question description must be entered.");
+        return;
+    }
+
+    if (question_text === "<p><br></p>" || question_text === "<br>") {
+        alert("Question text must be entered.");
+        return;
+    }
+
+    if (question_type === "") {
+        alert("Question type must be entered.");
+        return;
+    }
+
+    question_difficulty = parseInt(question_difficulty);
+    if (!(question_difficulty <= 5 && question_difficulty >= 1 && question_difficulty !== "")) {
+        alert("Question difficulty must be entered and be a whole number between 1 - 5");
+        return;
+    }
+
+    if (points_definition === "") {
+        alert("points rubric must be entered.");
+        return;
+    }
+
+    max_points = parseInt(max_points);
+
+    if (!(max_points > 0)) {
+        alert("Max points must be entered, larger than 0, and a whole integer");
+        return;
+    }
 
     console.log('Objective ID:', obj_id);
     console.log('Question Description:', question_desc);
