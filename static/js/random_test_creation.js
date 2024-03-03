@@ -1,56 +1,56 @@
-// Wait for the DOM content to be fully loaded before executing JavaScript
 document.addEventListener('DOMContentLoaded', function () {
   
-  // Select necessary elements from the DOM
   const toggleDivs = document.querySelectorAll('.toggle-btn');
   const confirmButton = document.getElementById('confirm-selection');
+  const categoryButtons = document.querySelectorAll('.select-category'); 
 
-  // Function to update the selection status of checkboxes within a category
   function updateSelection(category, isChecked) {
-    // Select all checkboxes with the specified category attribute
     document.querySelectorAll(`.toggle-btn input[data-category='${category}']`).forEach(function (checkbox) {
-      // Update checkbox status
       checkbox.checked = isChecked;
-      // Update the data-selected attribute and class of the parent div
       const div = checkbox.closest('.toggle-btn');
       div.setAttribute('data-selected', isChecked);
       div.classList.toggle('selected', isChecked);
     });
+    updateCategoryButtonState(category, isChecked);
   }
 
-  // Select all toggle buttons
+  function updateCategoryButtonState(category, isChecked) {
+    const allSelected = Array.from(document.querySelectorAll(`.toggle-btn input[data-category='${category}']`)).every(checkbox => checkbox.checked);
+    const categoryButton = document.querySelector(`.select-category[data-category='${category}']`);
+    if (categoryButton) {
+      categoryButton.classList.toggle('selected', allSelected);
+    }
+  }
+
   toggleDivs.forEach(function (div) {
     div.addEventListener('click', function () {
-      // Toggle the checkbox status when the div is clicked
       const checkbox = div.querySelector('input[type="checkbox"]');
       checkbox.checked = !checkbox.checked;
       div.setAttribute('data-selected', checkbox.checked);
       div.classList.toggle('selected', checkbox.checked);
+
+      const category = checkbox.getAttribute('data-category');
+      updateCategoryButtonState(category, checkbox.checked);
     });
   });
 
-  // Select all category selection buttons and add click event listeners
-  document.querySelectorAll('.select-category').forEach(function (button) {
+  categoryButtons.forEach(function (button) {
     button.addEventListener('click', function (event) {
       event.preventDefault();
-      // Get the category from the data-category attribute
       const category = button.getAttribute('data-category');
-      // Check if all checkboxes in the category are checked
-      const allChecked = Array.from(document.querySelectorAll(`.toggle-btn input[data-category="${category}"]`)).every(checkbox => checkbox.checked);
-      // Determine the new checked status
-      const isChecked = !allChecked;
-      // Update the selection for the category
+      const isChecked = !button.classList.contains('selected');
       updateSelection(category, isChecked);
-      // Toggle the 'selected' class of the button
-      button.classList.toggle('selected', isChecked);
     });
-  });
+  });  
 
-  // Select the confirm button
   if (confirmButton) {
     confirmButton.addEventListener('click', function () {
       console.log('Confirm button clicked');
-      // Initialize selected data object
+      
+      confirmButton.disabled = true;
+      confirmButton.classList.add('disabled');
+      showProcessingOverlay()
+
       const selectedData = {
         blooms_taxonomy: [],
         subjects: [],
@@ -59,12 +59,10 @@ document.addEventListener('DOMContentLoaded', function () {
         question_difficulties: []
       };
 
-      // Iterate over toggle buttons to collect selected data
       toggleDivs.forEach(function (div) {
         const checkbox = div.querySelector('input[type="checkbox"]');
         if (checkbox.checked) {
           const category = checkbox.getAttribute('data-category');
-          // Push the checked checkbox value to the corresponding category in selectedData
           if (selectedData.hasOwnProperty(category)) {
             selectedData[category].push(checkbox.value);
           }
@@ -72,16 +70,54 @@ document.addEventListener('DOMContentLoaded', function () {
       });
 
       console.log('Selected Data:', selectedData);
+      let isValid = true; 
 
-      // Collect form input values
-      const numQuestionsValue = parseInt(document.getElementById('number_of_questions').value, 10);
-      const testMaxPointsValue = parseInt(document.getElementById('test_max_points').value, 10);
-      const trainingLevelValue = document.getElementById('training_level').value;
+      const testNameInput = document.getElementById('test_name');
       const testNameValue = document.getElementById('test_name').value.trim();
+      if (!testNameInput.value.trim()) {
+        testNameInput.classList.add('error');
+        isValid = false;
+      } else {
+        testNameInput.classList.remove('error');
+      }
+      
+      const numQuestionsInput = document.getElementById('number_of_questions');
+      const numQuestionsValue = parseInt(numQuestionsInput.value, 10);
+      if (isNaN(numQuestionsValue) || numQuestionsValue <= 0) {
+        numQuestionsInput.classList.add('error');
+        isValid = false;
+      } else {
+        numQuestionsInput.classList.remove('error');
+      }
+      
+      const testMaxPointsInput = document.getElementById('test_max_points');
+      const testMaxPointsValue = parseInt(testMaxPointsInput.value, 10);
+      if (isNaN(testMaxPointsValue) || testMaxPointsValue <= 0) {
+        testMaxPointsInput.classList.add('error');
+        isValid = false;
+      } else {
+        testMaxPointsInput.classList.remove('error');
+      }
+      
+      const testDescriptionInput = document.getElementById('test_description');
       const testDescriptionValue = document.getElementById('test_description').value.trim();
+      if (!testDescriptionInput.value.trim()) {
+        testDescriptionInput.classList.add('error');
+        isValid = false;
+      } else {
+        testDescriptionInput.classList.remove('error');
+      }
+
+      if (!isValid) {
+        resetConfirmButtonState();
+        setTimeout(() => {
+          alert('Please fill in all the required fields correctly.');
+        }, 100);
+      }
+
+      const trainingLevelValue = document.getElementById('training_level').value;
       const isActiveValue = document.querySelector('.switch input[type="checkbox"]').checked;
 
-      // Create form data object to send via fetch
       const questionQueryData = {
         blooms_taxonomy: selectedData.blooms_taxonomy,
         subjects: selectedData.subjects,
@@ -105,8 +141,11 @@ document.addEventListener('DOMContentLoaded', function () {
         if (response.status === 204) {
           const error = '204 code occurred--No questions found.'
           console.log(error);
-          alert('No questions found that meet the selection criteria. Select new criteria and try again.');
-          resetUI();
+          resetConfirmButtonState();
+          setTimeout(() => {
+            alert('No questions found that meet the selection criteria. Select new criteria and try again.');
+            resetInputs();
+          }, 100);
           return Promise.reject(new Error(error));
         } else {
           return response.json().then(data => ({
@@ -151,11 +190,33 @@ document.addEventListener('DOMContentLoaded', function () {
           console.log('Error in test creation occurred.');
           console.log(`${status_code}: ${data.message}`);
           return handleAllErrors({status_code: status_code, json: () => Promise.resolve(data)}, {focusElement: 'test_name'});
+        } else {
+          const testId = data.test_id;
+          console.log(`Test created successfully with ID: ${testId}`);
+          
+          const form = document.createElement('form');
+          form.method = 'POST';
+          form.action = '/generate_test';
+          form.target = '_blank';
+          
+          const testIdInput = document.createElement('input');
+          testIdInput.type = 'hidden';
+          testIdInput.name = 'test_id';
+          testIdInput.value = testId;
+          
+          form.appendChild(testIdInput);
+          
+          document.body.appendChild(form);
+
+          resetInputs();
+          resetConfirmButtonState();
+          
+          form.submit();
         }
-        alert('Test created successfully!');
       })
       .catch(error => {
         console.error('Error occurred in test creation process: ', error.message || error);
+        resetConfirmButtonState()
       });
     });
   }
@@ -192,6 +253,7 @@ document.addEventListener('DOMContentLoaded', function () {
     .catch(error => {
       const errorMessage = `An error occurred while selecting questions: ${error.message}`;
       const customError = new Error(errorMessage);
+      resetConfirmButtonState()
       return Promise.reject(customError);
     });
   }
@@ -201,71 +263,116 @@ document.addEventListener('DOMContentLoaded', function () {
       console.log('Status code 200, no error to handle, terminating handleAllErrors.')
       return Promise.resolve();
     }
+
+    hideProcessingOverlay();
     
     let errorTriggered = false;
-    console.error(`Error occurred with status ${response.status_code}.`);
     
-    return response.json().then(data => {
-      alert(data.message || 'An error occurred.');
+    return new Promise((resolve, reject) => {
+      response.json().then(data => {
+        setTimeout(() => {
+          console.error(`Error occurred with status ${response.status_code}.`);
+          alert(data.message || 'An error occurred.');
       
-      switch (response.status_code) {
-        case 409:
-          console.log('409 error occurred--Duplicate name');
-          const element = document.getElementById('test_name');
-          if (element) {
-            element.classList.add('error');
-            element.focus();
+          switch (response.status_code) {
+            case 409:
+              errorTriggered = true;
+              console.log('409 error occurred--Duplicate name');
+              const element = document.getElementById('test_name');
+              if (element) {
+                element.classList.add('error');
+                element.focus();
+              }
+              resetConfirmButtonState();
+              reject(new Error('Process terminated so user can choose a different name.'));
+              break;
+            case 422:
+              errorTriggered = true;
+              console.log('422 error occurred--Less questions found then requested')
+              if (confirm(`Adjust number of questions to the available ${data.total_questions_in_pool}?`)) {
+                showProcessingOverlay();
+                return handleQuestionSelection(context.questions_pool, data.total_questions_in_pool, context.testMaxPoints)
+                  .then(selectionData => {
+                    resolve(selectionData);
+                  })
+                  .catch(error => {
+                    resetInputs();
+                    resetConfirmButtonState();
+                    reject(error);
+                  });
+              } else {
+                console.log('User terminated the process.');
+                resetInputs();
+                resetConfirmButtonState();
+                reject(new Error('Process terminated due to user choice.'));
+              }
+              break;
+            case 412:
+              errorTriggered = true;
+              console.log('412 error occurred--Less questions found then requested and the available questions exceed the max point allowance')
+              if (confirm('Do you want to adjust the number of questions and max points based on the feedback?')) {
+                const newNumQuestions = parseInt(prompt(`Enter new number of questions (Available: ${data.total_questions_in_pool}).`, context.numQuestions), 10);
+                const newTestMaxPoints = parseInt(prompt(`Enter new max points limit (Current maximum available: ${data.total_max_points}).`, context.testMaxPoints), 10);
+                showProcessingOverlay();
+                return handleQuestionSelection(context.questions_pool, newNumQuestions, newTestMaxPoints)
+                  .then(selectionData => {
+                    resolve(selectionData);
+                  })
+                  .catch(error => {
+                    resetInputs();
+                    resetConfirmButtonState();
+                    reject(error);
+                  });
+              } else {
+                console.log('User terminated process.');
+                resetInputs();
+                resetConfirmButtonState();
+                reject(new Error('Process terminated due to user choice.'));
+              }
+              break;
+            case 406:
+              errorTriggered = true;
+              console.log('406 error occurred--No valid combo')
+              resetInputs();
+              resetConfirmButtonState()
+              reject(new Error('Process terminated due to no valid combination of questions meeting selection criteria.'));
+              break;
+            case 500:
+              errorTriggered = true;  
+              console.log('500 error occurred')
+              alert('An unexpected server error occurred. Please try again later.');
+              resetInputs();
+              resetConfirmButtonState()
+              reject(new Error('Process terminated due to error.'));
+              break;
+            default:
+              console.log('No specified case for error--default')
+              resetInputs();
+              resetConfirmButtonState()
+              reject(new Error(`Unhandled error code: ${response.status_code}`));
+              break;
           }
-          return Promise.reject('Process terminated so user can choose a different name.')
-        case 422:
-          console.log('422 error occurred--Less questions found then requested')
-          if (confirm(`Adjust number of questions to the available ${data.total_questions_in_pool}?`)) {
-            return handleQuestionSelection(context.questions_pool, data.total_questions_in_pool, context.testMaxPoints)
-          } else {
-            console.log('User terminated the process.');
-            if (context.resetUI) context.resetUI();
-            errorTriggered = true;
-            return Promise.reject('Process terminated due to user choice.')
-          }
-        case 412:
-          console.log('412 error occurred--Less questions found then requested and the available questions exceed the max point allowance')
-          if (confirm('Do you want to adjust the number of questions and max points based on the feedback?')) {
-            const newNumQuestions = parseInt(prompt(`Enter new number of questions (Available: ${data.total_questions_in_pool}).`, context.numQuestions), 10);
-            const newTestMaxPoints = parseInt(prompt(`Enter new max points limit (Current maximum available: ${data.total_max_points}).`, context.testMaxPoints), 10);
-            return handleQuestionSelection(context.questions_pool, newNumQuestions, newTestMaxPoints)
-          } else {
-            console.log('User terminated process.');
-            if (context.resetUI) context.resetUI();
-            errorTriggered = true;
-            return Promise.reject('Process terminated due to user choice.')
-          }
-        case 406:
-          console.log('406 error occurred--No valid combo')
-          if (context.resetUI) context.resetUI();
-          errorTriggered = true;
-          return Promise.reject('Process terminated due to no valid combination of questions meeting selection criteria.')
-        case 500:
-          console.log('500 error occurred')
-          alert('An unexpected server error occurred. Please try again later.');
-          errorTriggered = true;
-          return Promise.reject('Process terminated due to error.')
-        default:
-          console.log('No specified case for error--default')
-          alert('An unexpected error occurred.');
-          errorTriggered = true;
-          return Promise.reject('Process terminated due to error.')
-      }
-    }).catch(error => {
-      if (!errorTriggered) {
-        console.error('Error processing the error response:', error);  
-        return Promise.reject('Process terminated due to unexpected error.'); 
-      } else {
-        return Promise.reject('Process terminated due caught error.');
-      }
-    });
+        }, 100);
+      }).catch(error => {
+        if (!errorTriggered) {
+          console.error('Error processing the error response:', error);  
+          resetInputs();
+          resetConfirmButtonState()
+          reject(new Error('Process terminated due to unexpected error.')); 
+        } else {
+          reject(new Error('Process terminated due caught error.'));
+        }
+      });
+    })
   }
 
-  function resetUI() {
+  function resetConfirmButtonState() {
+    confirmButton.disabled = false;
+    confirmButton.classList.remove('disabled');
+    hideProcessingOverlay();
+  }
+
+  function resetInputs() {
     document.querySelectorAll('.toggle-btn input[type="checkbox"]').forEach(checkbox => {
       checkbox.checked = false;
       const div = checkbox.closest('.toggle-btn');
@@ -286,10 +393,42 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     document.getElementById('number_of_questions').value = '';
-    document.getElementById('test_point_value').value = '';
+    document.getElementById('test_max_points').value = '';
     document.getElementById('training_level').selectedIndex = 0; 
     document.getElementById('test_name').value = '';
     document.getElementById('test_description').value = '';
     document.querySelector('.switch input[type="checkbox"]').checked = false; 
+  }
+
+  function showProcessingOverlay() {
+    const mainContainer = document.querySelector('.main-container');
+    
+    const overlay = document.createElement('div');
+    overlay.setAttribute('id', 'processing-overlay');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '50%';
+    overlay.style.left = '50%';
+    overlay.style.transform = 'translate(-50%, -50%)'; 
+    overlay.style.width = '30%'; 
+    overlay.style.height = '22.5%'; 
+    overlay.style.backgroundImage = 'url("/static/img/processing.gif")';
+    overlay.style.backgroundRepeat = 'no-repeat';
+    overlay.style.backgroundPosition = 'center';
+    overlay.style.backgroundSize = 'contain'; 
+    overlay.style.backgroundColor= '#FEFCFE'
+    overlay.style.zIndex = '1000';
+    overlay.style.border = '10px solid #708B75';
+    overlay.style.boxShadow = '0 5px 10px rgba(0,0,0,0.3)'; 
+    mainContainer.appendChild(overlay);
+  }
+  
+  function hideProcessingOverlay() {
+    const mainContainer = document.querySelector('.main-container');
+    mainContainer.style.overflow = 'auto';
+    
+    const overlay = document.getElementById('processing-overlay');
+    if (overlay) {
+      overlay.remove();
+    }
   }
 });

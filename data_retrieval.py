@@ -290,7 +290,8 @@ def create_test(is_active, created_by, creation_date, test_name, test_descriptio
         
         return {
             "status": "success", 
-            "message": f"Test '{test_name}' created successfully with ID {test_id}"
+            "message": f"Test '{test_name}' created successfully with ID {test_id}",
+            "test_id": test_id
         }, 201
         
     except ValueError as e:
