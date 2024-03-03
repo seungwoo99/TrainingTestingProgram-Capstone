@@ -1,7 +1,7 @@
 <!-- Table that shows each tester's history records -->
 <tbody id="table-body">
     {% for row in tester_history_data %}
-        <tr data-score-id="{{ row.score_id }}" data-tester-id="{{ row.tester_id }}" data-test-id="{{ row.test_id }}">
+        <tr class="record_table" data-score-id="{{ row.score_id }}" data-tester-id="{{ row.tester_id }}" data-test-id="{{ row.test_id }}">
             <td>{{ loop.index }}</td>
             <td>{{ row.testee_name }}</td>
             <td class="attemptDate-cell">{{ row.attempt_date }}</td>
@@ -23,18 +23,24 @@
 <script>
     /* Function that deletes tester record */
     function deleteRecord(score_id, test_id, tester_id){
-        //send data to flask
-        let xhr = new XMLHttpRequest();
+        //Confirmation message
+        var confirmationDeleteRecord = confirm('Are you sure you want to delete this record?');
 
-        let json = JSON.stringify({
-            score_id:score_id, test_id:test_id, tester_id:tester_id
-        });
-        xhr.open("POST", '/delete_record')
-        xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+        if(confirmationDeleteRecord){
+            //send data to flask
+            let xhr = new XMLHttpRequest();
 
-        xhr.send(json);
-        xhr.onload = function(event){
-            window.location.reload();
+            let json = JSON.stringify({
+                score_id:score_id, test_id:test_id, tester_id:tester_id
+            });
+            xhr.open("POST", '/delete_record')
+            xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+
+            xhr.send(json);
+            xhr.onload = function(event){
+                window.location.reload();
+            }
         }
+
     }
 </script>
