@@ -43,6 +43,44 @@ def fetch_test_creation_options():
         logging.error("An error occurred while fetching test creation options:", exc_info=True)
         raise
 
+
+def get_questions_for_modify(test_id):
+    try:
+        # Log that we are connecting to the database.
+        logging.info("Connecting to the database.")
+
+        # Use a context manager to safely interact with the database.
+        with db.engine.connect() as connection:
+
+            # Define the SQL query with placeholders.
+            sql = text(f"""
+                SELECT q.question_id, q.question_desc, q.max_points, q.question_desc, tq.question_order
+                FROM questions q
+                INNER JOIN test_questions tq ON q.question_id = tq.question_id
+                WHERE tq.test_id = :test_id
+            """)
+
+            # Execute the SQL query with the provided test_id.
+            result = connection.execute(sql, {'test_id': test_id}).fetchall()
+
+            # Log the generated SQL query and parameters.
+            logging.debug(f"Generated SQL Query: {sql}")
+            logging.debug(f"Parameters: {{'test_id': {test_id}}}")
+
+            # Log a success message.
+            logging.info("Query executed successfully.")
+
+            # Sort the result by question_order to maintain the order of questions within the test.
+            result = sorted(result, key=lambda x: x[3])
+
+            # Return the result of the SQL query.
+            print(result)
+            return result
+
+    except Exception as e:
+        logging.error(f"Error executing query: {e}")
+        raise
+
 # Function to query the database for questions that match user inputs to create a pool of questions
 def get_questions(blooms_taxonomy, subjects, topics, question_types, question_difficulties, training_level_conditions, max_points=None):
     try:
@@ -239,7 +277,92 @@ def create_test(is_active, created_by, creation_date, test_name, test_descriptio
     except Exception as e:
         logging.error("Unexpected error while creating the test", exc_info=True)
         return {"error": "An unexpected error occurred while creating the test."}
-    
+
+def create_test_for_modify(is_active, modified_by, last_modified_date, test_name, test_description, total_score, question_order, test_id):
+    # Log the start of the update_test function
+    logging.info("Starting update_test function")
+    try:
+        # Convert is_active to integer
+        is_active_db = int(is_active)
+        # Log parameters received for updating the test
+        logging.info(f"Parameters received: active_status={is_active_db}, modified_by={modified_by}, test_name={test_name}, ...")
+
+        # Begin a transaction
+        with db.engine.begin() as transaction:
+            logging.info("Transaction started")
+            logging.info("Attempting to update tests table")
+            # Execute SQL query to update test data in tests table
+            transaction.execute(
+                text(
+                    "UPDATE tests SET active_status=:active_status, last_modified_date=:last_modified_date, modified_by=:modified_by, test_name=:test_name, test_description=:test_description, total_score=:total_score "
+                    "WHERE test_id=:test_id"
+                ),
+                {
+                    "active_status": is_active_db,
+                    "modified_by": modified_by,
+                    "last_modified_date": last_modified_date,
+                    "test_name": test_name,
+                    "test_description": test_description,
+                    "total_score": total_score,
+                    "test_id": test_id
+                }
+            )
+            # Log successful update of the test
+            logging.info(f"Successfully updated test with ID {test_id}")
+
+            # Remove existing questions associated with the test
+            transaction.execute(
+                text(
+                    "DELETE FROM test_questions WHERE test_id=:test_id"
+                ),
+                {
+                    "test_id": test_id
+                }
+            )
+
+            # Track the number of successful inserts for questions
+            successful_inserts = 0
+            # Iterate over question order to insert each question into test_questions table
+            for order in question_order:
+                # Check if question_order is not None
+                if order['question_order'] is not None:
+                    # Convert question_order to integer
+                    question_order_int = int(order['question_order'])
+                    # Execute SQL query to insert question into test_questions table
+                    transaction.execute(
+                        text(
+                            "INSERT INTO test_questions (question_id, question_order, test_id) "
+                            "VALUES (:question_id, :question_order, :test_id)"
+                        ),
+                        {
+                            "question_id": int(order['question_id']),
+                            "question_order": question_order_int,
+                            "test_id": test_id
+                        }
+                    )
+                    # Increment successful inserts count
+                    successful_inserts += 1
+
+            # If not all questions were successfully inserted, raise an error
+            if successful_inserts != len(question_order):
+                raise ValueError("Not all questions were successfully inserted.")
+
+            # Commit the transaction if everything went well
+            transaction.execute("COMMIT")
+            # Log the commitment of the transaction
+            logging.info("Transaction committed")
+            # Return a success message with the ID of the updated test
+            return {"message": f"Test '{test_name}' updated successfully with ID {test_id}"}
+
+    except ValueError as e:
+        logging.error("There was a problem updating the test: %s", str(e), exc_info=True)
+        return {"error": str(e)}
+    except SQLAlchemyError as e:
+        logging.error("An error occurred while updating the test in the database", exc_info=True)
+        return {"error": str(e)}
+    except Exception as e:
+        logging.error("Unexpected error while updating the test", exc_info=True)
+        return {"error": "An unexpected error occurred while updating the test."}
 # Function to get user from database
 def get_user(input_user):
 
@@ -477,7 +600,6 @@ def get_all_questions(obj_id):
                         """)
         obj_data = connection.execute(sql_query, obj_id=obj_id)
         obj_data = obj_data.fetchone()
-        obj_data = obj_data['description']
 
     return result, obj_data
 
@@ -503,77 +625,6 @@ def get_objs_temp():
     except Exception as e:
         # Log an error message with exception details.
         logging.error(f"Error while getting test list: {e}", exc_info=True)
-
-
-def get_obj_desc(obj_id):
-
-    try:
-        # Connect to the database using db.engine.
-        with db.engine.connect() as connection:
-
-            # Execute query to retrieve all tests
-            # Execute the SQL query to retrieve all tests
-            sql_query = text("""
-                        SELECT description
-                        FROM learning_objectives
-                        WHERE obj_id=:obj_id
-                    """)
-            result = connection.execute(sql_query, obj_id=obj_id)
-
-            desc = result.fetchone()
-
-            return desc['description']
-
-    except Exception as e:
-        # Log an error message with exception details.
-        logging.error(f"Error while getting objective description: {e}", exc_info=True)
-
-
-def get_question_by_id(question_id):
-
-    try:
-        # Connect to the database using db.engine.
-        with db.engine.connect() as connection:
-
-            # Execute query to retrieve all tests
-            # Execute the SQL query to retrieve all tests
-            sql_query = text("""
-                        SELECT *
-                        FROM questions
-                        WHERE question_id=:question_id
-                    """)
-            result = connection.execute(sql_query, question_id=question_id)
-
-            return result.fetchone()
-
-    except Exception as e:
-        # Log an error message with exception details.
-        logging.error(f"Error while getting question: {e}", exc_info=True)
-
-
-def get_test_question_conflicts(question_id):
-    try:
-        # Connect to the database using db.engine.
-        with db.engine.connect() as connection:
-
-            # Execute the SQL query to retrieve question data for the selected test ID
-            sql_query = text("""
-                    SELECT t.test_id, t.test_name
-                    FROM tests t
-                    JOIN test_questions tq ON t.test_id = tq.test_id
-                    WHERE tq.question_id = :question_id
-                    ORDER BY t.test_id
-                """)
-
-            result = connection.execute(sql_query, question_id=question_id)
-
-            tests = result.fetchall()
-
-            return tests
-
-    except Exception as e:
-        # Log an error message with exception details.
-        logging.error(f"Error while getting questions: {e}", exc_info=True)
 
 def insertLearningObjective(topic_id, description, blooms_id, applicant, apprentice, journeyman, senior, chief, coordinator, tags):
     with db.engine.connect() as connection:
