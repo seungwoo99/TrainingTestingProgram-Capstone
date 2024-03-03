@@ -32,7 +32,7 @@ from itsdangerous import URLSafeTimedSerializer
 # Local application/library specific imports
 from config import MailConfig
 from db_config import db
-from data_retrieval import (fetch_test_creation_options, get_questions, select_questions, create_test, get_user,
+from data_retrieval import (fetch_test_creation_options, get_questions,get_questions_for_modify, select_questions, create_test,create_test_for_modify, get_user,
                             get_test_questions,
                             check_registered, get_test_data, get_tests, get_topics, get_subjects,
                             get_all_subjects, get_tester_list,
@@ -1296,7 +1296,126 @@ def generate_test_answers():
     # Render page
     return render_template('test_answers_template.html', test_questions=get_test_questions(selected_test_id),
                            test_data=get_test_data(selected_test_id))
+#---test modify implementation---
+@app.route('/modify-test/<test_id>', methods=['GET'])
+def modify_test(test_id):
 
+        return show_test_modification_page('modify_tests.html', test_id = test_id)
+
+
+def show_test_modification_page(template_name, test_id):
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
+    try:
+        # Fetch test creation options from a function.
+        options = fetch_test_creation_options()
+        # Render the template 'random_test_creation.html' with the fetched options.
+        return render_template(
+            template_name,
+            blooms_taxonomy=options['blooms_taxonomy'],
+            subjects=options['subjects'],
+            topics=options['topics'],
+            question_types=options['question_types'],
+            question_difficulty=options['question_difficulty'],
+            test_id = test_id
+        )
+    except Exception as e:
+        # Handle any exceptions that may occur and provide an error message.
+        print("An error occurred in show_options:", str(e))
+        return "An error occurred while preparing the test creation page."
+@app.route('/get-questions-for-modify/<int:test_id>', methods=['POST'])
+def handle_questions_for_modify(test_id):
+    try:
+        # Get selected questions for the provided test_id
+        selected_questions = get_questions_for_modify(test_id)
+
+        if len(selected_questions) == 0:
+            return jsonify({'error': 'No questions found that meet the selection criteria.'}), 500
+
+        # Sort questions based on their order
+        selected_questions.sort(key=lambda x: x['question_order'])
+
+        # Construct response data with question order and maximum points
+        question_order = [
+            {
+                'question_id': q['question_id'],
+                'question_order': q['question_order'],
+                'max_points': q['max_points'],
+                'question_desc': q['question_desc']  # Include question_text
+            }
+            for q in selected_questions
+        ]
+
+        # Calculate total score (if needed)
+        total_score = sum(q['max_points'] for q in selected_questions)
+        #print(question_order)
+        return jsonify({
+            'question_order': question_order
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+@app.route('/handle_test_creation_for_modify', methods=['POST'])
+def handle_test_creation_for_modify():
+    try:
+        # Get JSON data from the request
+        data = request.get_json()
+        # Get the test type from the data, defaulting to 'random'
+        test_type = data.get('test_type', 'random')
+
+        # If the test type is 'random', send a request to get questions
+        if test_type == 'random':
+            response = requests.post('http://127.0.0.1:5000/get-questions', json=data)
+            # If the request is successful, extract relevant data
+            if response.status_code == 200:
+                is_active = data.get('is_active')
+                created_by = session.get('username')
+                creation_date = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+                test_name = data.get('test_name')
+                test_description = data.get('test_description')
+                response_data = response.json()
+                total_score = response_data.get('total_score', 0)
+                question_order = response_data.get('question_order')
+            # If no questions are found, return an appropriate message
+            elif response.status_code == 500:
+                return jsonify({'message': 'No questions found that meet the selection criteria.'}), 500
+        # If the test type is not 'random', extract data directly from the request
+        else:
+            is_active = data.get('is_active')
+            modified_by = session.get('username')
+            last_modified_date = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+            test_name = data.get('test_name')
+            test_description = data.get('test_description')
+            total_score = data.get('total_score', 0)
+            question_order = data.get('question_order')
+            test_id =  data.get('testId')
+
+
+        # Ensure total score is an integer
+        total_score = int(total_score) if isinstance(total_score, int) else 0
+
+        # Create the test using extracted data
+        test_message = create_test_for_modify(is_active, modified_by, last_modified_date, test_name, test_description, total_score, question_order, test_id)
+
+        logging.info("Received test_message from create_test")
+        logging.info(f"test_message content: {test_message}")
+
+        # If there's an error in test creation, log it and return an error response
+        if "error" in test_message:
+            logging.error(f"Error in test creation: {test_message['error']}")
+            return jsonify({"error": test_message["error"]}), 500
+
+        # If the test is created successfully, log it and return a success response
+        logging.info("Test created successfully")
+        return jsonify({"message": test_message["message"]}), 200
+
+    except Exception as e:
+        # Log any unexpected error that occurs during test creation and return an error response
+        logging.error("An error occurred while creating the test: %s", str(e), exc_info=True)
+        return jsonify({"error": str(e)}), 500
 #----------Routes for registration and verification----------
 
 # Route for the registration page, admin only.
