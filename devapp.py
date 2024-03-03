@@ -7,7 +7,6 @@ from random import randint
 import requests
 import random
 
-
 # Statistics related imports
 from io import BytesIO
 from base64 import urlsafe_b64decode
@@ -33,12 +32,13 @@ from itsdangerous import URLSafeTimedSerializer
 # Local application/library specific imports
 from config import MailConfig
 from db_config import db
-from data_retrieval import (fetch_test_creation_options,get_questions_for_modify, get_questions, select_questions, create_test, create_test_for_modify, get_user,
+from data_retrieval import (fetch_test_creation_options, get_questions,get_questions_for_modify, select_questions, create_test, create_test_for_modify, get_user,
                             get_test_questions,
                             check_registered, get_test_data, get_tests, get_topics, get_subjects,
                             get_all_subjects, get_tester_list,
                             selectSubjectNames, selectSubjectDescriptions, insertSubject, get_all_topics, insertTopic,
-                            get_all_objectives, get_objs_temp, insertLearningObjective, get_all_questions)
+                            get_all_objectives, get_objs_temp, insertLearningObjective, get_all_questions, get_obj_desc,
+                            get_question_by_id, get_test_question_conflicts)
 
 # Load environment variables from a .env file
 load_dotenv()
@@ -47,7 +47,7 @@ load_dotenv()
 app = Flask(__name__)
 
 # Configure Flask app to use SQLAlchemy for a local MySQL database
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:password@localhost:3306/test_train_db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:@localhost:3306/test_train_db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Configure logging to write to a file
@@ -317,6 +317,7 @@ def objectives():
 
     # Get the selected subject_id from the query parameters
     topic_id = request.args.get('topic_id')
+    subject_id = request.args.get('subject_id')
 
     # Use the subject_id to fetch topics
     objectives, topic_data = get_all_objectives(topic_id)
@@ -405,7 +406,7 @@ def objectives():
                 questions, obj_data = get_all_questions(obj_id)
 
                 # Create alert response
-                alert = ("Unable to delete learning objective " + obj_data['description'] +
+                alert = ("Unable to delete learning objective " + obj_data +
                          " . The following questions must be deleted first: \n")
                 for question in questions:
                     alert += "\u2022 " + question.question_desc + "\n"
@@ -417,12 +418,77 @@ def objectives():
 
     else:
         # Pass topics to the template
-        return render_template('dataobjhierarchy.html', objectives=objectives,topic_id=topic_id, topic_data=topic_data)
+        return render_template('dataobjhierarchy.html', objectives=objectives,topic_id=topic_id, topic_data=topic_data,subject_id=subject_id)
     
 @app.route('/dataquestionhierarchy', methods=['GET', 'POST'])
 def questions():
+    # Check which database function to execute
+    if request.method == "POST":
+        pData = request.get_json()
+        if pData.get("type") == "delete":
+            # Attempt to delete question
+            try:
+                question_id = pData.get("value1")
+                query = text("""DELETE FROM questions where question_id = :question_id""")
+                db.engine.execute(query, question_id=question_id)
+            except Exception as e:
 
-    return render_template('dataquestionhierarchy.html',objs=get_objs_temp())
+                # Log an error message with exception details.
+                logging.error(f"Error while attempting question deletion: {e}", exc_info=True)
+
+                # Get all conflicting tests
+                tests = get_test_question_conflicts(question_id);
+
+                # Create alert response
+                alert = ("Unable to delete question id " + question_id +
+                         " . The following tests must be deleted first: \n")
+                for test in tests:
+                    alert += "\u2022 " + test.test_name + "\n"
+
+                response_data = {"category": "FAILURE", 'error_message': alert}
+                return jsonify(response_data)
+            return jsonify({"category": "SUCCESS"})
+
+
+
+    # Get the selected subject_id from the query parameters
+    obj_id = request.args.get('obj_id')
+    topic_id = request.args.get('topic_id')
+    subject_id = request.args.get('subject_id')
+
+    questions, obj_data = get_all_questions(obj_id)
+
+    return render_template('dataquestionhierarchy.html', questions=questions, obj_id=obj_id, obj_data=obj_data,topic_id=topic_id,subject_id=subject_id)
+
+@app.route('/addquestion')
+def addquestion():
+
+    # Get the selected subject_id from the query parameters
+    obj_id = request.args.get('obj_id')
+
+    # Get the objective desc
+    obj_desc = get_obj_desc(obj_id)
+
+
+    return render_template('addquestion.html', obj_id=obj_id, obj_desc=obj_desc)
+
+@app.route('/editquestion')
+def editquestion():
+
+    # Get the selected subject_id from the query parameters
+    obj_id = request.args.get('obj_id')
+
+    # Get the selected question_id from the query parameters
+    question_id = request.args.get('question_id')
+
+    # Get the objective desc
+    obj_desc = get_obj_desc(obj_id)
+
+    # Get the selected question
+    question = get_question_by_id(question_id)
+
+    return render_template('editquestion.html', obj_id=obj_id, obj_desc=obj_desc, question=question)
+
 
 
 
@@ -661,6 +727,19 @@ def add_tester():
     pass_status = new_tester_data.get("passStatus")
     test_id = new_tester_data.get("testId")
 
+    try:
+        # check testee name is already exist in the database
+        check_testee_name_query = text("SELECT * FROM testee WHERE testee_name = :testee_name")
+        result = db.engine.execute(check_testee_name_query, testee_name=testee_name)
+        exist = result.fetchone()
+
+        if exist:
+            response_data = {"Category": "invalid"}
+            return jsonify(response_data)
+    except Exception as e:
+        response_data = {"Category": "invalid"}
+        return jsonify(response_data)
+
     # Insert new tester in the database
     add_tester_query = text("INSERT INTO testee (testee_name) VALUES (:testee_name)")
     db.engine.execute(add_tester_query, testee_name=testee_name)
@@ -678,8 +757,8 @@ def add_tester():
                                   +" VALUES (:test_id, :tester_id, :attempt_date, :total_score, :pass_status)")
     db.engine.execute(add_tester_score_query, test_id=test_id, tester_id=tester_id, attempt_date=attempt_date, total_score=score, pass_status=pass_status)
 
-    return ''
-
+    response_data = {"Category": "valid"}
+    return jsonify(response_data)
 
 # Add exist tester data in the tester list table
 @app.route('/add_existing_tester', methods=['POST'])
@@ -740,6 +819,42 @@ def add_record():
     db.engine.execute(insert_query, test_id=test_id, tester_id=tester_id, attempt_date=attempt_date, score=score, pass_status=pass_status)
 
     return ''
+
+
+# Routes for deleting selected test
+@app.route('/delete_test/<int:test_id>')
+def delete_test_validation(test_id):
+    try:
+        # Check testers' scores exist for the test
+        check_tester_query = text("SELECT * FROM test_scores WHERE test_id = :test_id")
+        result = db.engine.execute(check_tester_query, test_id=test_id)
+        exist = result.fetchone()
+
+        # If testers' scores exist
+        if exist:
+            delete_test_query = text("DELETE FROM tests WHERE test_id = :test_id")
+            db.engine.execute(delete_test_query, test_id=test_id)
+        else:
+            # Delete the questions on the test
+            delete_test_questions = text("DELETE FROM test_questions WHERE test_id = :test_id")
+            db.engine.execute(delete_test_questions, test_id=test_id)
+
+        # Delete the test
+        delete_test_query = text("DELETE FROM tests WHERE test_id = :test_id")
+        db.engine.execute(delete_test_query, test_id=test_id)
+
+        # Send data
+        alert = "Successfully deleted"
+        response_data = {"Category": "Success", 'Message': alert}
+
+        return jsonify(response_data)
+    except Exception as e:
+        # If testers' scores or questions for the test are not completely deleted
+        # Create alert response
+        alert = "Unable to delete the test. All the testers' records must be deleted first."
+        response_data = {"Category": "Failure", 'error_message': alert}
+
+        return jsonify(response_data)
 
 
 #------ Route for Scoring  Metrics---------
@@ -1126,6 +1241,40 @@ def process_question():
 
     return 'Question added successfully!'
 
+@app.route('/modify_question', methods=['POST'])
+def modify_question():
+    obj_id = request.form['obj_id']
+    question_id = request.form['question_id']
+    question_desc = request.form['question_desc']
+    question_text = request.form['question_text']
+    question_answer = request.form['question_answer']
+    question_type = request.form['question_type']
+    question_difficulty = request.form['question_difficulty']
+    answer_explanation = request.form['answer_explanation']
+    points_definition = request.form['points_definition']
+    max_points = request.form['max_points']
+    source = request.form['source']
+
+    query = text("""
+            UPDATE questions 
+            SET obj_id = :obj_id, 
+                question_desc = :question_desc, 
+                question_text = :question_text, 
+                question_answer = :question_answer, 
+                question_type = :question_type, 
+                question_difficulty = :question_difficulty, 
+                answer_explanation = :answer_explanation, 
+                points_definition = :points_definition, 
+                max_points = :max_points, 
+                source = :source
+            WHERE question_id = :question_id
+        """)
+
+    # Execute the query
+    db.engine.execute(query, obj_id=obj_id, question_desc=question_desc, question_text=question_text, question_answer=question_answer, question_type=question_type, question_difficulty=question_difficulty, answer_explanation=answer_explanation, points_definition=points_definition, max_points=max_points, source=source, question_id=question_id)
+
+    return 'Question updated successfully!'
+
 # Route to render tests as a html file for export
 @app.route('/generate_test', methods=['POST'])
 def generate_test():
@@ -1270,13 +1419,6 @@ def handle_test_creation_for_modify():
         # Log any unexpected error that occurs during test creation and return an error response
         logging.error("An error occurred while creating the test: %s", str(e), exc_info=True)
         return jsonify({"error": str(e)}), 500
-@app.route('/delete_test', methods=['POST'])
-def delete_test():
-    return "Under Construction"
-
-@app.route('/enter_scores', methods=['POST'])
-def enter_scores():
-    return "Under Construction"
 
 #----------Routes for registration and verification----------
 
@@ -1371,6 +1513,7 @@ def register():
             mail.send(msg)
 
             # Return to homepage
+            flash("Account registered, please check your email for a verification link.")
             return redirect(url_for('homepage'))
 
 # Action when the given link is clicked
@@ -1569,4 +1712,3 @@ def verify_email(username, user_hash):
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
-
