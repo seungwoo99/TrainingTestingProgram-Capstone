@@ -4,7 +4,6 @@ import logging
 from logging.handlers import RotatingFileHandler
 from datetime import datetime, timezone, timedelta
 from random import randint
-import re
 import random
 from itertools import combinations
 
@@ -33,12 +32,14 @@ from itsdangerous import URLSafeTimedSerializer
 # Local application/library specific imports
 from config import MailConfig
 from db_config import db
-from data_retrieval import (fetch_test_creation_options, get_questions, create_test, get_user,
+from data_retrieval import (fetch_test_creation_options, get_questions,get_questions_for_modify, select_questions, create_test,create_test_for_modify, get_user,
+
                             get_test_questions,
-                            check_registered, get_test_data, get_tests_temp, get_tests, get_topics, get_subjects,
+                            check_registered, get_test_data, get_tests, get_topics, get_subjects,
                             get_all_subjects, get_tester_list,
                             selectSubjectNames, selectSubjectDescriptions, insertSubject, get_all_topics, insertTopic,
-                            get_all_objectives, get_objs_temp)
+                            get_all_objectives, get_objs_temp, insertLearningObjective, get_all_questions, get_obj_desc,
+                            get_question_by_id, get_test_question_conflicts)
 
 # Load environment variables from a .env file
 load_dotenv()
@@ -223,9 +224,28 @@ def data():
             #db.engine.execute(query, name=name, description=description)
             logging.debug("adding new data")
         elif pData.get("type") == "delete":
-            subject_id = pData.get("value1")
-            query = text("""DELETE FROM subjects where subject_id = :subject_id""")
-            db.engine.execute(query, subject_id=subject_id)
+            # Attempt to delete subject
+            try:
+                subject_id = pData.get("value1")
+                query = text("""DELETE FROM subjects where subject_id = :subject_id""")
+                db.engine.execute(query, subject_id=subject_id)
+            except Exception as e:
+
+                # Log an error message with exception details.
+                logging.error(f"Error while attempting subject deletion: {e}", exc_info=True)
+
+                # Get and display any topics that need to be deleted.
+                topics, subject_data = get_all_topics(subject_id)
+
+                # Create alert response
+                alert = ("Unable to delete subject " + subject_data['name'] +
+                         " . The following topics must be deleted first: \n")
+                for topic in topics:
+                    alert += "\u2022 " + topic.name + "\n"
+
+                response_data = {"category": "FAILURE", 'error_message': alert}
+                return jsonify(response_data)
+
         elif pData.get("type") == "edit":
             subject_id = pData.get("value1")
             name = pData.get("value2")
@@ -251,7 +271,7 @@ def topics():
     if request.method == "POST":
         pData = request.get_json()
         if pData.get("type") == "add":
-            subject_id=pData.get("value1")
+            subject_id = pData.get("value1")
             name = pData.get("value2")
             description = pData.get("value3")
             facility = pData.get("value4")
@@ -267,9 +287,29 @@ def topics():
             db.engine.execute(query, topic_id=topic_id, name=name, description=description, facility=facility)
             print()
         elif pData.get("type") == "delete":
-            topic_id = pData.get("value1")
-            query = text("""DELETE FROM topics where topic_id = :topic_id""")
-            db.engine.execute(query, topic_id=topic_id)
+            # Attempt to delete subject
+            try:
+                topic_id = pData.get("value1")
+                query = text("""DELETE FROM topics where topic_id = :topic_id""")
+                db.engine.execute(query, topic_id=topic_id)
+            except Exception as e:
+
+                # Log an error message with exception details.
+                logging.error(f"Error while attempting topic deletion: {e}", exc_info=True)
+
+                # Get and display any objectives that need to be deleted.
+                objectives, topic_data = get_all_objectives(topic_id)
+
+                # Create alert response
+                alert = ("Unable to delete topic " + topic_data['name'] +
+                         " . The following learning objectives must be deleted first: \n")
+                for obj in objectives:
+                    alert += "\u2022 " + obj.obj_description + "\n"
+
+                response_data = {"category": "FAILURE", 'error_message': alert}
+                return jsonify(response_data)
+
+        return jsonify({"category": "SUCCESS"})
     else:
         # Pass topics to the template
         return render_template('datatopichierarchy.html', topics=topics ,subject_id=subject_id, subject_data=subject_data)
@@ -279,21 +319,178 @@ def objectives():
 
     # Get the selected subject_id from the query parameters
     topic_id = request.args.get('topic_id')
+    subject_id = request.args.get('subject_id')
 
     # Use the subject_id to fetch topics
     objectives, topic_data = get_all_objectives(topic_id)
 
     # Check which database function to execute
     if request.method == "POST":
-        print()
+        pData = request.get_json()
+        if pData.get("type") == "add":
+            topic_id = pData.get("value1")
+            description = pData.get("value2")
+            bloom = pData.get("value3")
+            skills = pData.get("value4")
+            tags = pData.get("value5")
+            if "1" in skills:
+                applicant = 1
+            else:
+                applicant = 0
+            if "2" in skills:
+                apprentice = 1
+            else:
+                apprentice = 0
+            if "3" in skills:
+                journeyman = 1
+            else:
+                journeyman = 0
+            if "4" in skills:
+                senior = 1
+            else:
+                senior = 0
+            if "5" in skills:
+                chief = 1
+            else:
+                chief = 0
+            if "6" in skills:
+                coordinator = 1
+            else:
+                coordinator = 0
+            insertLearningObjective(topic_id, description, bloom, applicant, apprentice, journeyman, senior, chief, coordinator, tags)
+        if pData.get("type") == "edit":
+            objId = pData.get("value1")
+            topic_id = pData.get("value2")
+            description = pData.get("value3")
+            bloom = pData.get("value4")
+            skills = pData.get("value5")
+            tags = pData.get("value6")
+            if "1" in skills:
+                applicant = 1
+            else:
+                applicant = 0
+            if "2" in skills:
+                apprentice = 1
+            else:
+                apprentice = 0
+            if "3" in skills:
+                journeyman = 1
+            else:
+                journeyman = 0
+            if "4" in skills:
+                senior = 1
+            else:
+                senior = 0
+            if "5" in skills:
+                chief = 1
+            else:
+                chief = 0
+            if "6" in skills:
+                coordinator = 1
+            else:
+                coordinator = 0
+            query = text(
+                """UPDATE learning_objectives SET topic_id = :topic_id, description = :description, blooms_id=:bloom, is_applicant=:applicant,is_apprentice = :apprentice, 
+                is_journeyman=:journeyman, is_senior=:senior, is_chief=:chief, is_coordinator=:coordinator, tags=:tags WHERE obj_id = :objId""")
+            db.engine.execute(query, topic_id=topic_id, description=description, bloom=bloom,applicant=applicant, apprentice=apprentice, journeyman=journeyman, senior=senior, chief=chief, coordinator=coordinator, tags=tags,objId=objId)
+        elif pData.get("type") == "delete":
+            # Attempt to delete objective
+            try:
+                obj_id = pData.get("value1")
+                query = text("""DELETE FROM learning_objectives where obj_id = :obj_id""")
+                db.engine.execute(query, obj_id=obj_id)
+            except Exception as e:
+
+                # Log an error message with exception details.
+                logging.error(f"Error while attempting learning objective deletion: {e}", exc_info=True)
+
+                # Get and display any objectives that need to be deleted.
+                questions, obj_data = get_all_questions(obj_id)
+
+                # Create alert response
+                alert = ("Unable to delete learning objective " + obj_data +
+                         " . The following questions must be deleted first: \n")
+                for question in questions:
+                    alert += "\u2022 " + question.question_desc + "\n"
+
+                response_data = {"category": "FAILURE", 'error_message': alert}
+                return jsonify(response_data)
+        return jsonify({"category": "SUCCESS"})
+
+
     else:
         # Pass topics to the template
-        return render_template('dataobjhierarchy.html', objectives=objectives,topic_id=topic_id, topic_data=topic_data)
+        return render_template('dataobjhierarchy.html', objectives=objectives,topic_id=topic_id, topic_data=topic_data,subject_id=subject_id)
     
 @app.route('/dataquestionhierarchy', methods=['GET', 'POST'])
 def questions():
+    # Check which database function to execute
+    if request.method == "POST":
+        pData = request.get_json()
+        if pData.get("type") == "delete":
+            # Attempt to delete question
+            try:
+                question_id = pData.get("value1")
+                query = text("""DELETE FROM questions where question_id = :question_id""")
+                db.engine.execute(query, question_id=question_id)
+            except Exception as e:
 
-    return render_template('dataquestionhierarchy.html',objs=get_objs_temp())
+                # Log an error message with exception details.
+                logging.error(f"Error while attempting question deletion: {e}", exc_info=True)
+
+                # Get all conflicting tests
+                tests = get_test_question_conflicts(question_id);
+
+                # Create alert response
+                alert = ("Unable to delete question id " + question_id +
+                         " . The following tests must be deleted first: \n")
+                for test in tests:
+                    alert += "\u2022 " + test.test_name + "\n"
+
+                response_data = {"category": "FAILURE", 'error_message': alert}
+                return jsonify(response_data)
+            return jsonify({"category": "SUCCESS"})
+
+
+
+    # Get the selected subject_id from the query parameters
+    obj_id = request.args.get('obj_id')
+    topic_id = request.args.get('topic_id')
+    subject_id = request.args.get('subject_id')
+
+    questions, obj_data = get_all_questions(obj_id)
+
+    return render_template('dataquestionhierarchy.html', questions=questions, obj_id=obj_id, obj_data=obj_data,topic_id=topic_id,subject_id=subject_id)
+
+@app.route('/addquestion')
+def addquestion():
+
+    # Get the selected subject_id from the query parameters
+    obj_id = request.args.get('obj_id')
+
+    # Get the objective desc
+    obj_desc = get_obj_desc(obj_id)
+
+
+    return render_template('addquestion.html', obj_id=obj_id, obj_desc=obj_desc)
+
+@app.route('/editquestion')
+def editquestion():
+
+    # Get the selected subject_id from the query parameters
+    obj_id = request.args.get('obj_id')
+
+    # Get the selected question_id from the query parameters
+    question_id = request.args.get('question_id')
+
+    # Get the objective desc
+    obj_desc = get_obj_desc(obj_id)
+
+    # Get the selected question
+    question = get_question_by_id(question_id)
+
+    return render_template('editquestion.html', obj_id=obj_id, obj_desc=obj_desc, question=question)
+
 
 #---------- Routes for the test list page and tester list page ----------
 
@@ -307,7 +504,6 @@ def test_list():
 
     # Query to fetch data from the tests table
     test_data = get_tests()
-
     # get subject list
     subject_data = get_subjects()
     # get topic list
@@ -315,19 +511,29 @@ def test_list():
 
     return render_template("test_list.html", data=test_data, subject_data=subject_data, topic_data=topic_data)
 
+
 # Route for showing filtered test list
+
 @app.route('/filter')
 def filter_data():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
+    # Get filtered data from test list page
     subject_id = request.args.get('subject')
     topic_id = request.args.get('topic')
     start_date = request.args.get('start')
     end_date = request.args.get('end')
 
+    # Set default value for start date and end date
     if start_date == '':
         start_date = '0000-00-00'
     if end_date == '':
-        end_date = datetime.now().strftime('%Y-%m-%d')
+        end_date = '9999-12-31'
 
+    # When subject and topic are not selected
     if subject_id == '' and topic_id == '':
         test_query = text("SELECT t.test_id, t.test_name, GROUP_CONCAT(DISTINCT s.name) AS subject_name, GROUP_CONCAT(DISTINCT tp.name) AS topic_name, t.creation_date, t.last_modified_date FROM tests t "
                         + "LEFT JOIN test_questions tq ON t.test_id = tq.test_id "
@@ -338,6 +544,7 @@ def filter_data():
                         + "WHERE (creation_date) BETWEEN :start_date AND :end_date "
                         + "GROUP BY t.test_id, t.test_name, s.name, t.creation_date, t.last_modified_date ")
         test_result = db.engine.execute(test_query, start_date=start_date, end_date=end_date)
+    # When subject is selected
     elif subject_id != '' and topic_id == '':
         test_query = text("SELECT t.test_id, t.test_name, GROUP_CONCAT(DISTINCT s.name) AS subject_name, GROUP_CONCAT(DISTINCT tp.name) AS topic_name, t.creation_date, t.last_modified_date FROM tests t "
                         + "LEFT JOIN test_questions tq ON t.test_id = tq.test_id "
@@ -348,6 +555,7 @@ def filter_data():
                         + "WHERE s.subject_id = :subject_id AND (creation_date) BETWEEN :start_date AND :end_date "
                         + "GROUP BY t.test_id, t.test_name, s.name, t.creation_date, t.last_modified_date ")
         test_result = db.engine.execute(test_query, subject_id=subject_id, start_date=start_date, end_date=end_date)
+    # When topic is selected
     elif subject_id == '' and topic_id != '':
         test_query = text(
             "SELECT t.test_id, t.test_name, GROUP_CONCAT(DISTINCT s.name) AS subject_name, GROUP_CONCAT(DISTINCT tp.name) AS topic_name, t.creation_date, t.last_modified_date FROM tests t "
@@ -360,6 +568,7 @@ def filter_data():
             + "GROUP BY t.test_id, t.test_name, s.name, t.creation_date, t.last_modified_date ")
 
         test_result = db.engine.execute(test_query, topic_id=topic_id, start_date=start_date, end_date=end_date)
+    # When subject and topic are selected
     else:
         test_query = text(
             "SELECT t.test_id, t.test_name, GROUP_CONCAT(DISTINCT s.name) AS subject_name, GROUP_CONCAT(DISTINCT tp.name) AS topic_name, t.creation_date, t.last_modified_date FROM tests t "
@@ -371,65 +580,168 @@ def filter_data():
             + "WHERE tp.topic_id = :topic_id AND s.subject_id = :subject_id AND (creation_date) BETWEEN :start_date AND :end_date "
             + "GROUP BY t.test_id, t.test_name, s.name, t.creation_date, t.last_modified_date ")
 
-        test_result = db.engine.execute(test_query, topic_id=topic_id, subject_id=subject_id, start_date=start_date,
-                                        end_date=end_date)
+        test_result = db.engine.execute(test_query, topic_id=topic_id, subject_id=subject_id, start_date=start_date, end_date=end_date)
 
     test_list_data = test_result.fetchall()
 
     return render_template("test_table.html", data=test_list_data)
 
-# Route for showing tester list of the clicked test
+# Route for displaying a list of testers of the clicked test
 @app.route('/test/<int:test_id>')
 def tester_list(test_id):
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
+    # Get a list of testers from database
     tester_list_data = get_tester_list(test_id)
 
-    return render_template("tester_list.html", tester_data=tester_list_data, testId=test_id)
+    # Get all existing tester from database
+    all_tester_query = text("SELECT * FROM testee")
+    all_tester_result = db.engine.execute(all_tester_query)
+    all_tester_data = all_tester_result.fetchall()
+
+    return render_template("tester_list.html", tester_data=tester_list_data, testId=test_id, all_tester_data=all_tester_data)
 
 # Route for updating tester's score
 @app.route('/update_score')
 def update_score():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
+    # Get data from tester_table.html
     score_id = request.args.get('scoreId')
     tester_id = request.args.get('testerId')
     test_id = request.args.get('testId')
     new_grade = request.args.get('newGrade')
 
-    update_query = text(
-        "UPDATE test_scores SET total_score = :new_grade WHERE test_id = :test_id and score_id = :score_id and tester_id = :tester_id")
+    # If there is no input for score, set to -1
+    if new_grade == '':
+        new_grade = '-1'
 
+    # Update score
+    update_query = text("UPDATE test_scores SET total_score = :new_grade WHERE test_id = :test_id and score_id = :score_id and tester_id = :tester_id")
     db.engine.execute(update_query, new_grade=new_grade, test_id=test_id, score_id=score_id, tester_id=tester_id)
     tester_list_data = get_tester_list(test_id)
 
-    return render_template("tester_table.html", tester_data=tester_list_data, testId=test_id)
+    # Get all existing tester from database
+    all_tester_query = text("SELECT * FROM testee")
+    all_tester_result = db.engine.execute(all_tester_query)
+    all_tester_data = all_tester_result.fetchall()
+
+    return render_template("tester_table.html", tester_data=tester_list_data, testId=test_id, all_tester_data=all_tester_data)
+
+
+# Route for updating tester's attempt date
+@app.route('/update_date', methods=['POST'])
+def update_date():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
+    # Get data from tester_table.html
+    new_attemptDate_data = request.get_json()
+    score_id = new_attemptDate_data.get('scoreId')
+    tester_id = new_attemptDate_data.get('testerId')
+    test_id = new_attemptDate_data.get('testId')
+    new_date = new_attemptDate_data.get('newDate')
+
+    # Update attempt date
+    update_query = text("UPDATE test_scores SET attempt_date = :new_date WHERE test_id = :test_id and score_id = :score_id and tester_id = :tester_id")
+    db.engine.execute(update_query, new_date=new_date, test_id=test_id, score_id=score_id, tester_id=tester_id)
+    tester_list_data = get_tester_list(test_id)
+
+    # Get all existing tester from database
+    all_tester_query = text("SELECT * FROM testee")
+    all_tester_result = db.engine.execute(all_tester_query)
+    all_tester_data = all_tester_result.fetchall()
+
+    return render_template("tester_table.html", tester_data=tester_list_data, testId=test_id, all_tester_data=all_tester_data)
+
+
+# Route for updating tester's pass status
+@app.route('/update_status', methods=['POST'])
+def update_status():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
+    # Get data from tester_table.html
+    new_status_data = request.get_json()
+    score_id = new_status_data.get('scoreId')
+    tester_id = new_status_data.get('testerId')
+    test_id = new_status_data.get('testId')
+    new_status = new_status_data.get('newStatus')
+
+    # Update pass status
+    update_query = text("UPDATE test_scores SET pass_status = :new_status WHERE test_id = :test_id and score_id = :score_id and tester_id = :tester_id")
+    db.engine.execute(update_query, new_status=new_status, test_id=test_id, score_id=score_id, tester_id=tester_id)
+    tester_list_data = get_tester_list(test_id)
+
+    # Get all existing tester from database
+    all_tester_query = text("SELECT * FROM testee")
+    all_tester_result = db.engine.execute(all_tester_query)
+    all_tester_data = all_tester_result.fetchall()
+
+    return render_template("tester_table.html", tester_data=tester_list_data, testId=test_id, all_tester_data=all_tester_data)
 
 # Route for displaying tester history records
 @app.route('/display_history')
 def display_history():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
+    # Get data from tester_table.html
     tester_id = request.args.get('testerId')
     test_id = request.args.get('testId')
 
+    # Query to get tester's all records
     history_query = text("SELECT ts.score_id, ts.tester_id, ts.test_id, te.testee_name, ts.attempt_date, ts.total_score, ts.pass_status "
                         + "FROM test_scores ts "
                         + "LEFT JOIN testee te ON ts.tester_id = te.tester_id "
-                        + "WHERE ts.test_id = :test_id AND ts.tester_id = :tester_id")
+                        + "WHERE ts.test_id = :test_id AND ts.tester_id = :tester_id "
+                        + "ORDER BY ts.attempt_date DESC")
     history_result = db.engine.execute(history_query, test_id=test_id, tester_id=tester_id)
     tester_history_data = history_result.fetchall()
 
     return render_template("tester_history_table.html", tester_history_data=tester_history_data)
 
 # Add new tester in the tester list table
-@app.route('/add_tester', methods=['POST'])
+@app.route('/add_new_tester', methods=['POST'])
 def add_tester():
+    # Get data from tester_list.html
     new_tester_data = request.get_json()
     testee_name = new_tester_data.get("testerName")
     attempt_date = new_tester_data.get("attemptDate")
     score = new_tester_data.get("score")
+    pass_status = new_tester_data.get("passStatus")
     test_id = new_tester_data.get("testId")
 
-    # insert new tester in the database
+    try:
+        # check testee name is already exist in the database
+        check_testee_name_query = text("SELECT * FROM testee WHERE testee_name = :testee_name")
+        result = db.engine.execute(check_testee_name_query, testee_name=testee_name)
+        exist = result.fetchone()
+
+        if exist:
+            response_data = {"Category": "invalid"}
+            return jsonify(response_data)
+    except Exception as e:
+        response_data = {"Category": "invalid"}
+        return jsonify(response_data)
+
+    # Insert new tester in the database
     add_tester_query = text("INSERT INTO testee (testee_name) VALUES (:testee_name)")
     db.engine.execute(add_tester_query, testee_name=testee_name)
 
-    # get tester id
+    # Get tester_id for new tester
     tester_id_query = text("SELECT tester_id FROM testee WHERE testee_name = :testee_name")
     tester_data_result = db.engine.execute(tester_id_query, testee_name=testee_name)
     tester_data = tester_data_result.fetchall()
@@ -437,41 +749,106 @@ def add_tester():
     for row in tester_data:
         tester_id = row['tester_id']
 
-    # insert new score in the database
+    # Insert new score in the database
     add_tester_score_query = text("INSERT INTO test_scores (test_id, tester_id, attempt_date, total_score, pass_status) "
-                                  +" VALUES (:test_id, :tester_id, :attempt_date, :total_score, 1)")
-    db.engine.execute(add_tester_score_query, test_id=test_id, tester_id=tester_id, attempt_date=attempt_date, total_score=score)
+                                  +" VALUES (:test_id, :tester_id, :attempt_date, :total_score, :pass_status)")
+    db.engine.execute(add_tester_score_query, test_id=test_id, tester_id=tester_id, attempt_date=attempt_date, total_score=score, pass_status=pass_status)
+
+    response_data = {"Category": "valid"}
+    return jsonify(response_data)
+
+# Add exist tester data in the tester list table
+@app.route('/add_existing_tester', methods=['POST'])
+def add_existing_tester():
+    # Get data from test_list.html
+    existing_tester_data = request.get_json()
+    tester_id = existing_tester_data.get("testerId")
+    attempt_date = existing_tester_data.get("attemptDate")
+    score = existing_tester_data.get("score")
+    pass_status = existing_tester_data.get("passStatus")
+    test_id = existing_tester_data.get("testId")
+
+    # Insert new score in the database
+    add_tester_score_query = text("INSERT INTO test_scores (test_id, tester_id, attempt_date, total_score, pass_status) "
+                                + " VALUES (:test_id, :tester_id, :attempt_date, :total_score, :pass_status)")
+    db.engine.execute(add_tester_score_query, test_id=test_id, tester_id=tester_id, attempt_date=attempt_date,
+                      total_score=score, pass_status=pass_status)
 
     return ''
 
-# delete tester's record
+# Delete tester's record
 @app.route('/delete_record', methods=['POST'])
 def delete_record():
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
+    # Get data from tester_history_table.html
     tester_record = request.get_json()
     score_id = tester_record.get("score_id")
     test_id = tester_record.get("test_id")
     tester_id = tester_record.get("tester_id")
 
+    # Delete tester record
     delete_query = text("DELETE FROM test_scores WHERE score_id = :score_id AND test_id = :test_id AND tester_id = :tester_id")
     db.engine.execute(delete_query, score_id=score_id, test_id=test_id, tester_id=tester_id)
 
     return ''
 
-# add new record to tester
+# Add new record to tester
 @app.route('/add_record', methods=['POST'])
 def add_record():
+    # Get data from tester_history_table.html
     new_record = request.get_json()
     score_id = new_record.get("score_id")
     test_id = new_record.get("test_id")
     tester_id = new_record.get("tester_id")
     attempt_date = new_record.get("attemptDate")
     score = new_record.get("score")
+    pass_status = new_record.get("passStatus")
 
+    # Insert new record to database
     insert_query = text("INSERT INTO test_scores (test_id, tester_id, attempt_date, total_score, pass_status) "
-                        +"VALUES (:test_id, :tester_id, :attempt_date, :score, 1)")
-    db.engine.execute(insert_query, test_id=test_id, tester_id=tester_id, attempt_date=attempt_date, score=score)
+                        +"VALUES (:test_id, :tester_id, :attempt_date, :score, :pass_status)")
+    db.engine.execute(insert_query, test_id=test_id, tester_id=tester_id, attempt_date=attempt_date, score=score, pass_status=pass_status)
 
     return ''
+
+# Routes for deleting selected test
+@app.route('/delete_test/<int:test_id>')
+def delete_test_validation(test_id):
+    try:
+        # Check testers' scores exist for the test
+        check_tester_query = text("SELECT * FROM test_scores WHERE test_id = :test_id")
+        result = db.engine.execute(check_tester_query, test_id=test_id)
+        exist = result.fetchone()
+
+        # If testers' scores exist
+        if exist:
+            delete_test_query = text("DELETE FROM tests WHERE test_id = :test_id")
+            db.engine.execute(delete_test_query, test_id=test_id)
+        else:
+            # Delete the questions on the test
+            delete_test_questions = text("DELETE FROM test_questions WHERE test_id = :test_id")
+            db.engine.execute(delete_test_questions, test_id=test_id)
+
+        # Delete the test
+        delete_test_query = text("DELETE FROM tests WHERE test_id = :test_id")
+        db.engine.execute(delete_test_query, test_id=test_id)
+
+        # Send data
+        alert = "Successfully deleted"
+        response_data = {"Category": "Success", 'Message': alert}
+
+        return jsonify(response_data)
+    except Exception as e:
+        # If testers' scores or questions for the test are not completely deleted
+        # Create alert response
+        alert = "Unable to delete the test. All the testers' records must be deleted first."
+        response_data = {"Category": "Failure", 'error_message': alert}
+
+        return jsonify(response_data)
 
 #------ Route for Scoring  Metrics---------
 
@@ -1000,6 +1377,40 @@ def process_question():
 
     return 'Question added successfully!'
 
+@app.route('/modify_question', methods=['POST'])
+def modify_question():
+    obj_id = request.form['obj_id']
+    question_id = request.form['question_id']
+    question_desc = request.form['question_desc']
+    question_text = request.form['question_text']
+    question_answer = request.form['question_answer']
+    question_type = request.form['question_type']
+    question_difficulty = request.form['question_difficulty']
+    answer_explanation = request.form['answer_explanation']
+    points_definition = request.form['points_definition']
+    max_points = request.form['max_points']
+    source = request.form['source']
+
+    query = text("""
+            UPDATE questions 
+            SET obj_id = :obj_id, 
+                question_desc = :question_desc, 
+                question_text = :question_text, 
+                question_answer = :question_answer, 
+                question_type = :question_type, 
+                question_difficulty = :question_difficulty, 
+                answer_explanation = :answer_explanation, 
+                points_definition = :points_definition, 
+                max_points = :max_points, 
+                source = :source
+            WHERE question_id = :question_id
+        """)
+
+    # Execute the query
+    db.engine.execute(query, obj_id=obj_id, question_desc=question_desc, question_text=question_text, question_answer=question_answer, question_type=question_type, question_difficulty=question_difficulty, answer_explanation=answer_explanation, points_definition=points_definition, max_points=max_points, source=source, question_id=question_id)
+
+    return 'Question updated successfully!'
+
 # Route to render tests as a html file for export
 @app.route('/generate_test', methods=['POST'])
 def generate_test():
@@ -1021,40 +1432,126 @@ def generate_test_answers():
     # Render page
     return render_template('test_answers_template.html', test_questions=get_test_questions(selected_test_id),
                            test_data=get_test_data(selected_test_id))
+#---test modify implementation---
+@app.route('/modify-test/<test_id>', methods=['GET'])
+def modify_test(test_id):
 
-# Temporary Route to list tests and applicable actions
-@app.route('/tests')
-def tests():
+        return show_test_modification_page('modify_tests.html', test_id = test_id)
 
-    # Check if user is logged in
+
+def show_test_modification_page(template_name, test_id):
+    # Check if user session is inactive
     if 'user' not in session or not session['user'].get('is_authenticated', False):
         flash("Access denied, please login.")
         return redirect(url_for('trylogin'))
-    
-    # Execute query to retrieve all tests
-    sql_query = text("""
-            SELECT test_id, test_name
-            FROM tests
-        """)
-    result = db.engine.execute(sql_query)
 
-    # Extract tests from the result
-    test_list = get_tests_temp()
-    return render_template('tests.html', test_list=test_list)
+    try:
+        # Fetch test creation options from a function.
+        options = fetch_test_creation_options()
+        # Render the template 'random_test_creation.html' with the fetched options.
+        return render_template(
+            template_name,
+            blooms_taxonomy=options['blooms_taxonomy'],
+            subjects=options['subjects'],
+            topics=options['topics'],
+            question_types=options['question_types'],
+            question_difficulty=options['question_difficulty'],
+            test_id = test_id
+        )
+    except Exception as e:
+        # Handle any exceptions that may occur and provide an error message.
+        print("An error occurred in show_options:", str(e))
+        return "An error occurred while preparing the test creation page."
+@app.route('/get-questions-for-modify/<int:test_id>', methods=['POST'])
+def handle_questions_for_modify(test_id):
+    try:
+        # Get selected questions for the provided test_id
+        selected_questions = get_questions_for_modify(test_id)
 
-# Routes yet to be implemented
-@app.route('/modify_test', methods=['POST'])
-def modify_test():
-    return "Under Construction"
+        if len(selected_questions) == 0:
+            return jsonify({'error': 'No questions found that meet the selection criteria.'}), 500
 
-@app.route('/delete_test', methods=['POST'])
-def delete_test():
-    return "Under Construction"
+        # Sort questions based on their order
+        selected_questions.sort(key=lambda x: x['question_order'])
 
-@app.route('/enter_scores', methods=['POST'])
-def enter_scores():
-    return "Under Construction"
+        # Construct response data with question order and maximum points
+        question_order = [
+            {
+                'question_id': q['question_id'],
+                'question_order': q['question_order'],
+                'max_points': q['max_points'],
+                'question_desc': q['question_desc']  # Include question_text
+            }
+            for q in selected_questions
+        ]
 
+        # Calculate total score (if needed)
+        total_score = sum(q['max_points'] for q in selected_questions)
+        #print(question_order)
+        return jsonify({
+            'question_order': question_order
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+@app.route('/handle_test_creation_for_modify', methods=['POST'])
+def handle_test_creation_for_modify():
+    try:
+        # Get JSON data from the request
+        data = request.get_json()
+        # Get the test type from the data, defaulting to 'random'
+        test_type = data.get('test_type', 'random')
+
+        # If the test type is 'random', send a request to get questions
+        if test_type == 'random':
+            response = requests.post('http://127.0.0.1:5000/get-questions', json=data)
+            # If the request is successful, extract relevant data
+            if response.status_code == 200:
+                is_active = data.get('is_active')
+                created_by = session.get('username')
+                creation_date = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+                test_name = data.get('test_name')
+                test_description = data.get('test_description')
+                response_data = response.json()
+                total_score = response_data.get('total_score', 0)
+                question_order = response_data.get('question_order')
+            # If no questions are found, return an appropriate message
+            elif response.status_code == 500:
+                return jsonify({'message': 'No questions found that meet the selection criteria.'}), 500
+        # If the test type is not 'random', extract data directly from the request
+        else:
+            is_active = data.get('is_active')
+            modified_by = session.get('username')
+            last_modified_date = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+            test_name = data.get('test_name')
+            test_description = data.get('test_description')
+            total_score = data.get('total_score', 0)
+            question_order = data.get('question_order')
+            test_id =  data.get('testId')
+
+
+        # Ensure total score is an integer
+        total_score = int(total_score) if isinstance(total_score, int) else 0
+
+        # Create the test using extracted data
+        test_message = create_test_for_modify(is_active, modified_by, last_modified_date, test_name, test_description, total_score, question_order, test_id)
+
+        logging.info("Received test_message from create_test")
+        logging.info(f"test_message content: {test_message}")
+
+        # If there's an error in test creation, log it and return an error response
+        if "error" in test_message:
+            logging.error(f"Error in test creation: {test_message['error']}")
+            return jsonify({"error": test_message["error"]}), 500
+
+        # If the test is created successfully, log it and return a success response
+        logging.info("Test created successfully")
+        return jsonify({"message": test_message["message"]}), 200
+
+    except Exception as e:
+        # Log any unexpected error that occurs during test creation and return an error response
+        logging.error("An error occurred while creating the test: %s", str(e), exc_info=True)
+        return jsonify({"error": str(e)}), 500
 #----------Routes for registration and verification----------
 
 # Route for the registration page, admin only.
@@ -1148,6 +1645,7 @@ def register():
             mail.send(msg)
 
             # Return to homepage
+            flash("Account registered, please check your email for a verification link.")
             return redirect(url_for('homepage'))
 
 # Action when the given link is clicked

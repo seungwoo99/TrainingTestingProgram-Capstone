@@ -1,15 +1,13 @@
-/* DATA HIERARCHY TABLE CSS */
-table {
+/* TEST LIST TABLE CSS */
+table{
+    margin: 1% auto;
+}
+table#datasTable {
     margin: 1% auto;
     vertical-align: middle;
     border-collapse: collapse;
     text-align: center;
-    width: 50%;
-}
-
-#testclick:hover {
-  background-color: #f0f0f0;
-  cursor: pointer;
+    height: 90%;
 }
 
 th, td {
@@ -23,20 +21,89 @@ th {
     text-align: center;
 }
 
-button {
-    margin-right: 1%;
-    background-color: #0b80bd;
-    border: none;
-    color: white;
-    cursor: pointer;
-    padding: 10px 22px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-family: 'Montserrat';
-    font-size: 16px;
-
+table#datasTable {
+    display: block; /* Change display type to block */
+    overflow-x: auto; /* Horizontal overflow auto */
+    overflow-y: hidden; /* Hide vertical overflow initially */
+    max-width: 100% ; /* Ensure table doesn't exceed container width */
 }
+
+table#datasTable tbody {
+    display: block; /* Change display type to block */
+    max-height: calc(85% - 10px); /* Set max-height for the table body */
+    overflow-y: auto; /* Enable vertical scrolling */
+    overflow-x: hidden; /* Hide horizontal scrolling */
+}
+
+thead tr th {
+    height: 30px;
+    line-height: 30px;
+}
+tr {
+  display: table;
+  table-layout: fixed;
+  width:100%;
+}
+.table-field{
+    height: 80%;
+    width: 80%;
+    margin: 1% auto;
+}
+
+#testclick:hover {
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+.attemptDate-cell:hover  {
+    background-color: #f0f0f0;
+    cursor: pointer;
+}
+.score-cell:hover {
+    background-color: #f0f0f0;
+    cursor: pointer;
+}
+.passStatus-cell:hover {
+    background-color: #f0f0f0;
+    cursor: pointer;
+}
+
+.test_table th:nth-child(1), .test_table td:nth-child(1){ width:5% }
+.test_table th:nth-child(2), .test_table td:nth-child(2){ width:15% }
+.test_table th:nth-child(3), .test_table td:nth-child(3){ width:22% }
+.test_table th:nth-child(4), .test_table td:nth-child(4){ width:22% }
+.test_table th:nth-child(5), .test_table td:nth-child(5){ width:18% }
+.test_table th:nth-child(6), .test_table td:nth-child(6){ width:18% }
+
+.tester_table th:nth-child(1), .tester_table td:nth-child(1){width: 5%}
+.tester_table th:nth-child(2), .tester_table td:nth-child(2){width: 5%}
+.tester_table th:nth-child(3), .tester_table td:nth-child(3){width: 20%}
+.tester_table th:nth-child(4), .tester_table td:nth-child(4){width: 30%}
+.tester_table th:nth-child(5), .tester_table td:nth-child(5){width: 10%}
+.tester_table th:nth-child(6), .tester_table td:nth-child(6){width: 10%}
+.tester_table th:nth-child(7), .tester_table td:nth-child(7){width: 20%}
+
+.record_table td:nth-child(1) {width: 10%}
+.record_table td:nth-child(2) {width: 20%}
+.record_table td:nth-child(3) {width: 30%}
+.record_table td:nth-child(4) {width: 10%}
+.record_table td:nth-child(5) {width: 10%}
+.record_table td:nth-child(6) {width: 20%}
+
+
+button{
+   margin-right: 1%;
+   background-color: #0b80bd;
+   border: none;
+   color: white;
+   cursor: pointer;
+   padding: 1% 2%;
+   text-align: center;
+   text-decoration: none;
+   display: inline-block;
+   font-size: 125%;
+   height: auto;
+   margin-bottom: 4%;
+ }
 button:hover{background-color: #0d688f}
 button:active {
   background-color: #040f16;
@@ -60,64 +127,88 @@ button:active {
   }
 }
 
-/* Rest of page */
-h2{
-  margin-top: 2%;
+#add-record-button{
+    width: 100%;
+    font-size: 75%;
+}
+#delete-button{
+    width: 100%;
 }
 
-.container{
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%,-50%);
-  max-width: 1000px;
-  width: 100%;
+/* Rest of page */
+/* Heading Styles */
+h1 {
+  font-size: 225%;
+  font-weight: 700;
+  margin-bottom: 1%;
+}
+body {
+  overflow: hidden;
+}
+
+/* Container Styles */
+.main-container {
+  position: relative;
+  top: -4%;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  min-height: 75%;
+  max-height: 80%;
+  min-width: 30%;
+  max-width: 85%;
+  overflow: auto;
+  margin: auto;
+  padding: 1.5%;
   background: #fff;
   border-radius: 7px;
   box-shadow: 0 5px 10px rgba(0,0,0,0.3);
-  text-align: center;
 }
 
-button{
-  margin-bottom: 4%;
+.centered-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-/* Container for filtering options */
+/* Wrapper Styles */
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* FILTERING OPTIONS ON test_list.html */
 .filter {
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;
 }
-
 /* filtering options */
 .options {
     display: flex;
     flex-direction: column;
 }
-
 /* labels in each option */
 .options label {
     margin-bottom: 5px;
 }
-
 /* select/input fields in each option */
 .options select,
 .options input[type="date"] {
     width: 150px;
 }
 
-
+/* DROPDOWN TABLE on tester_history_record.html */
 /* Hide dropdown table by default */
 .dropdown-table {
     display: none;
 }
-
 /* Add animation effect */
 .dropdown-table.show {
     display: table-row;
     animation: slideIn 0.5s ease-in-out;
 }
-
 @keyframes slideIn {
     0% {
         opacity: 0;
@@ -129,7 +220,8 @@ button{
     }
 }
 
-/* CSS file */
+/* POP UP PAGE on tester_list.html */
+/* pop up page */
 .modal {
   display: none; /* Hidden by default */
   position: fixed;
@@ -141,25 +233,92 @@ button{
   overflow: auto;
   background-color: rgba(0, 0, 0, 0.4);
 }
-
 .modal-content {
   background-color: #fefefe;
-  margin: 5% auto;
+  margin: 20% auto;
   padding: 20px;
   border: 1px solid #888;
-  width: 80%;
+  width: 50%;
 }
-
 .close {
   color: #aaa;
   float: right;
   font-size: 28px;
   font-weight: bold;
 }
-
 .close:hover,
 .close:focus {
   color: black;
   text-decoration: none;
   cursor: pointer;
+}
+.modal-content p {
+    display: flex;
+    justify-content: center;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+.modal-content > div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px; /* Adjust as needed */
+}
+
+
+/* PASS STATUS CHECKBOX on tester_list.html */
+/* The switch - the box around the slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 25px;
+}
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+input:checked + .slider {
+  background-color: #2196F3;
+}
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+.slider.round:before {
+  border-radius: 50%;
 }

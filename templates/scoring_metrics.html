@@ -12,35 +12,37 @@
 
 <body>
 <div class="wrapper">
+    <div class="main-container">
+        <div class="centered-container">
+            <h2>Scoring Metrics</h2>
+        </div>
+        <div class="centered-container">
+            <table class="subject-table" id="datasTable">
+                <thead>
+                <tr>
+                    <th>Test</th>
 
-<div class="main-container">
-    <h2>Scoring Metrics</h2>
+                    <th>Metrics Preview</th> <!-- Added preview column -->
+                </tr>
+                </thead>
+                <tbody>
+                {% for test in tests %}
+                <tr>
+                    <td>{{ test.test_name }}</td>
 
-    <table id="datasTable">
-        <thead>
-        <tr>
-            <th>Test</th>
+                    <td><button class="btn btn-primary" onclick="previewPDF({{ test.test_id }})">Preview</button></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
 
-            <th>Metrics Preview</th> <!-- Added preview column -->
-        </tr>
-        </thead>
-        <tbody>
-        {% for test in tests %}
-        <tr>
-            <td>{{ test.test_name }}</td>
+            <div id="pdfPreview" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);">
+                <button onclick="togglePDFPreview()">Close</button>
+                <iframe id="pdfFrame" width="100%" height="100%" style="border: none;"></iframe>
+            </div>
 
-            <td><a href="#" onclick="previewPDF({{ test.test_id }})">Preview</a></td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-
-    <div id="pdfPreview" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);">
-        <button onclick="togglePDFPreview()">Close</button>
-        <iframe id="pdfFrame" width="100%" height="100%" style="border: none;"></iframe>
+        </div>
     </div>
-
-</div>
 </div>
 
 <script>

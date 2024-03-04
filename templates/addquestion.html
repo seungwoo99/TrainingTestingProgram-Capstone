@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+        <script>obj_id = {{ obj_id }}</script>
+    </head>
+    <body>
+        <p>New question for learning objective:</p>
+        <p>{{ obj_desc }}</p>
+
+        <p>Enter a question description (summary of a question without images, writing lines, and other content.)</p>
+        <input type="text" name="question_desc" placeholder="Question Description" style="width: 80%;">
+        <p><br>Enter the question contents. Displayed as is on tests including any other content. Use template buttons to get started, or start from scratch.</p>
+        <textarea id="summernote1" name="question_text" class="summernote"></textarea>
+            <!-- Predefined content buttons -->
+        <div id="predefinedContentButtons">
+            <button type="button" class="btn btn-default predefined-content-btn" data-html="
+            <p>What is the correct answer?<br></p>
+            <p>
+                <span style='font-size: 22px;'>Ⓐ</span>
+                <span style='font-size: 14px;'>Answer A</span><br>
+                <span style='font-size: 22px;'>Ⓑ</span>
+                <span style='font-size: 14px;'>Answer B</span><br>
+                <span style='font-size: 22px;'>Ⓒ</span>
+                <span style='font-size: 14px;'>Answer C</span><br>
+                <span style='font-size: 22px;'>Ⓓ</span>
+                <span style='font-size: 14px;'>Answer D</span>
+            </p>">Multiple Choice</button>
+
+            <button type="button" class="btn btn-default predefined-content-btn" data-html="
+            <p> What question will go here?</p>
+            <p>__________________________________________________________________________________________</p>
+            <p>__________________________________________________________________________________________</p>
+            <p>__________________________________________________________________________________________</p>
+            <p>__________________________________________________________________________________________</p>
+            <p>__________________________________________________________________________________________</p>
+            ">Short Answer</button>
+
+            <button type="button" class="btn btn-default predefined-content-btn" data-html="
+            <p>A statement of possible fact.<br></p>
+            <p><span style='font-size: 22px;'>Ⓐ</span>
+            True<br><span style='font-size: 22px;'>Ⓑ</span> False<br></p>
+            ">True/False</button>
+        </div>
+        <p>Enter the question answer. Displayed as is on test answer keys.</p>
+        <textarea id="summernote2" name="question_answer" class="summernote"></textarea>
+        <p><br>Enter a question type (multiple choice, short answer, true / false, etc...)</p>
+        <input type="text" name="question_type" placeholder="Question Type">
+        <p><br>Enter the question difficulty (number between 1 and 5)</p>
+        <input type="number" name="question_difficulty" placeholder="#">
+        <p><br>Optional: Enter an additional answer explanation.</p>
+        <input type="text" name="answer_explanation" placeholder="Explanation" style="width: 80%;">
+        <p><br>Enter the points rubric / definition for the question.</p>
+        <input type="text" name="points_definition" placeholder="Rubric" style="width: 80%;">
+        <p><br>Enter the max points for the question</p>
+        <input type="number" name="max_points" placeholder="#">
+        <p><br>Optional: Enter the reference source for the question.</p><br>
+        <input type="text" name="source" placeholder="Source">
+        <button onclick="addQuestion(obj_id)">Add Question</button>
+
+
+        <script src="{{ url_for('static', filename='js/summernote.js') }}"></script>
+    </body>
+</html>

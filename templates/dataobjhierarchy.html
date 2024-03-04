@@ -1,95 +1,273 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-        <link rel = "stylesheet" href = "{{url_for('static', filename='/css/datahierarchy.css')}}">
-        <link rel = "stylesheet" href = "{{url_for('static', filename='/css/main.css')}}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
-        {% include 'navbar.html' %}
-    </head>
-    <body>
-        <div class="wrapper">
-            <div class="main-container">
-                <div class="centered-container">
-                    <h1>{{ topic_data['name'] }} Learning Objectives</h1>
-                </div>
-                <div class="centered-container">
-                    <table class="objectives-table" id="datasTable">
-                        <thead>
-                            <tr>
-                                <th>Objective ID</th>
-                                <th>Description</th>
-                                <th>Bloom</th>
-                                <th>Skill Applicability</th>
-                                <th>Tags</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for objective in objectives %}
-                                <tr onclick="toggleClass(this, 'selected');" onmouseover="this.style.cursor = 'pointer';" onmouseout="this.style.cursor='auto';">
-                                    <td>{{ objective.obj_id }}</td>
-                                    <td>{{ objective.obj_description }}</td>
-                                    <td>{{ objective.blooms_name }}</td>
-                                    <td>
-                                        <div class="custom-dropdown">
-                                            <button class="dropdown-toggle" onclick="toggleDropdown(this)">Select Training Level</button>
-                                            <div class="dropdown-content">
-                                                  <label><input type="checkbox" value="all">Select training levels</label>
-                                                  <label><input type="checkbox" value="applicant" {%  if objective.is_applicant == 1 %} checked {% endif %}>Applicant</label>
-                                                  <label><input type="checkbox" value="apprentice"{%  if objective.is_apprentice == 1 %} checked {% endif %}>Apprentice</label>
-                                                  <label><input type="checkbox" value="journeyman" {%  if objective.is_journeyman == 1 %} checked {% endif %}>Journeyman</label>
-                                                  <label><input type="checkbox" value="senior" {%  if objective.is_senior == 1 %} checked {% endif %}>Senior</label>
-                                                  <label><input type="checkbox" value="chief" {%  if objective.is_chief == 1 %} checked {% endif %}>Chief</label>
-                                                  <label><input type="checkbox" value="coordinator" {%  if objective.is_applicant == 1 %} checked {% endif %}>Coordinator</label>
-                                                  <label><input type="checkbox" value="all">Select all</label>
-                                            </div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{url_for('static', filename='/css/datahierarchy.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='/css/main.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
+    {% include 'navbar.html' %}
+</head>
+<body>
+    <div class="wrapper">
+        <div class="main-container">
+            <div class="centered-container">
+                <h1>{{ topic_data['name'] }} Learning Objectives</h1>
+            </div>
+            <div class="centered-container">
+                <table class="objectives-table" id="datasTable">
+                    <thead>
+                        <tr>
+                            <th>Objective ID</th>
+                            <th>Description</th>
+                            <th>Bloom</th>
+                            <th>Skill Applicability</th>
+                            <th>Tags</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for objective in objectives %}
+                            <tr onclick="toggleClass(this, 'selected');" onmouseover="this.style.cursor = 'pointer';" onmouseout="this.style.cursor='auto';">
+                                <td>{{ objective.obj_id }}</td>
+                                <td>{{ objective.obj_description }}</td>
+                                <td>{{ objective.blooms_name }}</td>
+                                <td>
+                                    <div class="custom-dropdown">
+                                        <button class="dropdown-toggle" data-index="{{ loop.index0 }}" onclick="toggleDropdown(this, event)">View Training Level</button>
+                                        <div class="checkbox-content" data-index="{{ loop.index0 }}">
+                                            <label class="disabled"><input type="checkbox" value="applicant" {%  if objective.is_applicant == 1 %} checked {% endif %} disabled>Applicant</label>
+                                            <label class="disabled"><input type="checkbox" value="apprentice"{%  if objective.is_apprentice == 1 %} checked {% endif %} disabled>Apprentice</label>
+                                            <label class="disabled"><input type="checkbox" value="journeyman" {%  if objective.is_journeyman == 1 %} checked {% endif %} disabled>Journeyman</label>
+                                            <label class="disabled"><input type="checkbox" value="senior" {%  if objective.is_senior == 1 %} checked {% endif %} disabled>Senior</label>
+                                            <label class="disabled"><input type="checkbox" value="chief" {%  if objective.is_chief == 1 %} checked {% endif %} disabled>Chief</label>
+                                            <label class="disabled"><input type="checkbox" value="coordinator" {%  if objective.is_applicant == 1 %} checked {% endif %} disabled>Coordinator</label>
+                                            <label class="disabled"><input type="checkbox" value="all" onclick="selectAll(this)" disabled>Select all</label>
                                         </div>
-                                    </td>
-                                    <td>{{ objective.tags }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                                    </div>
+                                </td>
+                                <td>{{ objective.tags }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
                 <div class="textinput-container">
-
-              </div>
-
-                </div>
-                <div>
-                    <button onclick="">New Reference</button>
-                </div>
-                <div class="centered-container">
-                    <!-- Buttons -->
-                   <!-- <button onclick="viewQuestions()">View Questions</button> -->
-                    <a href='{{ url_for('questions') }}'><button>View Questions</button></a>
-                    <button onclick="addTopic()">Add Topic</button>
-                    <button onclick="editTopic()">Edit Topic</button>
-                    <button onclick="deleteTopic()">Delete Topic</button>
-                    <button onclick="Function()">Save Changes</button>
-                    <a href="/datahierarchy"><button>Back</button></a>
                 </div>
             </div>
+            <div class="button-container">
+                <button onclick="viewQuestions()">View Questions</button>
+                <button onclick="addObjective()">Add Objective</button>
+                <button onclick="editObjective()">Edit Objective</button>
+                <button onclick="deleteObjective()">Delete Objective</button>
+                <button id="backButton">Back</button>
+            </div>
         </div>
-    </body>
+    </div>
+</body>
 <script>
-        function toggleDropdown(button) {
-            var dropdownContent = button.nextElementSibling;
-            dropdownContent.style.display = (dropdownContent.style.display === 'block') ? 'none' : 'block';
-        }
+    var openDropdown = null;
 
+    function closeAllDropdowns() {
+        var dropdowns = document.querySelectorAll('.checkbox-content');
+        dropdowns.forEach(function (dropdown) {
+            dropdown.style.display = 'none';
+        });
+    }
+
+    function toggleDropdown(button, event) {
+    event.stopPropagation();
+    var dropdownContent = button.nextElementSibling;
+
+    if (openDropdown !== dropdownContent) {
+        closeAllDropdowns();
+        dropdownContent.style.display = 'block';
+        openDropdown = dropdownContent;
+    } else {
+        dropdownContent.style.display = (dropdownContent.style.display === 'block') ? 'none' : 'block';
+        openDropdown = dropdownContent.style.display === 'block' ? dropdownContent : null;
+    }
+    }
 
     window.onclick = function (event) {
-        if (!event.target.matches('.dropdown-toggle')) {
-            var dropdowns = document.getElementsByClassName('dropdown-content');
-            for (var i = 0; i < dropdowns.length; i++) {
-                var openDropdown = dropdowns[i];
-                if (openDropdown.style.display === 'block') {
-                    openDropdown.style.display = 'none';
+        if (!event.target.matches('.dropdown-toggle') && !event.target.closest('.checkbox-content')) {
+            closeAllDropdowns();
+            openDropdown = null;
+        }
+    }
+
+    function toggleClass(el, className) {
+    if (event.target.type !== 'checkbox') {
+        var rows = el.parentNode.getElementsByTagName("tr");
+
+        for (var i = 0; i < rows.length; i++) {
+            if (rows[i] !== el) {
+                rows[i].classList.remove(className);
+            }
+        }
+
+        if (el.classList.contains(className)) {
+            el.classList.remove(className);
+        } else {
+            el.classList.add(className);
+        }
+    }
+
+    // Keep the dropdown open when clicking checkboxes
+    event.stopPropagation();
+    openDropdown = null;
+}
+
+    var topic_id = {{ topic_id | string }};
+    var subject_id = {{ subject_id | string }};
+
+    document.getElementById('backButton').addEventListener('click', function () {
+        window.location.replace('/datatopichierarchy?subject_id=' + subject_id);
+    });
+
+    function xhrSend(type, value1, value2, value3, value4, value5, value6) {
+        let xhr = new XMLHttpRequest();
+
+        let json = JSON.stringify({
+            type: type,
+            value1: value1,
+            value2: value2,
+            value3: value3,
+            value4: value4,
+            value5: value5,
+            value6: value6
+        });
+
+        xhr.open("POST", '/dataobjhierarchy')
+        xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    // Get response
+                    let response = JSON.parse(xhr.responseText);
+
+                    // If delete failed, display error message with topic conflicts.
+                    if (response.category === "FAILURE") {
+                        alert(response.error_message);
+                    } else {
+                        window.location.reload(); // Reload the page to reflect db changes
+                    }
+                } else {
+                    // Handle failed http request
+                    console.error("Request failed with status:", xhr.status);
                 }
+            }
+        };
+
+        xhr.send(json);
+    }
+
+    function viewQuestions() {
+        var rows = document.querySelectorAll('tbody tr');
+        var selectedObjId = null;
+
+        rows.forEach(function (row) {
+            if (row.classList.contains('selected')) {
+                selectedObjId = row.cells[0].textContent;
+            }
+        });
+
+        if (selectedObjId) {
+            window.location.href = '/dataquestionhierarchy?obj_id=' + selectedObjId + '&topic_id=' + topic_id + '&subject_id=' + subject_id;
+        } else {
+            alert('Please select a learning objective');
+        }
+    }
+
+    function addObjective() {
+        const newDesc = prompt('Enter the new objective description:');
+        const newTax = prompt('Enter the Blooms Taxonomy number(1:Remember,2:Understand,3:Apply,4:Analyze,5:Evaluate,6:Create):');
+        const newSkill = prompt('Enter a comma-separated list of skill levels(1:Applicant,2:Apprentice,3:Journeyman,4:Senior,5:Chief,6:Coordinator');
+        let newTags = prompt('Enter a comma-separated list of tags (okay to leave blank)');
+
+        if (newTags == null) {
+            newTags = "";
+        }
+
+        if (newDesc != null && newTax != null && newSkill != null) {
+            xhrSend("add", "" + topic_id, "" + newDesc, "" + newTax, "" + newSkill, "" + newTags, "");
+        } else {
+            alert("A field was left blank.");
+        }
+    }
+
+    function editObjective() {
+        var rows = document.querySelectorAll('tbody tr');
+        var rowIndex = null;
+        var currentDescription = null;
+        var currentTags = null;
+
+        rows.forEach(function (row) {
+            if (row.classList.contains('selected')) {
+                rowIndex = row.cells[0].textContent;
+                currentDescription = row.cells[1].textContent;
+                currentTags = row.cells[4].textContent;
+            }
+        });
+
+        const newDesc = prompt('Enter the new objective description:', currentDescription);
+        const newTax = prompt('Enter the Blooms Taxonomy number(1:Remember,2:Understand,3:Apply,4:Analyze,5:Evaluate,6:Create):');
+        const newSkill = prompt('Enter a comma-separated list of skill levels(1:Applicant,2:Apprentice,3:Journeyman,4:Senior,5:Chief,6:Coordinator');
+        let newTags = prompt('Enter a comma-separated list of tags (okay to leave blank)', currentTags);
+
+        if (newTags == null) {
+            newTags = "";
+        }
+
+        if (rowIndex != null) {
+            if (newSkill != null) {
+                xhrSend("edit", "" + rowIndex, "" + topic_id, "" + newDesc, "" + newTax, "" + newSkill, "" + newTags);
+            } else {
+                alert("Error: A field was left blank.")
+            }
+        } else {
+            alert("Please select a learning objective");
+        }
+    }
+
+    function deleteObjective() {
+        var confirmation = confirm("Are you sure you want to delete the selected record?");
+
+        if (confirmation) {
+            var rows = document.querySelectorAll('tbody tr');
+            var rowIndex = null;
+
+            rows.forEach(function (row) {
+                if (row.classList.contains('selected')) {
+                    rowIndex = row.cells[0].textContent;
+                }
+            });
+
+            if (rowIndex != null) {
+                xhrSend("delete", "" + rowIndex, "", "", "", "", "");
+            } else {
+                alert("Please select a learning objective");
             }
         }
     }
+
+    function selectAll(checkbox) {
+    var dataIndex = checkbox.closest('.checkbox-content').getAttribute('data-index');
+    var checkboxes = document.querySelectorAll('.checkbox-content[data-index="' + dataIndex + '"] input[type="checkbox"]');
+
+    checkboxes.forEach(function (cb) {
+        cb.checked = checkbox.checked;
+    });
+    }
+
+    document.querySelectorAll('.checkbox-content input[type="checkbox"]').forEach(function (checkbox) {
+    checkbox.addEventListener('change', function () {
+        if (checkbox.parentElement.tagName.toLowerCase() === 'label') {
+            // Skip the first checkbox (row toggle)
+            return;
+        }
+        toggleClass(checkbox.closest('tr'), 'selected');
+    });
+});
 </script>
 </html>

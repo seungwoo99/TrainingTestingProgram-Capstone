@@ -1,6 +1,14 @@
+<style>
+    /* CSS for hover effect */
+    #haspopover:hover {
+        cursor: pointer;
+        background-color: #f0f0f0; /* Change to the desired background color */
+    }
+</style>
+
 <!-- Table that shows test lists -->
 <thead>
-    <tr>
+    <tr class="test_table">
         <th>No.</th>
         <th>Test Name</th>
         <th>Subject</th>
@@ -9,9 +17,9 @@
         <th>Modified Date</th>
     </tr>
 </thead>
-<tbody>
+<tbody class="scrollable">
     {% for row in data %}
-        <tr id="testclick" onclick="navigateToPage('{{ row.test_id }}')">
+        <tr id="haspopover" class="test_table" data-test-id="{{ row.test_id }}" data-test-name="{{ row.test_name }}">
             <td>{{ loop.index }}</td>
             <td>{{ row.test_name }}</td>
             <td>{{ row.subject_name }}</td>
@@ -22,7 +30,89 @@
     {% endfor %}
 </tbody>
 <script>
-    function navigateToPage(test_id){
+    function showPopover(element, test_id, test_name) {
+        // Create HTML content for the popover
+        var popoverContent = `
+            <div class="popover">
+                <div class="arrow"></div>
+                <div class="popover-body">
+                    <form action="/generate_test" method="POST" target="_blank">
+                        <input type="hidden" name="test_id" value="${test_id}">
+                        <button type="submit" class="btn btn-primary">Export Test</button>
+                    </form>
+                    <form action="/generate_test_answers" method="POST" target="_blank">
+                        <input type="hidden" name="test_id" value="${test_id}">
+                        <button type="submit" class="btn btn-primary">Export Test Answers</button>
+                    </form>
+                    <button class="btn btn-primary" onclick="viewTestScores('${test_id}')">Test Scores</button>
+                    <button class="btn btn-primary" onclick="modifyTest('${test_id}')">Modify Test</button>
+                    <button class="btn btn-danger" onclick="deleteTest('${test_id}')">Delete Test</button>
+                </div>
+            </div>
+        `;
+
+        // Show popover
+        $(element).popover({
+            title: test_name,
+            content: popoverContent,
+            placement: 'right',
+            html: true,
+            trigger: 'manual'
+        }).popover('toggle');
+
+        // Close popover when clicking outside of it
+        $(document).on('click', function (event) {
+            if (!$(element).is(event.target) && $(element).has(event.target).length === 0 && !$(event.target).closest('.popover').length) {
+                $(element).popover('hide');
+            }
+        });
+    }
+
+    // Function to handle modify test button click
+    function modifyTest(test_id) {
+        window.location.href = "/modify-test/" + test_id;
+    }
+
+    // Function to handle view test scores button click
+    function viewTestScores(test_id) {
         window.location.href = "/test/" + test_id;
     }
+
+    // Function to handle delete test button click
+    function deleteTest(test_id) {
+        //Confirmation message
+        var confirmation = confirm('Are you sure you want to delete the selected test?');
+        if(confirmation){
+            //Send AJAX request to Flask route for checking validation
+            fetch(`/delete_test/${test_id}`)
+            .then(response => {
+                if(!response.ok){
+                    throw new Error("Network was not ok");
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.Category === 'Success') {
+                    alert(data.Message);
+                    window.location.reload();
+                } else if (data.Category === 'Failure') {
+                    alert("Failure: " + data.error_message);
+                }
+            });
+        }
+
+    }
+
+    // Initialize Bootstrap popovers
+    $(document).ready(function () {
+        $('[id="haspopover"]').hover(function() {
+            $(this).css('cursor', 'pointer');
+        }).click(function() {
+            var test_id = $(this).attr('data-test-id');
+            var test_name = $(this).attr('data-test-name');
+            showPopover(this, test_id, test_name);
+        });
+        $('[data-toggle="popover"]').popover();
+    });
+
 </script>
