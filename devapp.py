@@ -5,7 +5,6 @@ from logging.handlers import RotatingFileHandler
 from datetime import datetime, timezone, timedelta
 from random import randint
 import random
-from itertools import combinations
 
 # Statistics related imports
 from io import BytesIO
