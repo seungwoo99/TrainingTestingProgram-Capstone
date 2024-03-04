@@ -20,7 +20,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
     sidePanelToggle.addEventListener("click", toggleSidePanel);
     searchButton.addEventListener('click', handleSearchButtonClick);
     addButton.addEventListener('click', handleAddButtonClick);
-    submitButton.addEventListener('click', handleTestCreation);
+    const createTestButton = document.getElementById('create_test_button');
+    createTestButton.addEventListener('click', function (event) {
+      // Prevent the default form submission behavior
+      event.preventDefault();
+
+      // Call the function to handle test creation
+      handleTestCreation();
+    });
   }
 
   // Function to toggle the side panel's visibility and remove animation
