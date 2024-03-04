@@ -103,16 +103,21 @@
 
     }
 
+document.addEventListener('DOMContentLoaded', function() {
     // Initialize Bootstrap popovers
-    $(document).ready(function () {
-        $('[id="haspopover"]').hover(function() {
-            $(this).css('cursor', 'pointer');
-        }).click(function() {
-            var test_id = $(this).attr('data-test-id');
-            var test_name = $(this).attr('data-test-name');
-            showPopover(this, test_id, test_name);
-        });
-        $('[data-toggle="popover"]').popover();
+    $(document).on('mouseenter', '[id="haspopover"]', function() {
+        $(this).css('cursor', 'pointer');
     });
+
+    $(document).on('click', '[id="haspopover"]', function() {
+        var test_id = $(this).attr('data-test-id');
+        var test_name = $(this).attr('data-test-name');
+        showPopover(this, test_id, test_name);
+    });
+
+    $(document).on('hidden.bs.popover', '[data-toggle="popover"]', function() {
+        $(this).popover('dispose');
+    });
+});
 
 </script>

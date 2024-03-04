@@ -48,6 +48,11 @@
                     <label class="to_label">To</label>
                     <input type="date" id="end_date">
                 </div>
+
+                <div class="options">
+                    <label class="search_label">Search by name</label>
+                    <input type="" id="search_bar">
+                </div>
             </div>
             <!-- Test Table View -->
             <div class="table-field">
@@ -66,11 +71,13 @@
             let topicFilter = document.getElementById('topic-filter');
             let startDate = document.getElementById('start_date');
             let endDate = document.getElementById('end_date');
+            let searchBar = document.getElementById('search_bar');
 
             subjectFilter.addEventListener('change', handleFilterChange);
             topicFilter.addEventListener('change', handleFilterChange);
             startDate.addEventListener('change', handleFilterChange);
             endDate.addEventListener('change', handleFilterChange);
+            searchBar.addEventListener('input', handleFilterChange);
 
             //Get Data when value is changed
             function handleFilterChange(){
@@ -78,14 +85,15 @@
                 let selectedTopic = topicFilter.value;
                 let start_date = startDate.value;
                 let end_date = endDate.value;
+                let search_name = searchBar.value;
 
-                filterTable(selectedSubject, selectedTopic, start_date, end_date);
+                filterTable(selectedSubject, selectedTopic, start_date, end_date, search_name);
             }
 
             //Send filtered options data to flask
-            function filterTable(subject, topic, start, end){
+            function filterTable(subject, topic, start, end, name){
                 let xhr = new XMLHttpRequest();
-                xhr.open('GET', '/filter?subject=' + subject +'&topic=' + topic + '&start=' + start + '&end=' + end, true);
+                xhr.open('GET', '/filter?subject=' + subject +'&topic=' + topic + '&start=' + start + '&end=' + end +'&name=' + name, true);
                 xhr.onreadystatechange = function() {
                     if(xhr.readyState == 4 && xhr.status == 200){
                         document.getElementById('datasTable').innerHTML = xhr.responseText;
