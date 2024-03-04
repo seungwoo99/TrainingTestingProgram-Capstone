@@ -411,27 +411,26 @@ document.addEventListener('DOMContentLoaded', (event) => {
   }
 
   // Function to handle the creation of a test based on user input and selected questions
-  async function handleTestCreation() {
-    try {
-      // Log the initiation of the test creation process
-      console.log('Starting test creation process.')
+  function handleTestCreation() {
+    // Log the initiation of the test creation process
+    console.log('Starting test creation process.')
 
-      // Validate and collect inputs
-      testCreationData = validateAndCollectInputs();
+    // Validate and collect inputs
+    testCreationData = validateAndCollectInputs();
     
-      // Log the initiation of test creation attempt
-      console.log('Attempting test creation.');
+    // Log the initiation of test creation attempt
+    console.log('Attempting test creation.');
 
-      // Send a POST request to create the test
-      const response = await fetch('/test_creation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(testCreationData)
-      });
-      
-      // Parse the JSON response
-      const data = await response.json();
-    
+    // Send a POST request to create the test
+    fetch('/test_creation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(testCreationData)
+    }).then(response => {
+      // Parse response data and status code
+      return response.json().then(data => ({data, status_code: response.status}));
+    })
+    .then(({data, status_code}) => {
       // Handle errors if the test creation fails
       if (data.status === 'error') {
         console.log('Error in test creation occurred.');
@@ -440,33 +439,45 @@ document.addEventListener('DOMContentLoaded', (event) => {
       } else {
         // If test creation is successful
         const testId = data.test_id;
-        console.log(`Test created successfully with ID: ${testId}`);
-        
-        // Create a form to submit the test ID for test generation
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/generate_test';
-        form.target = '_blank';
-        
-        // Create an input field to hold the test ID
-        const testIdInput = document.createElement('input');
-        testIdInput.type = 'hidden';
-        testIdInput.name = 'test_id';
-        testIdInput.value = testId;
 
-        // Append the input field to the form        
-        form.appendChild(testIdInput);
+        // Display an alert with the test ID
+        alert(`Test created successfully with ID: ${testId}`);
 
-        // Append the form to the document body
-        document.body.appendChild(form);
-        
-        // Submit the form to generate the test
-        form.submit();
+        // Export the test immediately after the alert is closed
+        exportTest(testId);
       }
-    } catch(error) {
+    })
+    .catch(error => {
       // Log and handle any errors that occur during test creation
       console.error('Error occurred in test creation process: ', error.message || error);
-    }
+    });
+  }
+
+  // Function to export the test after successful creation
+  function exportTest(testId) {
+    // Log the successful test creation
+    console.log(`Exporting test with ID: ${testId}`);
+  
+    // Create a form element
+    const form = document.createElement('form');
+    form.method = 'POST'; // Set the HTTP method
+    form.action = '/generate_test'; // Set the action URL
+    form.target = '_blank'; // Open the form submission in a new tab
+  
+    // Create an input field to hold the test ID
+    const testIdInput = document.createElement('input');
+    testIdInput.type = 'hidden'; // Set the input type to hidden
+    testIdInput.name = 'test_id'; // Set the input name
+    testIdInput.value = testId; // Set the input value to the test ID
+  
+    // Append the test ID input field to the form
+    form.appendChild(testIdInput);
+
+    // Append the form to the document body
+    document.body.appendChild(form);
+
+    // Submit the form to generate the test
+    form.submit();
   }
 
   // Function to handle all errors returned from API requests
