@@ -1478,32 +1478,16 @@ def handle_test_creation_for_modify():
         # Get the test type from the data, defaulting to 'random'
         test_type = data.get('test_type', 'random')
 
-        # If the test type is 'random', send a request to get questions
-        if test_type == 'random':
-            response = requests.post('http://127.0.0.1:5000/get-questions', json=data)
-            # If the request is successful, extract relevant data
-            if response.status_code == 200:
-                is_active = data.get('is_active')
-                created_by = session.get('username')
-                creation_date = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
-                test_name = data.get('test_name')
-                test_description = data.get('test_description')
-                response_data = response.json()
-                total_score = response_data.get('total_score', 0)
-                question_order = response_data.get('question_order')
-            # If no questions are found, return an appropriate message
-            elif response.status_code == 500:
-                return jsonify({'message': 'No questions found that meet the selection criteria.'}), 500
-        # If the test type is not 'random', extract data directly from the request
-        else:
-            is_active = data.get('is_active')
-            modified_by = session.get('username')
-            last_modified_date = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
-            test_name = data.get('test_name')
-            test_description = data.get('test_description')
-            total_score = data.get('total_score', 0)
-            question_order = data.get('question_order')
-            test_id =  data.get('testId')
+        # Extract data directly from the request
+
+        is_active = data.get('is_active')
+        modified_by = session.get('username')
+        last_modified_date = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+        test_name = data.get('test_name')
+        test_description = data.get('test_description')
+        total_score = data.get('total_score', 0)
+        question_order = data.get('question_order')
+        test_id = data.get('testId')
 
 
         # Ensure total score is an integer
