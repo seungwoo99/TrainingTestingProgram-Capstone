@@ -52,7 +52,7 @@ body {
 
 /* Table Styles */
 table {
-  width: 90%;
+  width: 100%;
   border-collapse: collapse;
   margin: 2%;
   font-family: 'Code Next', sans-serif;
@@ -113,115 +113,107 @@ tbody{
 /* TOPICS TABLE */
 .topics-table td:nth-child(1),
 .topics-table th:nth-child(1) {
-  width: 5vw;
+  width: 140px;
   white-space: nowrap;
   text-overflow: ellipsis;
-  min-width: 5vw;
 }
 .topics-table td:nth-child(2),
 .topics-table th:nth-child(2) {
-  width: 10vw;
+  width: 200px;
   text-overflow: ellipsis;
-  min-width: 10vw;
 }
 .topics-table td:nth-child(3),
 .topics-table th:nth-child(3) {
-  width: 30vw;
+  width: 400px;
   text-overflow: ellipsis;
-  min-width: 30vw;
 }
 .topics-table td:nth-child(4),
 .topics-table th:nth-child(4) {
-  width: 15vw;
+  width: 200px;
   text-overflow: ellipsis;
-  min-width: 5vw;
 }
 
 /* SUBJECT TABLE */
 .subject-table td:nth-child(1),
 .subject-table th:nth-child(1) {
-  width: 10vw;
+  width: 150px;
   white-space: nowrap;
   text-overflow: ellipsis;
-  min-width: 10vw;
 }
 .subject-table td:nth-child(2),
 .subject-table th:nth-child(2) {
-  width: 10vw;
+  width: 300px;
   text-overflow: ellipsis;
-  min-width: 10vw;
 }
 .subject-table td:nth-child(3),
 .subject-table th:nth-child(3) {
-  width: 30vw;
+  width: 500px;
   text-overflow: ellipsis;
-  min-width: 5vw;
 }
 
 /* OBJECTIVES TABLE */
+
+.objectives-table th {
+  font-size: 18px;
+}
+
 .objectives-table td:nth-child(1),
 .objectives-table th:nth-child(1) {
-  width: 8vw;
+  width: 130px;
   white-space: nowrap;
   text-overflow: ellipsis;
-  min-width: 8vw;
 }
 .objectives-table td:nth-child(2),
 .objectives-table th:nth-child(2) {
-  width: 30vw;
+  width: 300px;
   text-overflow: ellipsis;
-  min-width: 30vw;
 }
 .objectives-table td:nth-child(3),
 .objectives-table th:nth-child(3) {
-  width: 7vw;
+  width: 150px;
   text-overflow: ellipsis;
-  min-width: 7vw;
 }
 .objectives-table td:nth-child(4),
 .objectives-table th:nth-child(4) {
-  width: 15vw;
+  width: 200px;
   text-overflow: ellipsis;
-  min-width: 15vw;
 }
 .objectives-table td:nth-child(5),
 .objectives-table th:nth-child(5) {
-  width: 15vw;
+  width: 150px;
   text-overflow: ellipsis;
-  min-width: 5vw;
 }
 
 /* QUESTIONS TABLE */
+.questions-table th {
+  font-size: 17px;
+}
+
 .questions-table td:nth-child(1),
 .questions-table th:nth-child(1) {
-  width: 8vw;
+  width: 150px;
   white-space: nowrap;
   text-overflow: ellipsis;
-  min-width: 8vw;
 }
 .questions-table td:nth-child(2),
 .questions-table th:nth-child(2) {
-  width: 30vw;
+  width: 300px;
   text-overflow: ellipsis;
-  min-width: 30vw;
 }
 .questions-table td:nth-child(3),
 .questions-table th:nth-child(3) {
-  width: 7vw;
+  width: 150px;
   text-overflow: ellipsis;
-  min-width: 7vw;
 }
 .questions-table td:nth-child(4),
 .questions-table th:nth-child(4) {
-  width: 7vw;
+  width: 100px;
   text-overflow: ellipsis;
-  min-width: 7vw;
 }
 .questions-table td:nth-child(5),
 .questions-table th:nth-child(5) {
-  width: 15vw;
+  width: 125px;
   text-overflow: ellipsis;
-  min-width: 5vw;
 }
 
 /* Dropdown Styles */
