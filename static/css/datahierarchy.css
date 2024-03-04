@@ -83,9 +83,14 @@ td {
 tbody{
   display:block;
   overflow-y:scroll;
+  overflow-x:hidden;
   height:400px;
 }
 
+.questions-table td:nth-child(1),
+.questions-table td:nth-child(3),
+.questions-table td:nth-child(4),
+.questions-table td:nth-child(5),
 .objectives-table td:nth-child(1),
 .objectives-table td:nth-child(3),
 .objectives-table td:nth-child(4),
@@ -98,76 +103,126 @@ tbody{
   text-align: center;
 }
 
+.questions-table td:nth-child(2),
 .objectives-table td:nth-child(2),
 .subject-table td:nth-child(3),
 .topics-table td:nth-child(3) {
   text-align: left;
 }
 
-.subject-table td:nth-child(1),
-.subject-table th:nth-child(1) {
-  width: 15vw;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  min-width: 15vw;
-}
-
-.subject-table td:nth-child(2),
-.subject-table th:nth-child(2) {
-  width: 30vw;
-  text-overflow: ellipsis;
-  min-width: 15vw;
-}
-
-.subject-table td:nth-child(3),
-.subject-table th:nth-child(3) {
-  width: 50vw;
-  text-overflow: ellipsis;
-}
-
+/* TOPICS TABLE */
 .topics-table td:nth-child(1),
 .topics-table th:nth-child(1) {
   width: 5vw;
+  white-space: nowrap;
   text-overflow: ellipsis;
+  min-width: 5vw;
 }
-
 .topics-table td:nth-child(2),
-.topics-table th:nth-child(2),
-.topics-table td:nth-child(4),
-.topics-table th:nth-child(4) {
+.topics-table th:nth-child(2) {
   width: 10vw;
   text-overflow: ellipsis;
+  min-width: 10vw;
 }
-
 .topics-table td:nth-child(3),
 .topics-table th:nth-child(3) {
   width: 30vw;
   text-overflow: ellipsis;
+  min-width: 30vw;
 }
-
 .topics-table td:nth-child(4),
 .topics-table th:nth-child(4) {
+  width: 15vw;
+  text-overflow: ellipsis;
+  min-width: 5vw;
+}
+
+/* SUBJECT TABLE */
+.subject-table td:nth-child(1),
+.subject-table th:nth-child(1) {
+  width: 10vw;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  min-width: 10vw;
+}
+.subject-table td:nth-child(2),
+.subject-table th:nth-child(2) {
   width: 10vw;
   text-overflow: ellipsis;
+  min-width: 10vw;
 }
-
-.objectives-table td:nth-child(3){
-  width: 10vw;
-}
-
-.objectives-table td:nth-child(4){
-  width: 12vw;
-}
-
-.objectives-table td:nth-child(5){
-  width: 5vw;
+.subject-table td:nth-child(3),
+.subject-table th:nth-child(3) {
+  width: 30vw;
   text-overflow: ellipsis;
+  min-width: 5vw;
 }
 
-.objectives-table td:nth-child(1){
+/* OBJECTIVES TABLE */
+.objectives-table td:nth-child(1),
+.objectives-table th:nth-child(1) {
+  width: 8vw;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  min-width: 8vw;
+}
+.objectives-table td:nth-child(2),
+.objectives-table th:nth-child(2) {
+  width: 30vw;
+  text-overflow: ellipsis;
+  min-width: 30vw;
+}
+.objectives-table td:nth-child(3),
+.objectives-table th:nth-child(3) {
   width: 7vw;
+  text-overflow: ellipsis;
+  min-width: 7vw;
+}
+.objectives-table td:nth-child(4),
+.objectives-table th:nth-child(4) {
+  width: 15vw;
+  text-overflow: ellipsis;
+  min-width: 15vw;
+}
+.objectives-table td:nth-child(5),
+.objectives-table th:nth-child(5) {
+  width: 15vw;
+  text-overflow: ellipsis;
+  min-width: 5vw;
 }
 
+/* QUESTIONS TABLE */
+.questions-table td:nth-child(1),
+.questions-table th:nth-child(1) {
+  width: 8vw;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  min-width: 8vw;
+}
+.questions-table td:nth-child(2),
+.questions-table th:nth-child(2) {
+  width: 30vw;
+  text-overflow: ellipsis;
+  min-width: 30vw;
+}
+.questions-table td:nth-child(3),
+.questions-table th:nth-child(3) {
+  width: 7vw;
+  text-overflow: ellipsis;
+  min-width: 7vw;
+}
+.questions-table td:nth-child(4),
+.questions-table th:nth-child(4) {
+  width: 7vw;
+  text-overflow: ellipsis;
+  min-width: 7vw;
+}
+.questions-table td:nth-child(5),
+.questions-table th:nth-child(5) {
+  width: 15vw;
+  text-overflow: ellipsis;
+  min-width: 5vw;
+}
 
 /* Dropdown Styles */
 .custom-dropdown{
