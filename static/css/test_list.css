@@ -8,6 +8,10 @@ table#datasTable {
     border-collapse: collapse;
     text-align: center;
     height: 90%;
+    display: block;
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-width: 100% ;
 }
 
 th, td {
@@ -19,13 +23,6 @@ th, td {
 th {
     background-color: #f2f2f2;
     text-align: center;
-}
-
-table#datasTable {
-    display: block; /* Change display type to block */
-    overflow-x: auto; /* Horizontal overflow auto */
-    overflow-y: hidden; /* Hide vertical overflow initially */
-    max-width: 100% ; /* Ensure table doesn't exceed container width */
 }
 
 table#datasTable tbody {
@@ -88,6 +85,7 @@ tr {
 .record_table td:nth-child(4) {width: 10%}
 .record_table td:nth-child(5) {width: 10%}
 .record_table td:nth-child(6) {width: 20%}
+
 
 
 button{
