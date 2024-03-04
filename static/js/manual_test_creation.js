@@ -3,15 +3,15 @@
 document.addEventListener('DOMContentLoaded', (event) => {
   
   // These constants store references to various DOM elements using querySelector or getElementById methods.
+  const searchButton = document.getElementById('search');
+  const addButton = document.getElementById('add');
+  const submitButton = document.getElementById('submit');
   const mainContainer = document.querySelector(".main-container");
   const sidePanelToggle = document.querySelector(".side-panel-toggle");
   const sidePanel = document.querySelector(".side-panel");
-  const addButton = document.getElementById('add');
-  const searchButton = document.getElementById('search');
   const selectedTableBody = document.querySelector('.selected-table tbody');
   const wrapper = document.querySelector(".wrapper");
   const animatedBorder = document.querySelector('.animated-border');
-  const submitButton = document.querySelector('submit')
 
   // Function to attach event listeners
   function initializeApp() {
@@ -33,7 +33,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     // This class controls the animation of the border element
     animatedBorder.classList.remove('animate');
   }
-
 
   // Function to adjust the position of the side panel and its toggle button based on the scroll position of the main container.
   function adjustPanelPosition() {
@@ -412,26 +411,27 @@ document.addEventListener('DOMContentLoaded', (event) => {
   }
 
   // Function to handle the creation of a test based on user input and selected questions
-  function handleTestCreation() {
-    // Log the initiation of the test creation process
-    console.log('Starting test creation process.')
+  async function handleTestCreation() {
+    try {
+      // Log the initiation of the test creation process
+      console.log('Starting test creation process.')
 
-    // Validate and collect inputs
-    testCreationData = validateAndCollectInputs();
+      // Validate and collect inputs
+      testCreationData = validateAndCollectInputs();
     
-    // Log the initiation of test creation attempt
-    console.log('Attempting test creation.');
+      // Log the initiation of test creation attempt
+      console.log('Attempting test creation.');
 
-    // Send a POST request to create the test
-    fetch('/test_creation', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(testCreationData)
-    }).then(response => {
-      // Parse response data and status code
-      return response.json().then(data => ({data, status_code: response.status}));
-    })
-    .then(({data, status_code}) => {
+      // Send a POST request to create the test
+      const response = await fetch('/test_creation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(testCreationData)
+      });
+      
+      // Parse the JSON response
+      const data = await response.json();
+    
       // Handle errors if the test creation fails
       if (data.status === 'error') {
         console.log('Error in test creation occurred.');
@@ -463,11 +463,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
         // Submit the form to generate the test
         form.submit();
       }
-    })
-    .catch(error => {
+    } catch(error) {
       // Log and handle any errors that occur during test creation
       console.error('Error occurred in test creation process: ', error.message || error);
-    });
+    }
   }
 
   // Function to handle all errors returned from API requests

@@ -1,8 +1,12 @@
+// This code waits for the DOMContentLoaded event to occur, 
+// indicating that the HTML document's initial structure has been fully loaded and parsed.
 document.addEventListener('DOMContentLoaded', function () {
   
   const toggleDivs = document.querySelectorAll('.toggle-btn');
   const confirmButton = document.getElementById('confirm-selection');
-  const categoryButtons = document.querySelectorAll('.select-category'); 
+  const categoryButtons = document.querySelectorAll('.select-category');
+  
+  confirmButton.addEventListener('click', handleTestCreation);
 
   function updateSelection(category, isChecked) {
     document.querySelectorAll(`.toggle-btn input[data-category='${category}']`).forEach(function (checkbox) {
@@ -43,10 +47,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });  
 
-  if (confirmButton) {
-    confirmButton.addEventListener('click', function () {
-      console.log('Confirm button clicked');
-      
+  function handleTestCreation() {
       confirmButton.disabled = true;
       confirmButton.classList.add('disabled');
       showProcessingOverlay()
@@ -218,8 +219,7 @@ document.addEventListener('DOMContentLoaded', function () {
         console.error('Error occurred in test creation process: ', error.message || error);
         resetConfirmButtonState()
       });
-    });
-  }
+    }
 
   function handleQuestionSelection(questions_pool, numQuestions, testMaxPoints) {
     console.log('Attempting question selection.');
