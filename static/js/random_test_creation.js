@@ -190,7 +190,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const testDescriptionValue = document.getElementById('test_description').value.trim();
     const trainingLevelValue = document.getElementById('training_level').value;
     const isActiveValue = document.querySelector('.switch input[type="checkbox"]').checked;
-
     const numQuestionsInput = document.getElementById('number_of_questions');
     const numQuestionsValue = parseInt(numQuestionsInput.value, 10);
     const testMaxPointsInput = document.getElementById('test_max_points');
@@ -286,33 +285,50 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log(`${status_code}: ${data.message}`);
         return handleAllErrors({status_code: status_code, json: () => Promise.resolve(data)}, {focusElement: 'test_name'});
       } else {
+        // If test creation is successful
         const testId = data.test_id;
-        console.log(`Test created successfully with ID: ${testId}`);
-        
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/generate_test';
-        form.target = '_blank';
-          
-        const testIdInput = document.createElement('input');
-        testIdInput.type = 'hidden';
-        testIdInput.name = 'test_id';
-        testIdInput.value = testId;
-        
-        form.appendChild(testIdInput);
-          
-        document.body.appendChild(form);
 
-        resetInputs();
-        resetConfirmButtonState();
-         
-        form.submit();
+        // Display an alert with the test ID
+        alert(`Test created successfully with ID: ${testId}`);
+
+        // Export the test immediately after the alert is closed
+        exportTest(testId);
+
+        // Refresh the page
+        location.reload();
       }
     })
     .catch(error => {
       console.error('Error occurred in test creation process: ', error.message || error);
       resetConfirmButtonState()
     });
+  }
+
+  // Function to export the test after successful creation
+  function exportTest(testId) {
+    // Log the successful test creation
+    console.log(`Exporting test with ID: ${testId}`);
+    
+    // Create a form element
+    const form = document.createElement('form');
+    form.method = 'POST'; // Set the HTTP method
+    form.action = '/generate_test'; // Set the action URL
+    form.target = '_blank'; // Open the form submission in a new tab
+    
+    // Create an input field to hold the test ID
+    const testIdInput = document.createElement('input');
+    testIdInput.type = 'hidden'; // Set the input type to hidden
+    testIdInput.name = 'test_id'; // Set the input name
+    testIdInput.value = testId; // Set the input value to the test ID
+    
+    // Append the test ID input field to the form
+    form.appendChild(testIdInput);
+  
+    // Append the form to the document body
+    document.body.appendChild(form);
+  
+    // Submit the form to generate the test
+    form.submit();
   }
 
   function handleQuestionSelection(questions_pool, numQuestions, testMaxPoints) {

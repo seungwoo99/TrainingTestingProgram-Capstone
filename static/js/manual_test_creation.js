@@ -469,6 +469,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
         // Export the test immediately after the alert is closed
         exportTest(testId);
+
+        // Refresh the page
+        location.reload();
       }
     })
     .catch(error => {
