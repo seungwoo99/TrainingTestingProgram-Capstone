@@ -35,6 +35,7 @@ function validateForm() {
 
     if (!emailRegex.test(email)) {
         alert("Please enter a valid email address.")
+        return false;
     }
     return true; // If all validations pass
 }
