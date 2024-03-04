@@ -13,7 +13,7 @@
 <body>
 <div class="wrapper">
     <div class="main-container">
-        <h1>Modify tests</h3>
+        <h1>Modify tests</h1>
             <form id="modify_tests">
                 <table class="filter-table">
                     <tr>
@@ -193,11 +193,12 @@
                             <textarea class="large-textbox" id="test_description" rows="6" cols="50" required></textarea>
                         </td>
                         <td>
-                            <button class="submit-button" id="submit">Create Test</button>
+                            <button class="submit-button" id="submit">Update Test</button>
                         </td>
                     </tr>
                 </table>
             </div>
+        </div>
     </div>
     <input type="hidden" id="testId" value="{{ test_id }}">
     <script src="{{ url_for('static', filename='js/modify_test.js') }}"></script>
