@@ -525,6 +525,7 @@ def filter_data():
     topic_id = request.args.get('topic')
     start_date = request.args.get('start')
     end_date = request.args.get('end')
+    search_name = request.args.get('name')
 
     # Set default value for start date and end date
     if start_date == '':
@@ -532,59 +533,34 @@ def filter_data():
     if end_date == '':
         end_date = '9999-12-31'
 
-    # When subject and topic are not selected
-    if subject_id == '' and topic_id == '':
-        test_query = text("SELECT t.test_id, t.test_name, GROUP_CONCAT(DISTINCT s.name) AS subject_name, GROUP_CONCAT(DISTINCT tp.name) AS topic_name, t.creation_date, t.last_modified_date FROM tests t "
-                        + "LEFT JOIN test_questions tq ON t.test_id = tq.test_id "
-                        + "LEFT JOIN questions q ON tq.question_id = q.question_id "
-                        + "LEFT JOIN learning_objectives lo ON q.obj_id = lo.obj_id "
-                        + "LEFT JOIN topics tp ON lo.topic_id = tp.topic_id "
-                        + "LEFT JOIN subjects s ON tp.subject_id = s.subject_id "
-                        + "WHERE (creation_date) BETWEEN :start_date AND :end_date "
-                        + "GROUP BY t.test_id, t.test_name, s.name, t.creation_date, t.last_modified_date ")
-        test_result = db.engine.execute(test_query, start_date=start_date, end_date=end_date)
+    base_select_query = """SELECT t.test_id, t.test_name, GROUP_CONCAT(DISTINCT s.name) AS subject_name, GROUP_CONCAT(DISTINCT tp.name) AS topic_name, t.creation_date, t.last_modified_date FROM tests t 
+                        LEFT JOIN test_questions tq ON t.test_id = tq.test_id 
+                        LEFT JOIN questions q ON tq.question_id = q.question_id 
+                        LEFT JOIN learning_objectives lo ON q.obj_id = lo.obj_id 
+                        LEFT JOIN topics tp ON lo.topic_id = tp.topic_id 
+                        LEFT JOIN subjects s ON tp.subject_id = s.subject_id """
+    where_clause = "WHERE (creation_date) BETWEEN :start_date AND :end_date "
+    group_by_clause = "GROUP BY t.test_id, t.test_name, s.name, t.creation_date, t.last_modified_date "
+
     # When subject is selected
-    elif subject_id != '' and topic_id == '':
-        test_query = text("SELECT t.test_id, t.test_name, GROUP_CONCAT(DISTINCT s.name) AS subject_name, GROUP_CONCAT(DISTINCT tp.name) AS topic_name, t.creation_date, t.last_modified_date FROM tests t "
-                        + "LEFT JOIN test_questions tq ON t.test_id = tq.test_id "
-                        + "LEFT JOIN questions q ON tq.question_id = q.question_id "
-                        + "LEFT JOIN learning_objectives lo ON q.obj_id = lo.obj_id "
-                        + "LEFT JOIN topics tp ON lo.topic_id = tp.topic_id "
-                        + "LEFT JOIN subjects s ON tp.subject_id = s.subject_id "
-                        + "WHERE s.subject_id = :subject_id AND (creation_date) BETWEEN :start_date AND :end_date "
-                        + "GROUP BY t.test_id, t.test_name, s.name, t.creation_date, t.last_modified_date ")
-        test_result = db.engine.execute(test_query, subject_id=subject_id, start_date=start_date, end_date=end_date)
+    if subject_id != '':
+        where_subject_clause = " AND s.subject_id = :subject_id "
+        where_clause = where_clause + where_subject_clause
     # When topic is selected
-    elif subject_id == '' and topic_id != '':
-        test_query = text(
-            "SELECT t.test_id, t.test_name, GROUP_CONCAT(DISTINCT s.name) AS subject_name, GROUP_CONCAT(DISTINCT tp.name) AS topic_name, t.creation_date, t.last_modified_date FROM tests t "
-            + "LEFT JOIN test_questions tq ON t.test_id = tq.test_id "
-            + "LEFT JOIN questions q ON tq.question_id = q.question_id "
-            + "LEFT JOIN learning_objectives lo ON q.obj_id = lo.obj_id "
-            + "LEFT JOIN topics tp ON lo.topic_id = tp.topic_id "
-            + "LEFT JOIN subjects s ON tp.subject_id = s.subject_id "
-            + "WHERE tp.topic_id = :topic_id AND (creation_date) BETWEEN :start_date AND :end_date "
-            + "GROUP BY t.test_id, t.test_name, s.name, t.creation_date, t.last_modified_date ")
+    if topic_id != '':
+        where_topic_clause = " AND tp.topic_id = :topic_id "
+        where_clause = where_clause + where_topic_clause
+    # When search name has an input
+    if search_name != '':
+        where_search_clause = " AND t.test_name LIKE CONCAT('%', :search_name, '%') "
+        where_clause = where_clause + where_search_clause
 
-        test_result = db.engine.execute(test_query, topic_id=topic_id, start_date=start_date, end_date=end_date)
-    # When subject and topic are selected
-    else:
-        test_query = text(
-            "SELECT t.test_id, t.test_name, GROUP_CONCAT(DISTINCT s.name) AS subject_name, GROUP_CONCAT(DISTINCT tp.name) AS topic_name, t.creation_date, t.last_modified_date FROM tests t "
-            + "LEFT JOIN test_questions tq ON t.test_id = tq.test_id "
-            + "LEFT JOIN questions q ON tq.question_id = q.question_id "
-            + "LEFT JOIN learning_objectives lo ON q.obj_id = lo.obj_id "
-            + "LEFT JOIN topics tp ON lo.topic_id = tp.topic_id "
-            + "LEFT JOIN subjects s ON tp.subject_id = s.subject_id "
-            + "WHERE tp.topic_id = :topic_id AND s.subject_id = :subject_id AND (creation_date) BETWEEN :start_date AND :end_date "
-            + "GROUP BY t.test_id, t.test_name, s.name, t.creation_date, t.last_modified_date ")
+    complete_query = text(base_select_query + where_clause + group_by_clause)
 
-        test_result = db.engine.execute(test_query, topic_id=topic_id, subject_id=subject_id, start_date=start_date, end_date=end_date)
-
+    test_result = db.engine.execute(complete_query, topic_id=topic_id, subject_id=subject_id, start_date=start_date, end_date=end_date, search_name=search_name)
     test_list_data = test_result.fetchall()
 
     return render_template("test_table.html", data=test_list_data)
-
 
 # Route for displaying a list of testers of the clicked test
 @app.route('/test/<int:test_id>')
@@ -873,7 +849,7 @@ def get_test_statistics(test_id):
         LEFT JOIN
             test_scores ts ON t.test_id = ts.test_id
         WHERE
-            t.test_id = :test_id
+            t.test_id = :test_id AND ts.total_score >= 0
         GROUP BY
             t.test_id, t.test_name
     """)
