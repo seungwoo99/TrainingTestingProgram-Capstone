@@ -34,15 +34,15 @@
                                 <td>{{ objective.blooms_name }}</td>
                                 <td>
                                     <div class="custom-dropdown">
-                                        <button class="dropdown-toggle" data-index="{{ loop.index0 }}" onclick="toggleDropdown(this, event)">Select Training Level</button>
+                                        <button class="dropdown-toggle" data-index="{{ loop.index0 }}" onclick="toggleDropdown(this, event)">View Training Level</button>
                                         <div class="checkbox-content" data-index="{{ loop.index0 }}">
-                                            <label><input type="checkbox" value="applicant" {%  if objective.is_applicant == 1 %} checked {% endif %}>Applicant</label>
-                                            <label><input type="checkbox" value="apprentice"{%  if objective.is_apprentice == 1 %} checked {% endif %}>Apprentice</label>
-                                            <label><input type="checkbox" value="journeyman" {%  if objective.is_journeyman == 1 %} checked {% endif %}>Journeyman</label>
-                                            <label><input type="checkbox" value="senior" {%  if objective.is_senior == 1 %} checked {% endif %}>Senior</label>
-                                            <label><input type="checkbox" value="chief" {%  if objective.is_chief == 1 %} checked {% endif %}>Chief</label>
-                                            <label><input type="checkbox" value="coordinator" {%  if objective.is_applicant == 1 %} checked {% endif %}>Coordinator</label>
-                                            <label><input type="checkbox" value="all" onclick="selectAll(this)">Select all</label>
+                                            <label class="disabled"><input type="checkbox" value="applicant" {%  if objective.is_applicant == 1 %} checked {% endif %} disabled>Applicant</label>
+                                            <label class="disabled"><input type="checkbox" value="apprentice"{%  if objective.is_apprentice == 1 %} checked {% endif %} disabled>Apprentice</label>
+                                            <label class="disabled"><input type="checkbox" value="journeyman" {%  if objective.is_journeyman == 1 %} checked {% endif %} disabled>Journeyman</label>
+                                            <label class="disabled"><input type="checkbox" value="senior" {%  if objective.is_senior == 1 %} checked {% endif %} disabled>Senior</label>
+                                            <label class="disabled"><input type="checkbox" value="chief" {%  if objective.is_chief == 1 %} checked {% endif %} disabled>Chief</label>
+                                            <label class="disabled"><input type="checkbox" value="coordinator" {%  if objective.is_applicant == 1 %} checked {% endif %} disabled>Coordinator</label>
+                                            <label class="disabled"><input type="checkbox" value="all" onclick="selectAll(this)" disabled>Select all</label>
                                         </div>
                                     </div>
                                 </td>
