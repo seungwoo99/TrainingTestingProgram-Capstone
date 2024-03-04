@@ -31,7 +31,7 @@ from itsdangerous import URLSafeTimedSerializer
 # Local application/library specific imports
 from config import MailConfig
 from db_config import db
-from data_retrieval import (fetch_test_creation_options, get_questions,get_questions_for_modify, select_questions, create_test,create_test_for_modify, get_user,
+from data_retrieval import (fetch_test_creation_options, get_questions,get_questions_for_modify, create_test,create_test_for_modify, get_user,
 
                             get_test_questions,
                             check_registered, get_test_data, get_tests, get_topics, get_subjects,
