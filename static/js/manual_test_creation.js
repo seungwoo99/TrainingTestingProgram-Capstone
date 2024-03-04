@@ -328,8 +328,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     return totalPoints;
   }
 
-  function validateAndCollectInputs() {
-    // Log the validation and data collection stage
+  function validateInputs() {
+    // Log the validation stage
     console.log('Validating inputs.')
     
     // Retrieve all selected questions from the selected table
@@ -338,30 +338,22 @@ document.addEventListener('DOMContentLoaded', (event) => {
     // Initialize a variable to track the validation status
     let isValid = true;
     
-    // Map over each selected question to retrieve its order and ID
-    const questionOrder = Array.from(selectedQuestions).map(row => {
+    // Check each selected question's order value for validity
+    selectedQuestions.forEach(row => {
       const input = row.querySelector('input[type="number"]');
-      const questionId = row.dataset.questionId;
       const orderValue = input ? parseInt(input.value, 10) : null;
-    
-      // Validate the order value
-      if (orderValue <= 0 || isNaN(orderValue)) {
+
+      // Check if orderValue is not null and greater than 0
+      if (orderValue === null || orderValue <= 0 || isNaN(orderValue)) {
         input.classList.add('error');
         isValid = false;
       } else {
         input.classList.remove('error');
       }
-    
-      // Return an object containing question ID and order
-      return {
-        question_id: questionId,
-        question_order: !isNaN(orderValue) && orderValue > 0 ? orderValue : null
-      };
     });
     
-    // Retrieve test name input and its value
+    // Retrieve test name input
     const testNameInput = document.getElementById('test_name');
-    const testNameValue = document.getElementById('test_name').value.trim();
         
     // Validate test name
     if (!testNameInput.value.trim()) {
@@ -373,8 +365,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     
     // Retrieve test description input and its value
     const testDescriptionInput = document.getElementById('test_description');
-    const testDescriptionValue = document.getElementById('test_description').value.trim();
-        
+
     // Validate test description
     if (!testDescriptionInput.value.trim()) {
       testDescriptionInput.classList.add('error');
@@ -382,22 +373,36 @@ document.addEventListener('DOMContentLoaded', (event) => {
     } else {
       testDescriptionInput.classList.remove('error');
     }
-    
-    // If any validation fails, display an alert and stop the process
-    if (!isValid) {
-      alert('Please fill in all the required fields correctly.');
-      return;
-    }
+
+    return isValid;
+  }
+
+  function collectInputs() {
+    // Log the data collection stage
+    console.log('Collecting inputs.')
+
+    // Retrieve all selected questions from the selected table
+    const selectedQuestions = document.querySelectorAll('.selected-table tbody tr');
         
-    // Log the completion of validation
-    console.log('Validation completed.')
+    // Map over each selected question to retrieve its order and ID
+    const questionOrder = Array.from(selectedQuestions).map(row => {
+      const input = row.querySelector('input[type="number"]');
+      const questionId = row.dataset.questionId;
+      const orderValue = input ? parseInt(input.value, 10) : null;
     
-    // Retrieve total score of the test
+      // Return an object containing question ID and order
+      return {
+        question_id: questionId,
+        question_order: orderValue
+      };
+    });
+    
+    // Retrieve other input values
+    const testNameValue = document.getElementById('test_name').value.trim();
+    const testDescriptionValue = document.getElementById('test_description').value.trim();        
     const totalScoreValue = parseInt(getTotalPoints(), 10);
-    
-    // Retrieve the active value for the test
     const isActiveValue = document.querySelector('.switch input[type="checkbox"]').checked;
-    
+        
     // Prepare data for test creation
     const testCreationData = {
       question_order: questionOrder,
@@ -406,17 +411,29 @@ document.addEventListener('DOMContentLoaded', (event) => {
       is_active: isActiveValue,
       test_description: testDescriptionValue,
     };
-
+    
     return testCreationData;
   }
-
+  
   // Function to handle the creation of a test based on user input and selected questions
   function handleTestCreation() {
     // Log the initiation of the test creation process
     console.log('Starting test creation process.')
 
     // Validate and collect inputs
-    testCreationData = validateAndCollectInputs();
+    isValid = validateInputs();
+    
+    // If any validation fails, display an alert and stop the process
+    if (!isValid) {
+      alert('Please fill in all the required fields correctly.');
+      return;
+    }
+
+    // Log the successful completions of input validation
+    console.log('Inputs validated.');
+
+    // Collect data from the inputs
+    testCreationData = collectInputs();
     
     // Log the initiation of test creation attempt
     console.log('Attempting test creation.');
