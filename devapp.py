@@ -4,7 +4,6 @@ import logging
 from logging.handlers import RotatingFileHandler
 from datetime import datetime, timezone, timedelta
 from random import randint
-import requests
 import random
 
 # Statistics related imports
@@ -33,6 +32,7 @@ from itsdangerous import URLSafeTimedSerializer
 from config import MailConfig
 from db_config import db
 from data_retrieval import (fetch_test_creation_options, get_questions,get_questions_for_modify, select_questions, create_test,create_test_for_modify, get_user,
+
                             get_test_questions,
                             check_registered, get_test_data, get_tests, get_topics, get_subjects,
                             get_all_subjects, get_tester_list,
@@ -79,6 +79,7 @@ mail = Mail(app)
 
 # Set the backend to 'Agg' for Matplotlib
 matplotlib.use('Agg')
+
 #----------Helper functions for OTP and token generation----------
 
 # Generate a verification otp
@@ -490,8 +491,6 @@ def editquestion():
     return render_template('editquestion.html', obj_id=obj_id, obj_desc=obj_desc, question=question)
 
 
-
-
 #---------- Routes for the test list page and tester list page ----------
 
 # Route for test list page
@@ -512,7 +511,8 @@ def test_list():
     return render_template("test_list.html", data=test_data, subject_data=subject_data, topic_data=topic_data)
 
 
-# Route for displaying filtered test list
+# Route for showing filtered test list
+
 @app.route('/filter')
 def filter_data():
     # Check if user session is inactive
@@ -585,7 +585,6 @@ def filter_data():
 
     return render_template("test_table.html", data=test_list_data)
 
-
 # Route for displaying a list of testers of the clicked test
 @app.route('/test/<int:test_id>')
 def tester_list(test_id):
@@ -603,7 +602,6 @@ def tester_list(test_id):
     all_tester_data = all_tester_result.fetchall()
 
     return render_template("tester_list.html", tester_data=tester_list_data, testId=test_id, all_tester_data=all_tester_data)
-
 
 # Route for updating tester's score
 @app.route('/update_score')
@@ -691,7 +689,6 @@ def update_status():
 
     return render_template("tester_table.html", tester_data=tester_list_data, testId=test_id, all_tester_data=all_tester_data)
 
-
 # Route for displaying tester history records
 @app.route('/display_history')
 def display_history():
@@ -714,7 +711,6 @@ def display_history():
     tester_history_data = history_result.fetchall()
 
     return render_template("tester_history_table.html", tester_history_data=tester_history_data)
-
 
 # Add new tester in the tester list table
 @app.route('/add_new_tester', methods=['POST'])
@@ -779,7 +775,6 @@ def add_existing_tester():
 
     return ''
 
-
 # Delete tester's record
 @app.route('/delete_record', methods=['POST'])
 def delete_record():
@@ -800,7 +795,6 @@ def delete_record():
 
     return ''
 
-
 # Add new record to tester
 @app.route('/add_record', methods=['POST'])
 def add_record():
@@ -819,7 +813,6 @@ def add_record():
     db.engine.execute(insert_query, test_id=test_id, tester_id=tester_id, attempt_date=attempt_date, score=score, pass_status=pass_status)
 
     return ''
-
 
 # Routes for deleting selected test
 @app.route('/delete_test/<int:test_id>')
@@ -855,7 +848,6 @@ def delete_test_validation(test_id):
         response_data = {"Category": "Failure", 'error_message': alert}
 
         return jsonify(response_data)
-
 
 #------ Route for Scoring  Metrics---------
 
@@ -1018,7 +1010,7 @@ def generate_pdf(test_id):
 
     return response
 
-#------ Route for Test Creation ---------
+#------ Routes for Test Creation ---------
 
 # Route for random test creation page.
 @app.route('/random_test_creation')
@@ -1032,15 +1024,17 @@ def manual_test_creation():
 
 # Route to render the appropriate test creation page with filters 
 def show_test_creation_page(template_name):
-    # Check if user session is inactive
     if 'user' not in session or not session['user'].get('is_authenticated', False):
         flash("Access denied, please login.")
         return redirect(url_for('trylogin'))
     
     try:
-        # Fetch test creation options from a function.
-        options = fetch_test_creation_options()
-        # Render the template 'random_test_creation.html' with the fetched options.
+        options_response = fetch_test_creation_options()
+        if isinstance(options_response, dict) and "error" in options_response:
+            flash(options_response["error"])
+            return redirect(url_for('index'))
+        
+        options = options_response
         return render_template(
             template_name,
             blooms_taxonomy=options['blooms_taxonomy'],
@@ -1050,9 +1044,8 @@ def show_test_creation_page(template_name):
             question_difficulty=options['question_difficulty']
         )
     except Exception as e:
-        # Handle any exceptions that may occur and provide an error message.
-        print("An error occurred in show_options:", str(e))
-        return "An error occurred while preparing the test creation page."
+        flash("An error occurred while preparing the test creation page.")
+        return redirect(url_for('index'))
 
 # Define the mapping of training levels to database columns
 training_level_mapping = {
@@ -1065,12 +1058,13 @@ training_level_mapping = {
 }
 
 # Route to handle the POST request to get random questions based on user selections.
-@app.route('/get-questions', methods=['POST'])    
+@app.route('/get_questions', methods=['POST'])
 def handle_get_questions():
+    logging.info("Executing handle_get_questions function.")
     try:
         data = request.json
         test_type = data.get('test_type', 'random')
-        logging.debug(f"Received data: {data}")
+        # logging.debug(f"Received data: {data}")
 
         blooms_taxonomy = data.get('blooms_taxonomy', [])
         subjects = data.get('subjects', [])
@@ -1090,6 +1084,7 @@ def handle_get_questions():
             training_level_conditions = {training_level_column: 1}
 
         question_max_points = None
+        
         if test_type == 'manual':
             question_max_points = int(data.get('question_max_points', 0))
             logging.debug(f"Filter parameters: blooms_taxonomy: {blooms_taxonomy}, subjects: {subjects}, topics: {topics}, question_types: {question_types}, question_difficulties: {question_difficulties}, question_max_points: {question_max_points}")
@@ -1098,125 +1093,265 @@ def handle_get_questions():
             logging.debug(f"Filter parameters: blooms_taxonomy: {blooms_taxonomy}, subjects: {subjects}, topics: {topics}, question_types: {question_types}, question_difficulties: {question_difficulties}")
             logging.debug(f"Test parameters: num_questions: {num_questions}, test_max_points: {test_max_points}")
 
-        questions_pool = get_questions(blooms_taxonomy, subjects, topics, question_types, question_difficulties, training_level_conditions, question_max_points)
-        total_questions_in_pool = len(questions_pool)
-        logging.debug(f"Total questions in pool: {total_questions_in_pool}")
-
-        if total_questions_in_pool == 0:
-            logging.warning("No questions found that meet the selection criteria.")
+        response, status_code = get_questions(test_type, blooms_taxonomy, subjects, topics, question_types, question_difficulties, training_level_conditions, question_max_points)
+        
+        status = response.get('status')
+        message = response.get('message')
+        
+        if status == 'error':
+            logging.error('Error in question retrieval occurred.')
             return jsonify({
-                'message': "No questions found that meet the selection criteria."
-            })
-
+                'status': status,
+                'message': message,
+            }), status_code
+        else:
+            questions_pool = response.get('search_result')
+        
         if test_type == 'manual':
             selected_questions = sorted(
                 [
                     {
-                        'question_id': q['question_id'], 
-                        'max_points': q['max_points'],
-                        'question_desc': q['question_desc']
+                    'question_id': q['question_id'], 
+                    'max_points': q['max_points'],
+                    'question_desc': q['question_desc']
                     } 
                     for q in questions_pool
                 ],
                 key=lambda x: x['max_points']
             )
-            questions_available_for_selection = len(selected_questions)
-            logging.debug(f"Questions available for manual selection: {questions_available_for_selection}")
 
             return jsonify({
-                'total_questions_in_pool': total_questions_in_pool,
-                'questions_available_for_selection': questions_available_for_selection,
-                'selected_questions': selected_questions, 
-                'message': "Questions successfully retrieved for manual selection."
+                'status': 'success',
+                'message': 'Questions successfully retrieved for manual selection.',
+                'selected_questions': selected_questions
             }), 200
         else:
-            selected_questions, total_score = select_questions(questions_pool, num_questions, test_max_points)
-            
-            if len(selected_questions) == 0:
-                return jsonify({'error': 'No questions found that meet the selection criteria.'}), 500
-            
-            max_num = len(selected_questions)
-            order_nums = random.sample(range(1, max_num + 1), max_num)
-            question_order = [
-                {
-                    'question_id': q['question_id'],
-                    'question_order': order
-                }
-                for q, order in zip(selected_questions, order_nums)
-            ]
             return jsonify({
-                'question_order': question_order,
-                'total_score': total_score,
+                'status': 'success',
+                'message': "Questions successfully retrieved for random selection.",
+                'questions_pool': questions_pool
             }), 200
-
+            
     # Error handling
     except ValueError as ve:
         logging.error(f"ValueError: {ve}")
-        return jsonify({'error': str(ve), 'selected_questions': []}), 400
+        return jsonify({
+            'status': 'error',
+            'message': str(ve), 
+            'selected_questions': []
+        }), 400
     except SQLAlchemyError as sae:
         logging.error(f"SQLAlchemyError: {sae}")
-        return jsonify({'error': "A database error occurred."}), 500
+        return jsonify({
+            'status': 'error',
+            'message': 'A database error occurred.'
+        }), 500
     except Exception as e:
         logging.error(f"Unhandled exception: {e}", exc_info=True)
-        return jsonify({'error': "An error occurred while preparing the test creation page."}), 500
+        return jsonify({
+            'status': 'error',
+            'message': 'An unhandled exception occurred while retrieving questions from the database.'
+        }), 500
+    
+# Route to handle question selection from available pool for random test creation
+@app.route('/select_questions', methods=['POST'])
+def select_questions():
+    logging.info("Executing handle_select_questions function.")
+    data = request.json
+    questions_pool = data['questions_pool']
+    num_questions = data['num_questions']
+    test_max_points = data['test_max_points']
+    
+    # Run checks to see if the question_pool is able to meet 
+    # user specified number of questions and have a max point total
+    # equal to or less then the user specified value
+    valid, response = validate_questions_pool(questions_pool, num_questions, test_max_points)
+    
+    if not valid:
+        # Initialize a default status code for general validation failures
+        status_code = 400
+        # Check if the issue is because the sum of max points exceeds the limit and there are fewer available questions than requested
+        if 'total_questions_in_pool' in response and 'total_max_points' in response:
+            status_code = 412
+        # Check if the issue is because the sum of max points exceeds the limit
+        elif 'total_questions_in_pool' in response and not 'total_max_points' in response:
+            status_code = 422 
+        # Check if no valid combination could be found
+        elif response.get('error_code') == 'NO_VALID_COMBINATION':
+            status_code = 406
+        logging.info(f"Response: {response}")
+        logging.info(f"Status code: {status_code}")
+        return jsonify(response), status_code
+    
+    logging.info("Proceeding to question selection process.")
+    
+    # Flatten the question pool for easier random access
+    flattened_questions = [
+        {"question_id": question_id, "max_points": max_points}
+        for max_points, questions in questions_pool.items()
+        for question_id in questions
+    ]
+    
+    selected_questions_info = []  # This will store dictionaries with question info
+    total_score = 0  # Initialize total_score
+    attempts = 0
+    max_attempts = 1000  # Set a reasonable limit to prevent infinite loops
+    
+    while attempts < max_attempts:
+        selected_questions_info.clear()  # Reset for each attempt
+        total_score = 0  # Reset total_score for each attempt
+        selected_indices = set()  # Track selected indices to avoid duplicates
+        
+        while len(selected_questions_info) < num_questions and total_score <= test_max_points:
+            idx = random.randint(0, len(flattened_questions) - 1)
+            if idx in selected_indices:  # Skip if already selected
+                continue
+            
+            question_info = flattened_questions[idx]
+            if total_score + int(question_info["max_points"]) <= test_max_points:
+                selected_questions_info.append(question_info)
+                total_score += int(question_info["max_points"])
+                selected_indices.add(idx)
+            
+            if len(selected_questions_info) == num_questions:
+                break  # Exit the loop once we've selected enough questions
+            
+        logging.info("Questions selection finished, giving selected questions order.")
+        
+        if len(selected_questions_info) == num_questions:
+            # If successfully selected, assign order numbers
+            order_nums = random.sample(range(1, num_questions + 1), num_questions)
+            question_order = [
+                {
+                    "question_id": question_info["question_id"],
+                    "question_order": order
+                } for question_info, order in zip(selected_questions_info, order_nums)
+            ]
+            
+            logging.info("Process finished and questions ready for test creation.")
+            # Return the structured response with question_order and total_score
+            return jsonify({
+                'status': 'success',
+                'question_order': question_order,
+                'total_score': total_score,
+                'message': "Questions successfully selected based on criteria."
+            }), 200
+        
+        attempts += 1  # Increment attempt counter if not successful
+
+    # If unable to select questions within max_attempts, return an error message
+    return jsonify({
+        'status': 'error',
+        'message': 'Unable to select questions within constraints.'
+    }), 400
+    
+def validate_questions_pool(questions_pool, num_questions, test_max_points):
+    logging.info("Executing validate_questions_pool function.")
+    
+    total_questions_in_pool = 0
+    total_max_points = 0
+    
+    # Iterate over each max_points value and its associated list of questions in question_pool
+    for q_max_points, questions in questions_pool.items():
+        # Convert q_max_points to integer
+        q_max_points = int(q_max_points)
+        # Add the number of questions at each key to the sum of all questions
+        total_questions_in_pool += len(questions)
+        # Calculate the sum of all question points by multipling the key
+        # by the number fo questions that have that max_point value
+        total_max_points += q_max_points * len(questions)
+
+    logging.info("Check 1: Performing check to see if the number of questions available in the pool can meet the requirements of the requested number of questions and maximum point total.")
+    # Perform initial checks for the number of questions and total max points
+    logging.info(f"{total_questions_in_pool} < {num_questions}")
+    if total_questions_in_pool < num_questions:
+        message = f'Fewer questions available than requested (Available questions: {total_questions_in_pool}). '
+        response = {
+            'status': 'error',
+            'message': message,
+            'total_questions_in_pool': total_questions_in_pool
+        }
+        logging.info(f"{total_max_points} > {test_max_points}")
+        if total_max_points > test_max_points:
+            message = f'Fewer questions available than requested (Available questions: {total_questions_in_pool}) and the sum of max points of available questions ({total_max_points}) is greater than the specified limit of {test_max_points}.'
+            response = {
+            'status': 'error',
+            'message': message,
+            'total_questions_in_pool': total_questions_in_pool,
+            'total_max_points': total_max_points
+            }
+        
+        # If failing any initial check, return error details for the frontend to use
+        logging.info("Check 1: Validation check failed.")
+        return False, response
+
+    logging.info("Check 1: Validation check passed.")
+    logging.info("Check 2: Performing check to see if the questions available in the questions pool can meet the user defined criteria of num_questions and test_max_points")
+    dp = [[False] * (test_max_points + 1) for _ in range(num_questions + 1)]
+    dp[0][0] = True
+
+    for max_points, questions in questions_pool.items():
+        max_points = int(max_points)
+        question_count = len(questions)
+
+        for n in range(num_questions, 0, -1):
+            for k in range(max_points, test_max_points + 1):  # Adjusted range
+                for q in range(1, min(question_count, n) + 1):
+                    # print(f'n: {n}, q: {q}, k: {k}, max_points: {max_points}, dp size: {len(dp)}, {len(dp[0])}')
+                    if k - max_points * q >= 0 and dp[n-q][k-max_points*q]:
+                        dp[n][k] = True
+
+        if any(dp[num_questions][:test_max_points+1]):
+            print('Validation checks passed!')
+            return True, {'status': 'success', 'message': 'Both validation checks passed'}
+    
+    # If no valid combination is found by this point, return False, indicating failure.
+    logging.info("Check 2: Validation check failed.")
+    message = f'No valid combination of {num_questions} from the current question pool will result in a test score less then or equal to {test_max_points}. Alter test parameters and try again.'
+    return False, {
+        'status': 'error',
+        'message': message,
+        'error_code': 'NO_VALID_COMBINATION'
+    }
     
 # Route to handle test creation
-@app.route('/handle_test_creation', methods=['POST'])
+@app.route('/test_creation', methods=['POST'])
 def handle_test_creation():
     try:
         # Get JSON data from the request
         data = request.get_json()
-        # Get the test type from the data, defaulting to 'random'
-        test_type = data.get('test_type', 'random')
-        
-        # If the test type is 'random', send a request to get questions
-        if test_type == 'random':
-            response = requests.post('http://127.0.0.1:5000/get-questions', json=data)
-            # If the request is successful, extract relevant data
-            if response.status_code == 200:
-                is_active = data.get('is_active')
-                created_by = session.get('username')
-                creation_date = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
-                test_name = data.get('test_name')
-                test_description = data.get('test_description')
-                response_data = response.json()
-                total_score = response_data.get('total_score', 0)
-                question_order = response_data.get('question_order')
-            # If no questions are found, return an appropriate message
-            elif response.status_code == 500:
-                return jsonify({'message': 'No questions found that meet the selection criteria.'}), 500
-        # If the test type is not 'random', extract data directly from the request
-        else:
-            is_active = data.get('is_active')
-            created_by = session.get('username')
-            creation_date = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
-            test_name = data.get('test_name')
-            test_description = data.get('test_description')
-            total_score = data.get('total_score', 0)
-            question_order = data.get('question_order')
+
+        is_active = data.get('is_active')
+        created_by = session.get('username')
+        creation_date = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+        test_name = data.get('test_name')
+        test_description = data.get('test_description')
+        total_score = data.get('total_score', 0)
+        question_order = data.get('question_order')
         
         # Ensure total score is an integer
         total_score = int(total_score) if isinstance(total_score, int) else 0
         
         # Create the test using extracted data
-        test_message = create_test(is_active, created_by, creation_date, test_name, test_description, total_score, question_order)
+        response, status_code = create_test(is_active, created_by, creation_date, test_name, test_description, total_score, question_order)
 
-        logging.info("Received test_message from create_test")
-        logging.info(f"test_message content: {test_message}")
+        logging.info("Received response from create_test")
+        logging.info(f"Response content: {response}")
 
         # If there's an error in test creation, log it and return an error response
-        if "error" in test_message:
-            logging.error(f"Error in test creation: {test_message['error']}")
-            return jsonify({"error": test_message["error"]}), 500
+        if 'error' in response:
+            error_message = response["error"]
+            logging.error(f"Error in test creation: {error_message}")
+            return jsonify({"error": error_message}), status_code
         
         # If the test is created successfully, log it and return a success response
+        logging.info(f"Test creation message: {response.get('message', '')}")
         logging.info("Test created successfully")
-        return jsonify({"message": test_message["message"]}), 200
+        return jsonify(response), status_code
 
     except Exception as e:
-        # Log any unexpected error that occurs during test creation and return an error response
-        logging.error("An error occurred while creating the test: %s", str(e), exc_info=True)
-        return jsonify({"error": str(e)}), 500
+        logging.error("An error occurred while processing the request: %s", str(e), exc_info=True)
+        return jsonify({"error": "An error occurred processing your request."}), 500
 
 @app.route('/process_question', methods=['POST'])
 def process_question():
@@ -1704,7 +1839,6 @@ def verify_email(username, user_hash):
     return redirect(url_for('trylogin'))
 
 #----------Server Configuration and Startup----------
-
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')

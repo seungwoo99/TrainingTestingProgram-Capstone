@@ -13,8 +13,8 @@
   <body>
     <div class="wrapper">
       <div class="main-container">
-        <h1>Manual Test Creation</h3>
-        <form id="manual_test_creation_form">
+        <h1>Manual Test Creation</h1>
+        <form id="manual_test_question_query_form">
           <table class="filter-table">
             <tr>
               <th></th>  
@@ -25,7 +25,7 @@
             <tr>
               <td></td>
               <td>
-                <select id="blooms_level_dropdown" name="blooms_taxonomy" class="dropdown-input">
+                <select id="blooms_taxonomy" name="blooms_taxonomy" class="dropdown-input">
                   <option value="all">Select Bloom's Taxonomy</option>
                   {% for category in blooms_taxonomy %}
                     <option value="{{ category }}">{{ category }}</option>
@@ -34,7 +34,7 @@
                 </select>
               </td>
               <td>
-                <select id="subject_dropdown" name="subject" class="dropdown-input">
+                <select id="subject" name="subject" class="dropdown-input">
                   <option value="all">Select subject</option>
                   {% for subject in subjects %}
                     <option value="{{ subject }}">{{ subject }}</option>
@@ -53,7 +53,7 @@
           <tr>
             <td></td>
             <td>
-              <select id="topic_dropdown" name="topic" class="dropdown-input">
+              <select id="topic" name="topic" class="dropdown-input">
                 <option value="all">Select topic</option>
                 {% for topic in topics %}
                   <option value="{{ topic }}">{{ topic }}</option>
@@ -62,7 +62,7 @@
               </select>
             </td>
             <td>
-              <select id="training_level_dropdown" name="training_level" class="dropdown-input">
+              <select id="training_level" name="training_level" class="dropdown-input">
                 <option value="all">Select training level</option>
                 <option value="applicant">Applicant</option>
                 <option value="apprentice">Apprentice</option>
@@ -84,7 +84,7 @@
             <tr>
               <td></td>
               <td>
-                <select id="question_type_dropdown" name="question_type" class="dropdown-input">
+                <select id="question_type" name="question_type" class="dropdown-input">
                   <option value="all">Select type</option>  
                   {% for q_type in question_types %}
                     <option value="{{ q_type }}">{{ q_type }}</option>
@@ -93,7 +93,7 @@
                 </select>
               </td>
               <td>
-                <select id="question_difficulty_dropdown" name="question_difficulty" class="dropdown-input">
+                <select id="question_difficulty" name="question_difficulty" class="dropdown-input">
                   <option value="all">Select difficulty</option>
                   {% for q_difficulty in question_difficulty %}  
                     <option value="{{ q_difficulty }}">{{ q_difficulty }}</option>
@@ -112,10 +112,10 @@
             <tr>
               <td></td>
               <td>
-                <input type="number" id="question_max_points_input" name="max_points" min="1" required>
+                <input type="number" id="question_max_points" name="max_points" min="1">
               </td>
               <td>
-                <input type="text" id="keyword_search_input" name="keyword_search">
+                <input type="text" id="keyword_search" name="keyword_search">
               </td>
               <td>
                 <button class="select-button" id="search">Search</button>
@@ -150,54 +150,57 @@
           <span class="material-icons">keyboard_double_arrow_right</span>
         </button>
         <div class="side-panel">
-          <div class="text-container">
-            Selected Questions
-          </div>
-          <table class="selected-table">
-            <thead>
+          <form id="manual_test_creation_form">
+            <div class="text-container">
+              Selected Questions
+            </div>
+            <table class="selected-table">
+              <thead>
+                <tr>
+                  <th>Order</th>
+                  <th>Point Value</th>
+                  <th>Question Contents</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+            
+              </tbody>
+            </table>
+            <table class="submit-table">
               <tr>
-                <th>Order</th>
-                <th>Point Value</th>
-                <th>Question Contents</th>
+                <th>Test Point Value</th>
+                <th>Test Name</th>
+                <th>Active?</th>
+              </tr>
+              <tr>
+                <td></td>
+                <td>
+                  <input type="text" id="test_name" name="test_name">
+                </td>
+                <td>
+                  <label class="switch">
+                    <input type="checkbox">
+                    <span class="slider round"></span>
+                  </label>
+                </td>
+              </tr>
+              <tr>
+                <th colspan="2">Description</th>
                 <th></th>
               </tr>
-            </thead>
-            <tbody>
-              
-            </tbody>
-          </table>
-          <table class="submit-table">
-            <tr>
-              <th>Test Point Value</th>
-              <th>Test Name</th>
-              <th>Active?</th>
-            </tr>
-            <tr>
-              <td></td>
-              <td>
-                <input type="text" id="test_name_input" name="test_name" required>
-              </td>
-              <td>
-                <label class="switch">
-                  <input type="checkbox">
-                  <span class="slider round"></span>
-                </label>
-              </td>
-            </tr>
-            <tr>
-              <th colspan="2">Description</th>
-              <th></th>
-            </tr>
-            <tr>
-              <td colspan="2">
-                <textarea class="large-textbox" id="test_description" rows="6" cols="50" required></textarea>
-              </td>
-              <td>
-                <button class="submit-button" id="submit">Create Test</button>
-              </td>
-            </tr>
-          </table>
+              <tr>
+                <td colspan="2">
+                  <textarea class="large-textbox" id="test_description" rows="6" cols="50"></textarea>
+                </td>
+                <td>
+                  <button class="submit-button" id="create_test_button">Create Test</button>
+                </td>
+              </tr>
+            </table>
+          </form>
         </div>
+      </div>
     </div>
     <script src="{{ url_for('static', filename='js/manual_test_creation.js') }}"></script>
   </body>
