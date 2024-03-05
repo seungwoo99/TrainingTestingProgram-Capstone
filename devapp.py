@@ -1329,7 +1329,8 @@ def handle_test_creation():
     except Exception as e:
         logging.error("An error occurred while processing the request: %s", str(e), exc_info=True)
         return jsonify({"error": "An error occurred processing your request."}), 500
-
+    
+#------ Routes for question creation and modification ---------
 @app.route('/process_question', methods=['POST'])
 def process_question():
     obj_id = request.form['obj_id']
@@ -1387,6 +1388,8 @@ def modify_question():
 
     return 'Question updated successfully!'
 
+#------ Routes for rendering tests and questions ---------
+
 # Route to render tests as a html file for export
 @app.route('/generate_test', methods=['POST'])
 def generate_test():
@@ -1408,12 +1411,13 @@ def generate_test_answers():
     # Render page
     return render_template('test_answers_template.html', test_questions=get_test_questions(selected_test_id),
                            test_data=get_test_data(selected_test_id))
-#---test modify implementation---
+
+#------ Routes for Test Test Modification ---------
+
 @app.route('/modify-test/<test_id>', methods=['GET'])
 def modify_test(test_id):
 
         return show_test_modification_page('modify_tests.html', test_id = test_id)
-
 
 def show_test_modification_page(template_name, test_id):
     # Check if user session is inactive
@@ -1438,6 +1442,7 @@ def show_test_modification_page(template_name, test_id):
         # Handle any exceptions that may occur and provide an error message.
         print("An error occurred in show_options:", str(e))
         return "An error occurred while preparing the test creation page."
+
 @app.route('/get-questions-for-modify/<int:test_id>', methods=['POST'])
 def handle_questions_for_modify(test_id):
     try:
@@ -1463,6 +1468,7 @@ def handle_questions_for_modify(test_id):
 
         # Calculate total score (if needed)
         total_score = sum(q['max_points'] for q in selected_questions)
+        
         #print(question_order)
         return jsonify({
             'question_order': question_order
@@ -1470,6 +1476,7 @@ def handle_questions_for_modify(test_id):
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
 @app.route('/handle_test_creation_for_modify', methods=['POST'])
 def handle_test_creation_for_modify():
     try:
@@ -1487,7 +1494,7 @@ def handle_test_creation_for_modify():
         test_description = data.get('test_description')
         total_score = data.get('total_score', 0)
         question_order = data.get('question_order')
-        test_id = data.get('testId')
+        test_id = data.get('test_id')
 
 
         # Ensure total score is an integer
@@ -1512,6 +1519,7 @@ def handle_test_creation_for_modify():
         # Log any unexpected error that occurs during test creation and return an error response
         logging.error("An error occurred while creating the test: %s", str(e), exc_info=True)
         return jsonify({"error": str(e)}), 500
+    
 #----------Routes for registration and verification----------
 
 # Route for the registration page, admin only.

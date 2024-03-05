@@ -10,198 +10,197 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     {% include 'navbar.html' %}
 </head>
-<body>
-<div class="wrapper">
-    <div class="main-container">
-        <h1>Modify tests</h1>
-            <form id="modify_tests">
-                <table class="filter-table">
-                    <tr>
-                        <th></th>
-                        <th>Bloom's Taxonomy</th>
-                        <th>Subject</th>
-                        <th></th>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>
-                            <select id="blooms_level_dropdown" name="blooms_taxonomy" class="dropdown-input">
-                                <option value="all">Select Bloom's Taxonomy</option>
-                                {% for category in blooms_taxonomy %}
-                                <option value="{{ category }}">{{ category }}</option>
-                                {% endfor %}
-                                <option value="all">Select All</option>
-                            </select>
-                        </td>
-                        <td>
-                            <select id="subject_dropdown" name="subject" class="dropdown-input">
-                                <option value="all">Select subject</option>
-                                {% for subject in subjects %}
-                                <option value="{{ subject }}">{{ subject }}</option>
-                                {% endfor %}
-                                <option value="all">Select All</option>
-                            </select>
-                        </td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <th></th>
-                        <th>Topic</th>
-                        <th>Training Level</th>
-                        <th></th>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>
-                            <select id="topic_dropdown" name="topic" class="dropdown-input">
-                                <option value="all">Select topic</option>
-                                {% for topic in topics %}
-                                <option value="{{ topic }}">{{ topic }}</option>
-                                {% endfor %}
-                                <option value="all">Select All</option>
-                            </select>
-                        </td>
-                        <td>
-                            <select id="training_level_dropdown" name="training_level" class="dropdown-input">
-                                <option value="all">Select training level</option>
-                                <option value="applicant">Applicant</option>
-                                <option value="apprentice">Apprentice</option>
-                                <option value="journeyman">Joureyman</option>
-                                <option value="senior">Senior</option>
-                                <option value="chief">Chief</option>
-                                <option value="coordinator">Coordinator</option>
-                                <option value="all">Select All</option>
-                            </select>
-                        </td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <th></th>
-                        <th>Question Type</th>
-                        <th>Question Difficulty</th>
-                        <th></th>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>
-                            <select id="question_type_dropdown" name="question_type" class="dropdown-input">
-                                <option value="all">Select type</option>
-                                {% for q_type in question_types %}
-                                <option value="{{ q_type }}">{{ q_type }}</option>
-                                {% endfor %}
-                                <option value="all">Select All</option>
-                            </select>
-                        </td>
-                        <td>
-                            <select id="question_difficulty_dropdown" name="question_difficulty" class="dropdown-input">
-                                <option value="all">Select difficulty</option>
-                                {% for q_difficulty in question_difficulty %}
-                                <option value="{{ q_difficulty }}">{{ q_difficulty }}</option>
-                                {% endfor %}
-                                <option value="all">Select All</option>
-                            </select>
-                        </td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <th></th>
-                        <th>Question Point Max Value</th>
-                        <th>Keyword Search</th>
-                        <th></th>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>
-                            <input type="number" id="question_max_points_input" name="max_points" min="1" required>
-                        </td>
-                        <td>
-                            <input type="text" id="keyword_search_input" name="keyword_search">
-                        </td>
-                        <td>
-                            <button class="select-button" id="search">Search</button>
-                        </td>
-                    </tr>
-                </table>
-            </form>
-            <table class="results-table">
-                <thead>
-                <tr>
-                    <th>Point Value</th>
-                    <th>Question Contents</th>
-                    <th>Select</th>
-                </tr>
-                </thead>
-                <tbody>
-                <!-- Dynamic rows will be inserted here -->
-                </tbody>
-                <tfoot>
-                <tr>
-                    <td colspan="2"></td>
-                    <td>
-                        <button class="add-button" id="add">Add</button>
-                    </td>
-                </tr>
-                </tfoot>
-            </table>
-            <div class="animated-border"></div>
-            <button class="side-panel-toggle" type="button">
-                <span class="material-icons">keyboard_double_arrow_left</span>
-                <span class="side-panel-toggle-text">Create Test</span>
-                <span class="material-icons">keyboard_double_arrow_right</span>
-            </button>
-            <div class="side-panel">
-                <div class="text-container">
-                    Selected Questions
-                </div>
-                <table class="selected-table">
-                    <thead>
-                    <tr>
-                        <th>Order</th>
-                        <th>Point Value</th>
-                        <th>Question Contents</th>
-                        <th></th>
-                    </tr>
-                    </thead>
-                    <tbody>
+    <body>
+        <div class="wrapper">
+            <div class="main-container">
+                <h1>Modify tests</h1>
+                    <form id="modify_tests">
+                        <table class="filter-table">
+                            <tr>
+                                <th></th>  
+                                <th>Bloom's Taxonomy</th>
+                                <th>Subject</th>
+                                <th></th>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td>
+                                    <select id="blooms_taxonomy" name="blooms_taxonomy" class="dropdown-input">
+                                        <option value="all">Select Bloom's Taxonomy</option>
+                                        {% for category in blooms_taxonomy %}
+                                            <option value="{{ category }}">{{ category }}</option>
+                                        {% endfor %}
+                                        <option value="all">Select All</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <select id="subject" name="subject" class="dropdown-input">
+                                        <option value="all">Select subject</option>
+                                        {% for subject in subjects %}
+                                            <option value="{{ subject }}">{{ subject }}</option>
+                                        {% endfor %}
+                                        <option value="all">Select All</option>
+                                    </select>
+                                </td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <th></th>
+                                <th>Topic</th>
+                                <th>Training Level</th>
+                                <th></th>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td>
+                                    <select id="topic" name="topic" class="dropdown-input">
+                                        <option value="all">Select topic</option>
+                                        {% for topic in topics %}
+                                            <option value="{{ topic }}">{{ topic }}</option>
+                                        {% endfor %}
+                                        <option value="all">Select All</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <select id="training_level" name="training_level" class="dropdown-input">
+                                        <option value="all">Select training level</option>
+                                        <option value="applicant">Applicant</option>
+                                        <option value="apprentice">Apprentice</option>
+                                        <option value="journeyman">Joureyman</option>
+                                        <option value="senior">Senior</option>
+                                        <option value="chief">Chief</option>
+                                        <option value="coordinator">Coordinator</option>
+                                        <option value="all">Select All</option>
+                                    </select>
+                                </td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <th></th>
+                                <th>Question Type</th>
+                                <th>Question Difficulty</th>
+                                <th></th>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td>
+                                    <select id="question_type" name="question_type" class="dropdown-input">
+                                        <option value="all">Select type</option>  
+                                        {% for q_type in question_types %}
+                                            <option value="{{ q_type }}">{{ q_type }}</option>
+                                        {% endfor %}
+                                        <option value="all">Select All</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <select id="question_difficulty" name="question_difficulty" class="dropdown-input">
+                                        <option value="all">Select difficulty</option>
+                                        {% for q_difficulty in question_difficulty %}  
+                                            <option value="{{ q_difficulty }}">{{ q_difficulty }}</option>
+                                        {% endfor %}
+                                        <option value="all">Select All</option>
+                                    </select>
+                                </td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <th></th>
+                                <th>Question Point Max Value</th>
+                                <th>Keyword Search</th>
+                                <th></th>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td>
+                                    <input type="number" id="question_max_points" name="max_points" min="1">
+                                </td>
+                                <td>
+                                    <input type="text" id="keyword_search" name="keyword_search">
+                                </td>
+                                <td>
+                                    <button class="select-button" id="search">Search</button>
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>Point Value</th>
+                                <th>Question Contents</th>
+                                <th>Select</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dynamic rows will be inserted here -->
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="2"></td>
+                                <td>
+                                    <button class="add-button" id="add">Add</button>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    <div class="animated-border"></div>
+                            <button class="side-panel-toggle" type="button">
+                            <span class="material-icons">keyboard_double_arrow_left</span>
+                            <span class="side-panel-toggle-text">Create Test</span>
+                            <span class="material-icons">keyboard_double_arrow_right</span>
+                        </button>
+                    <div class="side-panel">
+                    <div class="text-container">
+                        Selected Questions
+                    </div>
+                    <table class="selected-table">
+                        <thead>
+                            <tr>
+                                <th>Order</th>
+                                <th>Point Value</th>
+                                <th>Question Contents</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
 
-                    </tbody>
-                </table>
-                <table class="submit-table">
-                    <tr>
-                        <th>Test Point Value</th>
-                        <th>Test Name</th>
-                        <th>Active?</th>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>
-                            <input type="text" id="test_name_input" name="test_name" required>
-                        </td>
-                        <td>
-                            <label class="switch">
-                                <input type="checkbox">
-                                <span class="slider round"></span>
-                            </label>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th colspan="2">Description</th>
-                        <th></th>
-                    </tr>
-                    <tr>
-                        <td colspan="2">
-                            <textarea class="large-textbox" id="test_description" rows="6" cols="50" required></textarea>
-                        </td>
-                        <td>
-                            <button class="submit-button" id="submit">Update Test</button>
-                        </td>
-                    </tr>
-                </table>
+                        </tbody>
+                    </table>
+                    <table class="submit-table">
+                        <tr>
+                            <th>Test Point Value</th>
+                            <th>Test Name</th>
+                            <th>Active?</th>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <input type="text" id="test_name" name="test_name" required>
+                            </td>
+                            <td>
+                                <label class="switch">
+                                    <input type="checkbox">
+                                    <span class="slider round"></span>
+                                </label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th colspan="2">Description</th>
+                            <th></th>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <textarea class="large-textbox" id="test_description" rows="6" cols="50" required></textarea>
+                            </td>
+                            <td>
+                                <button class="submit-button" id="modify_test_button">Update Test</button>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
-    <input type="hidden" id="testId" value="{{ test_id }}">
-    <script src="{{ url_for('static', filename='js/modify_test.js') }}"></script>
-
-</body>
+        <input type="hidden" id="testId" value="{{ test_id }}">
+        <script src="{{ url_for('static', filename='js/modify_test.js') }}"></script>
+    </body>
 </html>
