@@ -183,13 +183,6 @@ def get_questions(test_type, blooms_taxonomy, subjects, topics, question_types, 
             where_clauses = []  # List to store WHERE clauses.
             params = {}  # Dictionary to store parameters for the SQL query.
 
-            # Check if blooms_taxonomy filter is provided.
-            if blooms_taxonomy:
-                placeholders = ', '.join([f':blooms_taxonomy{i}' for i in range(len(blooms_taxonomy))])
-                clause = f'b.name IN ({placeholders})'
-                where_clauses.append(clause)
-                params.update({f'blooms_taxonomy{i}': category for i, category in enumerate(blooms_taxonomy)})
-
             # Check if subjects filter is provided.
             if subjects:
                 placeholders = ', '.join([f':subject_{i}' for i in range(len(subjects))])
@@ -208,6 +201,13 @@ def get_questions(test_type, blooms_taxonomy, subjects, topics, question_types, 
             grouped_conditions = ' OR '.join(where_clauses) if where_clauses else '1'
             where_clauses = [f"({grouped_conditions})"]
 
+            # Check if blooms_taxonomy filter is provided.
+            if blooms_taxonomy:
+                placeholders = ', '.join([f':blooms_taxonomy{i}' for i in range(len(blooms_taxonomy))])
+                clause = f'b.name IN ({placeholders})'
+                where_clauses.append(clause)
+                params.update({f'blooms_taxonomy{i}': category for i, category in enumerate(blooms_taxonomy)})
+            
             # Check if question_types filter is provided.
             if question_types:
                 placeholders = ', '.join([f':question_type_{i}' for i in range(len(question_types))])
