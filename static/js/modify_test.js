@@ -121,7 +121,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const questionTypeValue = document.getElementById('question_type').value;
     const questionDifficultyValue = document.getElementById('question_difficulty').value;
     const questionMaxPointsInput = document.getElementById('question_max_points');
-  
+    const keywordsInput = document.getElementById('keyword_search').value.trim();
+    const keywords = keywordsInput !== '' ? keywordsInput.split('/[,\s.]+/') : null;
+    
     // Initialize a flag to track form validity
     let isValid = true;
   
@@ -153,6 +155,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
       question_difficulties: questionDifficultyValue !== "all" ? [questionDifficultyValue] : [],
       question_max_points: questionMaxPointsValue,
       training_level: trainingLevelValue !== "all" ? trainingLevelValue : undefined,
+      keywords: keywords,
       test_type: "manual"
     };
   

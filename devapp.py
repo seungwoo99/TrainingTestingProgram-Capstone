@@ -47,7 +47,7 @@ load_dotenv()
 app = Flask(__name__)
 
 # Configure Flask app to use SQLAlchemy for a local MySQL database
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:1234@localhost:3306/test_train_db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:@localhost:3306/test_train_db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Configure logging to write to a file
@@ -1049,6 +1049,7 @@ def handle_get_questions():
         question_types = data.get('question_types', [])
         question_difficulties = data.get('question_difficulties', [])
         num_questions = int(data.get('num_questions', 0))
+        keywords = data.get('keywords')
         
         training_level_text = data.get('training_level', 'all')
         
@@ -1059,18 +1060,16 @@ def handle_get_questions():
             if not training_level_column:
                 raise ValueError(f"Invalid training level: {training_level_text}")
             training_level_conditions = {training_level_column: 1}
-
-        question_max_points = None
         
         if test_type == 'manual':
             question_max_points = int(data.get('question_max_points', 0))
-            logging.debug(f"Filter parameters: blooms_taxonomy: {blooms_taxonomy}, subjects: {subjects}, topics: {topics}, question_types: {question_types}, question_difficulties: {question_difficulties}, question_max_points: {question_max_points}")
+            logging.debug(f"Filter parameters: blooms_taxonomy: {blooms_taxonomy}, subjects: {subjects}, topics: {topics}, question_types: {question_types}, question_difficulties: {question_difficulties}, training_level_conditions: {training_level_conditions}, keywords: {keywords}, question_max_points: {question_max_points}")
+            response, status_code = get_questions(test_type, blooms_taxonomy, subjects, topics, question_types, question_difficulties, training_level_conditions, keywords, question_max_points)
         else:
             test_max_points = int(data.get('test_max_points', 0))
             logging.debug(f"Filter parameters: blooms_taxonomy: {blooms_taxonomy}, subjects: {subjects}, topics: {topics}, question_types: {question_types}, question_difficulties: {question_difficulties}")
             logging.debug(f"Test parameters: num_questions: {num_questions}, test_max_points: {test_max_points}")
-
-        response, status_code = get_questions(test_type, blooms_taxonomy, subjects, topics, question_types, question_difficulties, training_level_conditions, question_max_points)
+            response, status_code = get_questions(test_type, blooms_taxonomy, subjects, topics, question_types, question_difficulties, training_level_conditions, keywords, test_max_points)
         
         status = response.get('status')
         message = response.get('message')
