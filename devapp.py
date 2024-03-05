@@ -120,7 +120,7 @@ def logout():
 def trylogin():
     # Check if user session is already active
     if 'user' in session and session['user'].get('is_authenticated', False):
-        return redirect(url_for('homepage'))
+        return redirect(url_for('data'))
 
     # Check for any failed login or access denied messages
     messages = get_flashed_messages()
@@ -192,38 +192,32 @@ def login():
             return redirect(url_for('trylogin'))
 
 #---------- Routes for the homepage and user actions----------
-       
-# Route for the homepage, logged in users only.
-@app.route("/homepage")
-def homepage():
+
+
+# Route for subject operations in the data hierarchy
+@app.route('/datahierarchy',methods = ['POST', 'GET'])
+def data():
+
     # Check if user session is inactive
     if 'user' not in session or not session['user'].get('is_authenticated', False):
         flash("Access denied, please login.")
         return redirect(url_for('trylogin'))
 
-    # Serve homepage
-    #return "<h2>This is the under-construction homepage</h2><a href=\"/logout\">Logout</a>"
-    # Temporary redirect to a different page
-    return redirect(url_for('data'))
-  
-@app.route('/datahierarchy',methods = ['POST', 'GET'])
-def data():
-    #if 'user' not in session or not session['user'].get('is_authenticated', False):
-        #flash("Access denied, please login.")
-        #return redirect(url_for('trylogin'))
+    # Check which database function to execute
     if request.method == "POST":
         pData = request.get_json()
+
+        # Add subject operation
         if pData.get("type") == "add":
-            #insertSubject(pData.get("value1"),pData.get("value2"))
+
+            # Get values and execute insert statement
             name = pData.get("value1")
             description = pData.get("value2")
-
-            insertSubject(name,description)
-            #query = text("""INSERT INTO subjects (name,description) VALUES (:name,:description)""")
-            #db.engine.execute(query, name=name, description=description)
+            insertSubject(name, description)
             logging.debug("adding new data")
+
+        # Delete subject operation
         elif pData.get("type") == "delete":
-            # Attempt to delete subject
             try:
                 subject_id = pData.get("value1")
                 query = text("""DELETE FROM subjects where subject_id = :subject_id""")
@@ -236,7 +230,7 @@ def data():
                 # Get and display any topics that need to be deleted.
                 topics, subject_data = get_all_topics(subject_id)
 
-                # Create alert response
+                # Create alert listing conflicting topics
                 alert = ("Unable to delete subject " + subject_data['name'] +
                          " . The following topics must be deleted first: \n")
                 for topic in topics:
@@ -245,7 +239,10 @@ def data():
                 response_data = {"category": "FAILURE", 'error_message': alert}
                 return jsonify(response_data)
 
+        # Edit subject operation
         elif pData.get("type") == "edit":
+
+            # Get values and execute update statement
             subject_id = pData.get("value1")
             name = pData.get("value2")
             description = pData.get("value3")
@@ -257,8 +254,15 @@ def data():
         subjects = get_all_subjects()
         return render_template('datahierarchy.html', subjects=subjects)
 
+
+# Route for topics operations in the data hierarchy
 @app.route('/datatopichierarchy', methods=['GET', 'POST'])
 def topics():
+
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
 
     # Get the selected subject_id from the query parameters
     subject_id = request.args.get('subject_id')
@@ -269,14 +273,21 @@ def topics():
     # Check which database function to execute
     if request.method == "POST":
         pData = request.get_json()
+
+        # Add topic operation
         if pData.get("type") == "add":
+
+            # Get values and execute insert statement
             subject_id = pData.get("value1")
             name = pData.get("value2")
             description = pData.get("value3")
             facility = pData.get("value4")
             insertTopic(subject_id, name, description, facility)
 
+        # Edit topic operation
         elif pData.get("type") == "edit":
+
+            # Get values and execute update statement
             topic_id = pData.get("value1")
             name = pData.get("value2")
             description = pData.get("value3")
@@ -284,7 +295,8 @@ def topics():
             query = text(
                 """UPDATE topics SET name = :name, description = :description, facility=:facility WHERE topic_id = :topic_id""")
             db.engine.execute(query, topic_id=topic_id, name=name, description=description, facility=facility)
-            print()
+
+        # Delete topic operation
         elif pData.get("type") == "delete":
             # Attempt to delete subject
             try:
@@ -313,8 +325,15 @@ def topics():
         # Pass topics to the template
         return render_template('datatopichierarchy.html', topics=topics ,subject_id=subject_id, subject_data=subject_data)
 
+
+# Route for learning objective operations in the data hierarchy
 @app.route('/dataobjhierarchy', methods=['GET', 'POST'])
 def objectives():
+
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
 
     # Get the selected subject_id from the query parameters
     topic_id = request.args.get('topic_id')
@@ -326,12 +345,18 @@ def objectives():
     # Check which database function to execute
     if request.method == "POST":
         pData = request.get_json()
+
+        # Add learning objective operation
         if pData.get("type") == "add":
+
+            # Get values and execute insert statement
             topic_id = pData.get("value1")
             description = pData.get("value2")
             bloom = pData.get("value3")
             skills = pData.get("value4")
             tags = pData.get("value5")
+
+            # Parse skills input and set flags accordingly
             if "1" in skills:
                 applicant = 1
             else:
@@ -356,14 +381,21 @@ def objectives():
                 coordinator = 1
             else:
                 coordinator = 0
+
             insertLearningObjective(topic_id, description, bloom, applicant, apprentice, journeyman, senior, chief, coordinator, tags)
+
+        # Edit learning objective operation
         if pData.get("type") == "edit":
+
+            # Get values and execute update statement
             objId = pData.get("value1")
             topic_id = pData.get("value2")
             description = pData.get("value3")
             bloom = pData.get("value4")
             skills = pData.get("value5")
             tags = pData.get("value6")
+
+            # Parse skills input and set flags accordingly
             if "1" in skills:
                 applicant = 1
             else:
@@ -420,12 +452,22 @@ def objectives():
     else:
         # Pass topics to the template
         return render_template('dataobjhierarchy.html', objectives=objectives,topic_id=topic_id, topic_data=topic_data,subject_id=subject_id)
-    
+
+
+# Route for question operations in the data hierarchy
 @app.route('/dataquestionhierarchy', methods=['GET', 'POST'])
 def questions():
+
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     # Check which database function to execute
     if request.method == "POST":
         pData = request.get_json()
+
+        # Delete question operation
         if pData.get("type") == "delete":
             # Attempt to delete question
             try:
@@ -450,19 +492,25 @@ def questions():
                 return jsonify(response_data)
             return jsonify({"category": "SUCCESS"})
 
-
-
     # Get the selected subject_id from the query parameters
     obj_id = request.args.get('obj_id')
     topic_id = request.args.get('topic_id')
     subject_id = request.args.get('subject_id')
 
+    # Get all questions associated with the selected objective id
     questions, obj_data = get_all_questions(obj_id)
 
     return render_template('dataquestionhierarchy.html', questions=questions, obj_id=obj_id, obj_data=obj_data,topic_id=topic_id,subject_id=subject_id)
 
+
+# Route for the add question popup window
 @app.route('/addquestion')
 def addquestion():
+
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
 
     # Get the selected subject_id from the query parameters
     obj_id = request.args.get('obj_id')
@@ -470,11 +518,17 @@ def addquestion():
     # Get the objective desc
     obj_desc = get_obj_desc(obj_id)
 
-
     return render_template('addquestion.html', obj_id=obj_id, obj_desc=obj_desc)
 
+
+# Route for the edit question popup window
 @app.route('/editquestion')
 def editquestion():
+
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
 
     # Get the selected subject_id from the query parameters
     obj_id = request.args.get('obj_id')
@@ -496,6 +550,7 @@ def editquestion():
 # Route for test list page
 @app.route('/test_list')
 def test_list():
+
     # Check if user session is inactive
     if 'user' not in session or not session['user'].get('is_authenticated', False):
         flash("Access denied, please login.")
@@ -512,7 +567,6 @@ def test_list():
 
 
 # Route for showing filtered test list
-
 @app.route('/filter')
 def filter_data():
     # Check if user session is inactive
@@ -565,6 +619,7 @@ def filter_data():
 # Route for displaying a list of testers of the clicked test
 @app.route('/test/<int:test_id>')
 def tester_list(test_id):
+
     # Check if user session is inactive
     if 'user' not in session or not session['user'].get('is_authenticated', False):
         flash("Access denied, please login.")
@@ -583,6 +638,7 @@ def tester_list(test_id):
 # Route for updating tester's score
 @app.route('/update_score')
 def update_score():
+
     # Check if user session is inactive
     if 'user' not in session or not session['user'].get('is_authenticated', False):
         flash("Access denied, please login.")
@@ -614,6 +670,7 @@ def update_score():
 # Route for updating tester's attempt date
 @app.route('/update_date', methods=['POST'])
 def update_date():
+
     # Check if user session is inactive
     if 'user' not in session or not session['user'].get('is_authenticated', False):
         flash("Access denied, please login.")
@@ -642,6 +699,7 @@ def update_date():
 # Route for updating tester's pass status
 @app.route('/update_status', methods=['POST'])
 def update_status():
+
     # Check if user session is inactive
     if 'user' not in session or not session['user'].get('is_authenticated', False):
         flash("Access denied, please login.")
@@ -669,6 +727,7 @@ def update_status():
 # Route for displaying tester history records
 @app.route('/display_history')
 def display_history():
+
     # Check if user session is inactive
     if 'user' not in session or not session['user'].get('is_authenticated', False):
         flash("Access denied, please login.")
@@ -692,6 +751,12 @@ def display_history():
 # Add new tester in the tester list table
 @app.route('/add_new_tester', methods=['POST'])
 def add_tester():
+
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     # Get data from tester_list.html
     new_tester_data = request.get_json()
     testee_name = new_tester_data.get("testerName")
@@ -736,6 +801,12 @@ def add_tester():
 # Add exist tester data in the tester list table
 @app.route('/add_existing_tester', methods=['POST'])
 def add_existing_tester():
+
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     # Get data from test_list.html
     existing_tester_data = request.get_json()
     tester_id = existing_tester_data.get("testerId")
@@ -775,6 +846,12 @@ def delete_record():
 # Add new record to tester
 @app.route('/add_record', methods=['POST'])
 def add_record():
+
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     # Get data from tester_history_table.html
     new_record = request.get_json()
     score_id = new_record.get("score_id")
@@ -791,9 +868,16 @@ def add_record():
 
     return ''
 
+
 # Routes for deleting selected test
 @app.route('/delete_test/<int:test_id>')
 def delete_test_validation(test_id):
+
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     try:
         # Check testers' scores exist for the test
         check_tester_query = text("SELECT * FROM test_scores WHERE test_id = :test_id")
@@ -828,6 +912,7 @@ def delete_test_validation(test_id):
 
 #------ Route for Scoring  Metrics---------
 
+
 # function to retrieve statistics for a test
 def get_test_statistics(test_id):
     query = text("""
@@ -860,11 +945,12 @@ def get_test_statistics(test_id):
             'passed_count': row['passed_count'] or 0,
             'scores': [int(score) for score in row['scores'].split(',')] if row['scores'] else [],
         }
-        #print(dummy_statistics)
         return dummy_statistics
     else:
         return {'error': 'Test not found'}
 
+
+# Route for exporting test score metrics
 @app.route('/scoring_metrics')
 def scoring():
     if 'user' not in session or not session['user'].get('is_authenticated', False):
@@ -878,7 +964,8 @@ def scoring():
     tests = [dict(row) for row in result.fetchall()]
     return render_template('scoring_metrics.html', tests=tests)
 
-# funcion to generate graphs
+
+# function to generate graphs
 def generate_graphs(statistics):
     graph_images = []
     # score distribution histgram
@@ -914,6 +1001,7 @@ def generate_graphs(statistics):
     # Return paths to graph images
     return graph_images
 
+
 # Function to generate PDF from statistics data
 def generate_pdf_from_statistics(statistics, graph_images):
     # Generate PDF using a library like reportlab or fpdf
@@ -927,7 +1015,6 @@ def generate_pdf_from_statistics(statistics, graph_images):
         c.drawString(400, 730, f"Test ID: {statistics['test_id']}")
         c.drawString(100, 680, f"-    Test taken {statistics['times_taken']} times.")
         c.drawString(100, 660, f"-    {statistics['times_taken']} test takers have passed.")
-
 
         # Embed graphs into the PDF
         y_offset = 630
@@ -970,15 +1057,22 @@ def generate_pdf_from_statistics(statistics, graph_images):
         buffer.close()
     return pdf_data
 
+
 # Route to generate PDF data for a specific test
 @app.route('/generate_pdf/<int:test_id>')
 def generate_pdf(test_id):
+
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     # Retrieve statistics for the specific test with test_id
     statistics = get_test_statistics(test_id)
     # Generate graphs
     graph_images = generate_graphs(statistics)
     # Generate PDF
-    pdf = generate_pdf_from_statistics(statistics,graph_images)
+    pdf = generate_pdf_from_statistics(statistics, graph_images)
 
     # Create a response with PDF data
     response = make_response(pdf)
@@ -989,15 +1083,18 @@ def generate_pdf(test_id):
 
 #------ Routes for Test Creation ---------
 
+
 # Route for random test creation page.
 @app.route('/random_test_creation')
 def random_test_creation():
     return show_test_creation_page('random_test_creation.html')
 
+
 # Route for manual test creation page.
 @app.route('/manual_test_creation')
 def manual_test_creation():
     return show_test_creation_page('manual_test_creation.html')
+
 
 # Route to render the appropriate test creation page with filters 
 def show_test_creation_page(template_name):
@@ -1034,9 +1131,16 @@ training_level_mapping = {
     'coordinator': 'is_coordinator'
 }
 
+
 # Route to handle the POST request to get random questions based on user selections.
 @app.route('/get_questions', methods=['POST'])
 def handle_get_questions():
+
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     logging.info("Executing handle_get_questions function.")
     try:
         data = request.json
@@ -1128,10 +1232,17 @@ def handle_get_questions():
             'status': 'error',
             'message': 'An unhandled exception occurred while retrieving questions from the database.'
         }), 500
-    
+
+
 # Route to handle question selection from available pool for random test creation
 @app.route('/select_questions', methods=['POST'])
 def select_questions():
+
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     logging.info("Executing handle_select_questions function.")
     data = request.json
     questions_pool = data['questions_pool']
@@ -1289,10 +1400,17 @@ def validate_questions_pool(questions_pool, num_questions, test_max_points):
         'message': message,
         'error_code': 'NO_VALID_COMBINATION'
     }
-    
+
+
 # Route to handle test creation
 @app.route('/test_creation', methods=['POST'])
 def handle_test_creation():
+
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     try:
         # Get JSON data from the request
         data = request.get_json()
@@ -1330,8 +1448,18 @@ def handle_test_creation():
         return jsonify({"error": "An error occurred processing your request."}), 500
     
 #------ Routes for question creation and modification ---------
+
+
+# Post request route for adding a new question to a learning objective
 @app.route('/process_question', methods=['POST'])
 def process_question():
+
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
+    # Get values from the Ajax form
     obj_id = request.form['obj_id']
     question_desc = request.form['question_desc']
     question_text = request.form['question_text']
@@ -1351,10 +1479,20 @@ def process_question():
     # Execute the query
     db.engine.execute(query, obj_id=obj_id, question_desc=question_desc, question_text=question_text, question_answer=question_answer, question_type=question_type, question_difficulty=question_difficulty, answer_explanation=answer_explanation, points_definition=points_definition, max_points=max_points, source=source)
 
+    # Return request response
     return 'Question added successfully!'
 
+
+# Post request route to modify an existing question
 @app.route('/modify_question', methods=['POST'])
 def modify_question():
+
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
+    # Get values from the Ajax form
     obj_id = request.form['obj_id']
     question_id = request.form['question_id']
     question_desc = request.form['question_desc']
@@ -1385,6 +1523,7 @@ def modify_question():
     # Execute the query
     db.engine.execute(query, obj_id=obj_id, question_desc=question_desc, question_text=question_text, question_answer=question_answer, question_type=question_type, question_difficulty=question_difficulty, answer_explanation=answer_explanation, points_definition=points_definition, max_points=max_points, source=source, question_id=question_id)
 
+    # Return success response
     return 'Question updated successfully!'
 
 #------ Routes for rendering tests and questions ---------
@@ -1392,6 +1531,11 @@ def modify_question():
 # Route to render tests as a html file for export
 @app.route('/generate_test', methods=['POST'])
 def generate_test():
+
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
 
     # Get the selected test ID from the form submission
     selected_test_id = request.form.get('test_id')
@@ -1404,6 +1548,11 @@ def generate_test():
 @app.route('/generate_test_answers', methods=['POST'])
 def generate_test_answers():
 
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     # Get the selected test ID from the form submission
     selected_test_id = request.form.get('test_id')
 
@@ -1413,10 +1562,13 @@ def generate_test_answers():
 
 #------ Routes for Test Test Modification ---------
 
+
+# Route for modifying an existing test
 @app.route('/modify-test/<test_id>', methods=['GET'])
 def modify_test(test_id):
 
-        return show_test_modification_page('modify_tests.html', test_id = test_id)
+    return show_test_modification_page('modify_tests.html', test_id=test_id)
+
 
 def show_test_modification_page(template_name, test_id):
     # Check if user session is inactive
@@ -1442,8 +1594,16 @@ def show_test_modification_page(template_name, test_id):
         print("An error occurred in show_options:", str(e))
         return "An error occurred while preparing the test creation page."
 
+
+# Post request route to get questions from selected test for sidebar
 @app.route('/get-questions-for-modify/<int:test_id>', methods=['POST'])
 def handle_questions_for_modify(test_id):
+
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     try:
         # Get selected questions for the provided test_id
         selected_questions = get_questions_for_modify(test_id)
@@ -1475,9 +1635,17 @@ def handle_questions_for_modify(test_id):
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-    
+
+
+# Post request route for updating existing test with changes
 @app.route('/handle_test_creation_for_modify', methods=['POST'])
 def handle_test_creation_for_modify():
+
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     try:
         # Get JSON data from the request
         data = request.get_json()
@@ -1494,7 +1662,6 @@ def handle_test_creation_for_modify():
         total_score = data.get('total_score', 0)
         question_order = data.get('question_order')
         test_id = data.get('test_id')
-
 
         # Ensure total score is an integer
         total_score = int(total_score) if isinstance(total_score, int) else 0
@@ -1521,6 +1688,7 @@ def handle_test_creation_for_modify():
     
 #----------Routes for registration and verification----------
 
+
 # Route for the registration page, admin only.
 @app.route("/tryregister")
 def tryregister():
@@ -1533,7 +1701,7 @@ def tryregister():
     # Check if user is not an admin
     if session['user']['is_admin'] == 0:
         flash("Access denied, page is admin only.")
-        return redirect(url_for('homepage'))
+        return redirect(url_for('data'))
 
     # Check for any failed login or access denied messages
     messages = get_flashed_messages()
@@ -1543,6 +1711,12 @@ def tryregister():
 
 @app.route("/register", methods=["POST"])
 def register():
+
+    # Check if user session is inactive
+    if 'user' not in session or not session['user'].get('is_authenticated', False):
+        flash("Access denied, please login.")
+        return redirect(url_for('trylogin'))
+
     if request.method == "POST":
 
         # Load form variables
@@ -1613,7 +1787,8 @@ def register():
 
             # Return to homepage
             flash("Account registered, please check your email for a verification link.")
-            return redirect(url_for('homepage'))
+            return redirect(url_for('data'))
+
 
 # Action when the given link is clicked
 @app.route('/logincode')
@@ -1623,7 +1798,7 @@ def verify_token():
         return redirect(url_for('trylogin'))
 
     if session['user']['is_authenticated']:
-        return redirect(url_for('homepage'))
+        return redirect(url_for('data'))
 
     tokenized_email = confirm_token(token)
     user = session['user']
@@ -1637,6 +1812,7 @@ def verify_token():
     # Handle invalid link
     error_message = {'category': 'error', 'message': 'Invalid or expired verification link.<br>Please make sure you are using the correct link provided in your email.'}
     return render_template("error_page.html", error_message=error_message)
+
 
 # Action when submit button is clicked on verification page
 @app.route('/verification', methods=['POST'])
@@ -1667,12 +1843,14 @@ def verify_otp():
 
         # Update session as authenticated
         session['user']['is_authenticated'] = True
-        return redirect(url_for('homepage'))
+        return redirect(url_for('data'))
 
     elif otp != session_otp:
         verification_result = {'category': 'error', 'message': 'Invalid OTP. Please try again.'}
         return render_template('verification.html', verification_result=verification_result, user_email=session_email)
 
+
+# Route for password reset page
 @app.route("/password_reset", methods=["GET", "POST"])
 def password_reset():
     if request.method == "POST":
@@ -1706,6 +1884,7 @@ def password_reset():
         # Render the password reset form
         return render_template("password_reset.html")
 
+
 @app.route('/reset_otp', methods=['GET', 'POST'])
 def reset_otp():
 
@@ -1736,6 +1915,7 @@ def reset_otp():
     elif otp != session_otp:
         verification_result = {'category': 'error', 'message': 'Invalid OTP. Please try again.'}
         return render_template('reset_otp.html', verification_result=verification_result, user_email=session_email)
+
 
 @app.route("/update_password", methods=["POST"])
 def update_password():
@@ -1781,6 +1961,7 @@ def update_password():
         except Exception as e:
             flash('Failed to update password. Please try again later.', 'error')
             return redirect(url_for('reset_otp'))  # Redirect back to password reset form
+
 
 # Route to handle initial email verification link
 @app.route('/verify_email/<string:username>/<string:user_hash>', methods=['GET'])
