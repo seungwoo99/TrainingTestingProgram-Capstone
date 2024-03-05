@@ -383,16 +383,33 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let isValid = true;
     
     // Check each selected question's order value for validity
-    selectedQuestions.forEach(row => {
-      const input = row.querySelector('input[type="number"]');
-      const orderValue = input ? parseInt(input.value, 10) : null;
+    const orderValues = []; 
+    let maxOrderValue = 0; 
+    let orderValue; 
+    let input; 
 
-      // Check if orderValue is not null and greater than 0
-      if (orderValue === null || orderValue <= 0 || isNaN(orderValue)) {
+    selectedQuestions.forEach((row, index) => {
+      input = row.querySelector('input[type="number"]');
+      orderValue = input ? parseInt(input.value, 10) : null;
+    
+      // Check if orderValue is not null, greater than 0, and is not larger then the number of question
+      if (orderValue === null || orderValue <= 0 || isNaN(orderValue) || orderValue > selectedQuestions.length) {
         input.classList.add('error');
         isValid = false;
       } else {
-        input.classList.remove('error');
+        // Check for duplicate order values
+        if (orderValues.includes(orderValue)) {
+          input.classList.add('error');
+          isValid = false;
+        } else {
+          input.classList.remove('error');
+          orderValues.push(orderValue);
+        }
+    
+        // Update the maximum order value
+        if (orderValue > maxOrderValue) {
+          maxOrderValue = orderValue;
+        }
       }
     });
     
