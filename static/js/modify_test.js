@@ -128,84 +128,129 @@ function openSidebarAndPopulateQuestions(testId) {
 
   // Function to handle search button click
   function handleSearchButtonClick(event) {
-    event.preventDefault();
-    // Collect form input values
-    const bloomsLevelValue = document.getElementById('blooms_level_dropdown').value;
-    const subjectValue = document.getElementById('subject_dropdown').value;
-    const topicValue = document.getElementById('topic_dropdown').value;
-    const trainingLevelValue = document.getElementById('training_level_dropdown').value;
-    const questionTypeValue = document.getElementById('question_type_dropdown').value;
-    const questionDifficultyValue = document.getElementById('question_difficulty_dropdown').value;
-    const questionMaxPointValue = document.getElementById('question_max_points_input').value;
+      // Prevent the default form submission behavior
+      event.preventDefault();
 
-    // Validate question max points input
-    const questionMaxPointsInput = document.getElementById('question_max_points_input');
-    questionMaxPointsInput.classList.remove('error');
-    if (!questionMaxPointsInput.checkValidity()) {
-      questionMaxPointsInput.classList.add('error');
-      questionMaxPointsInput.reportValidity();
-      return;
-    }
+      // Retrieve values from form inputs
+      const bloomsTaxonomyValue = document.getElementById('blooms_level_dropdown').value;
+      const subjectValue = document.getElementById('subject_dropdown').value;
+      const topicValue = document.getElementById('topic_dropdown').value;
+      const trainingLevelValue = document.getElementById('training_level_dropdown').value;
+      const questionTypeValue = document.getElementById('question_type_dropdown').value;
+      const questionDifficultyValue = document.getElementById('question_difficulty_dropdown').value;
+      const questionMaxPointsInput = document.getElementById('question_max_points_input');
 
-    // Create form data object to send via fetch
-    const formData = {
-      blooms_levels: bloomsLevelValue !== "all" ? [bloomsLevelValue] : [],
-      subjects: subjectValue !== "all" ? [subjectValue] : [],
-      topics: topicValue !== "all" ? [topicValue] : [],
-      question_types: questionTypeValue !== "all" ? [questionTypeValue] : [],
-      question_difficulties: questionDifficultyValue !== "all" ? [questionDifficultyValue] : [],
-      question_max_points: questionMaxPointValue,
-      training_level: trainingLevelValue !== "all" ? trainingLevelValue : undefined,
-      test_type: "manual"
-    };
+      // Initialize a flag to track form validity
+      let isValid = true;
 
-    // Send form data to server via fetch
-    fetch('/get-questions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(formData)
-    })
-    .then(response => response.json())
-    .then(data => {
-      console.log('Success:', data);
-      // Clear existing table body content
-      const resultsTable = document.querySelector(".results-table");
-      const tableBody = resultsTable.querySelector("tbody");
-      tableBody.innerHTML = "";
+      // Retrieve and parse the maximum points value for a question
+      const questionMaxPointsValue = parseInt(questionMaxPointsInput.value, 10);
 
-      // Populate table with received data or show alert if no data
-      if (typeof data.total_questions_in_pool !== 'undefined' && data.selected_questions) {
-        data.selected_questions.forEach(question => {
-            const row = tableBody.insertRow();
-            row.dataset.questionId = question.question_id;
-
-            const cell1 = row.insertCell(0);
-            const cell2 = row.insertCell(1);
-            const cell3 = row.insertCell(2);
-
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.name = 'select_question';
-            checkbox.value = question.question_id;
-            cell3.appendChild(checkbox);
-
-            cell1.textContent = question.max_points;
-            cell2.textContent = question.question_desc;
-        });
-      } else if (data.total_questions_in_pool === 0) {
-        alert(data.message || "No questions found that meet the selection criteria.");
+      // Validate the maximum points value
+      if (isNaN(questionMaxPointsValue) || questionMaxPointsValue <= 0) {
+        // Add an error class to the input if the value is invalid
+        questionMaxPointsInput.classList.add('error');
+        isValid = false;
       } else {
-        console.error('Error: Missing data from server response.');
-        alert('An error occurred while processing your request. Please try again.');
+        // Remove the error class if the value is valid
+        questionMaxPointsInput.classList.remove('error');
       }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      alert('An error occurred while processing your request. Please check your network connection and try again.');
-    });
-  }
+
+      // If the form is invalid, display an alert and stop further processing
+      if (!isValid) {
+        alert('Please ensure the maximum points for a question is a valid number greater than 0.');
+        return false;
+      }
+
+      // Construct the request payload with form data
+      const questionQueryFormData = {
+        blooms_taxonomy: bloomsTaxonomyValue !== "all" ? [bloomsTaxonomyValue] : [],
+        subjects: subjectValue !== "all" ? [subjectValue] : [],
+        topics: topicValue !== "all" ? [topicValue] : [],
+        question_types: questionTypeValue !== "all" ? [questionTypeValue] : [],
+        question_difficulties: questionDifficultyValue !== "all" ? [questionDifficultyValue] : [],
+        question_max_points: questionMaxPointsValue,
+        training_level: trainingLevelValue !== "all" ? trainingLevelValue : undefined,
+        test_type: "manual"
+      };
+
+      // Send a POST request to the server to retrieve questions based on the form data
+      fetch('/get_questions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(questionQueryFormData)
+      })
+      .then(response => {
+        // Log the response status to the console
+        console.log('Response status:', response.status);
+
+        // Handle different response statuses
+        if (response.status === 204) {
+          // If no questions are found, display an alert and reset form inputs
+          const error = '204 code occurred--No questions found.'
+          console.log(error);
+          alert('No questions found that meet the selection criteria. Select new criteria and try again.');
+          resetInputs();
+          return Promise.reject(new Error(error));
+        } else {
+          // Parse the response JSON data
+          return response.json().then(data => ({
+              data,
+              status_code: response.status
+          }));
+        }
+      })
+      .then(({data, status_code}) => {
+        // Handle data received from the server
+        if (data.status === 'error') {
+          // If an error occurred, log the error message
+          console.log("Error in question retrieval occurred.");
+          console.log('Data status:', data.status);
+          console.log(`${status_code}: ${data.message}`);
+
+          // Handle all errors
+          return handleAllErrors({status_code: status_code, json: () => Promise.resolve(data)});
+        }
+
+        // Log the message from the server to the console
+        console.log(data.message);
+        return {data, status_code};
+      })
+      .then(({data}) => {
+        // Display the selected questions in a table
+        const resultsTable = document.querySelector(".results-table");
+        const tableBody = resultsTable.querySelector("tbody");
+        tableBody.innerHTML = "";
+
+        // Iterate over the selected questions and create table rows
+        data.selected_questions.forEach(question => {
+          const row = tableBody.insertRow();
+          row.dataset.questionId = question.question_id;
+
+          // Insert cells for each question attribute
+          const cell1 = row.insertCell(0);
+          const cell2 = row.insertCell(1);
+          const cell3 = row.insertCell(2);
+
+          // Create a checkbox input for selecting the question
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.name = 'select_question';
+          checkbox.value = question.question_id;
+          cell3.appendChild(checkbox);
+
+          // Populate cells with question attributes
+          cell1.textContent = question.max_points;
+          cell2.textContent = question.question_desc;
+        });
+      })
+      .catch(error => {
+        // Handle errors that occurred during question retrieval
+        console.error('Error in question retrieval occurred: ', error.message || error);
+      });
+    }
 
   // Function to handle add button click
   function handleAddButtonClick() {
@@ -226,35 +271,40 @@ function openSidebarAndPopulateQuestions(testId) {
     }
   }
 
-  // Function to add a question to the selected table
   function addQuestionToSelected(checkbox) {
-    const row = checkbox.closest('tr');
-    const questionId = row.dataset.questionId;
+      const row = checkbox.closest('tr');
+      const questionId = row.dataset.questionId;
 
-    const newRow = selectedTableBody.insertRow();
-    newRow.dataset.questionId = questionId;
+      // Check if the question already exists in the selected table
+      const existingQuestion = selectedTableBody.querySelector(`tr[data-question-id="${questionId}"]`);
+      if (existingQuestion) {
+          // If the question already exists, return without adding it again
+          return;
+      }
 
-    const newCell1 = newRow.insertCell(0);
-    const newCell2 = newRow.insertCell(1);
-    const newCell3 = newRow.insertCell(2);
-    const newCell4 = newRow.insertCell(3);
+      const newRow = selectedTableBody.insertRow();
+      newRow.dataset.questionId = questionId;
 
-    const numInput = document.createElement('input');
-    numInput.type = 'number';
-    newCell1.appendChild(numInput);
+      const newCell1 = newRow.insertCell(0);
+      const newCell2 = newRow.insertCell(1);
+      const newCell3 = newRow.insertCell(2);
+      const newCell4 = newRow.insertCell(3);
 
-    const hiddenInput = document.createElement('input');
-    hiddenInput.type = 'hidden';
-    hiddenInput.name = 'questionId';
-    hiddenInput.value = questionId;
-    newCell1.appendChild(hiddenInput);
+      const numInput = document.createElement('input');
+      numInput.type = 'number';
+      newCell1.appendChild(numInput);
 
-    newCell2.textContent = row.cells[0].textContent;
-    newCell3.textContent = row.cells[1].textContent;
+      const hiddenInput = document.createElement('input');
+      hiddenInput.type = 'hidden';
+      hiddenInput.name = 'questionId';
+      hiddenInput.value = questionId;
+      newCell1.appendChild(hiddenInput);
 
-    newCell4.appendChild(createRemoveButton(newRow));
+      newCell2.textContent = row.cells[0].textContent;
+      newCell3.textContent = row.cells[1].textContent;
+
+      newCell4.appendChild(createRemoveButton(newRow));
   }
-
   // Function to create a remove button
   function createRemoveButton(row) {
     const removeButton = document.createElement('button');
