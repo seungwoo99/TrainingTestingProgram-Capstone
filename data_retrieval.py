@@ -171,8 +171,9 @@ def create_test_for_modify(is_active, modified_by, last_modified_date, test_name
     except Exception as e:
         logging.error("Unexpected error while updating the test", exc_info=True)
         return {"error": "An unexpected error occurred while updating the test."}
+    
 # Function to query the database for questions that match user inputs to create a pool of questions
-def get_questions(test_type, blooms_taxonomy, subjects, topics, question_types, question_difficulties, training_level_conditions, max_points=None):
+def get_questions(test_type, blooms_taxonomy, subjects, topics, question_types, question_difficulties, training_level_conditions, keywords, max_points=None):
     try:
         # Log that we are connecting to the database.
         logging.info("Connecting to the database.")
@@ -231,6 +232,14 @@ def get_questions(test_type, blooms_taxonomy, subjects, topics, question_types, 
             if max_points is not None and max_points > 0:
                 where_clauses.append("q.max_points <= :max_points")
                 params['max_points'] = max_points
+                
+            # Check if keywords are provided
+            if keywords is not None:
+                keyword_conditions = []
+                for i, keyword in enumerate(keywords):
+                    keyword_conditions.append(f"q.question_desc LIKE :keyword_{i}")
+                    params[f'keyword_{i}'] = f"%{keyword}%"
+                where_clauses.append("(" + " OR ".join(keyword_conditions) + ")")
 
             # Construct the WHERE statement based on the clauses.
             where_statement = ' AND '.join(where_clauses)

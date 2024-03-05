@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
   // These constants store references to various DOM elements using querySelector or getElementById methods.
   const searchButton = document.getElementById('search');
   const addButton = document.getElementById('add');
-  const submitButton = document.getElementById('submit');
+  const createTestButton = document.getElementById('create_test_button');
   const mainContainer = document.querySelector(".main-container");
   const sidePanelToggle = document.querySelector(".side-panel-toggle");
   const sidePanel = document.querySelector(".side-panel");
@@ -18,9 +18,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     // Attach event listeners
     mainContainer.addEventListener('scroll', adjustPanelPosition);
     sidePanelToggle.addEventListener("click", toggleSidePanel);
-    searchButton.addEventListener('click', handleSearchButtonClick);
+    searchButton.addEventListener('click', queryForQuestions);
     addButton.addEventListener('click', handleAddButtonClick);
-    const createTestButton = document.getElementById('create_test_button');
     createTestButton.addEventListener('click', function (event) {
       // Prevent the default form submission behavior
       event.preventDefault();
@@ -30,58 +29,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
   }
 
-  // Function to toggle the side panel's visibility and remove animation
-  function toggleSidePanel() {
-    // Toggle the "side-panel-open" class on the wrapper element
-    // This class controls the visibility of the side panel
-    wrapper.classList.toggle("side-panel-open");
-  
-    // Remove the 'animate' class from the animatedBorder element
-    // This class controls the animation of the border element
-    animatedBorder.classList.remove('animate');
-  }
-
-  // Function to adjust the position of the side panel and its toggle button based on the scroll position of the main container.
-  function adjustPanelPosition() {
-    // Get the new top position of the side panel based on the scroll position of the main container
-    let newTopPosition = mainContainer.scrollTop;
-  
-    // Set the top position of the side panel to match the new scroll position
-    sidePanel.style.top = `${newTopPosition}px`;
-  
-    // Set the top position of the side panel toggle button slightly below the side panel
-    sidePanelToggle.style.top = `${newTopPosition + 20}px`;
-
-    // If the animatedBorder element has the class 'animate', then adjust its position as well.
-    if(animatedBorder.classList.contains('animate')) {
-      // Call the adjustAnimatedBorderPosition function to reposition the animated border
-      adjustAnimatedBorderPosition();
-    }
-  }
-
-  // Function to adjust the position of the animated border relative to the side panel toggle button.
-  function adjustAnimatedBorderPosition() {
-    // Get the position and dimensions of the sidePanelToggle element and the mainContainer element
-    const toggleRect = sidePanelToggle.getBoundingClientRect();
-    const containerRect = mainContainer.getBoundingClientRect();
-
-    // Calculate the top and right positions of the animated border
-    const topPosition = toggleRect.top - containerRect.top + mainContainer.scrollTop;
-    const rightPosition = containerRect.right - toggleRect.right;
-
-    // Set the top, right, width, and height styles of the animated border
-    // Adjusting them to align properly with the side panel toggle button
-    animatedBorder.style.top = `${topPosition - 5}px`;
-    animatedBorder.style.right = `${rightPosition - 17}px`; 
-    animatedBorder.style.width = `137px`;
-    animatedBorder.style.height = `49px`;
-  }
-
+  // ---------- Function that handles question retrieval ----------
   // Function to handle the click event on the search button
-  function handleSearchButtonClick(event) {
+  function queryForQuestions(event) {
     // Prevent the default form submission behavior
     event.preventDefault();
-
+  
     // Retrieve values from form inputs
     const bloomsTaxonomyValue = document.getElementById('blooms_taxonomy').value;
     const subjectValue = document.getElementById('subject').value;
@@ -90,13 +43,15 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const questionTypeValue = document.getElementById('question_type').value;
     const questionDifficultyValue = document.getElementById('question_difficulty').value;
     const questionMaxPointsInput = document.getElementById('question_max_points');
-
+    const keywordsInput = document.getElementById('keyword_search').value.trim();
+    const keywords = keywordsInput !== '' ? keywordsInput.split('/[,\s.]+/') : null;
+  
     // Initialize a flag to track form validity
     let isValid = true;
-
+  
     // Retrieve and parse the maximum points value for a question
     const questionMaxPointsValue = parseInt(questionMaxPointsInput.value, 10);
-
+  
     // Validate the maximum points value
     if (isNaN(questionMaxPointsValue) || questionMaxPointsValue <= 0) {
       // Add an error class to the input if the value is invalid
@@ -106,13 +61,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
       // Remove the error class if the value is valid
       questionMaxPointsInput.classList.remove('error');
     }
-
+  
     // If the form is invalid, display an alert and stop further processing
     if (!isValid) {
       alert('Please ensure the maximum points for a question is a valid number greater than 0.');
       return false;
     }
-
+  
     // Construct the request payload with form data
     const questionQueryFormData = {
       blooms_taxonomy: bloomsTaxonomyValue !== "all" ? [bloomsTaxonomyValue] : [],
@@ -122,9 +77,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
       question_difficulties: questionDifficultyValue !== "all" ? [questionDifficultyValue] : [],
       question_max_points: questionMaxPointsValue,
       training_level: trainingLevelValue !== "all" ? trainingLevelValue : undefined,
+      keywords: keywords,
       test_type: "manual"
     };
-
+  
     // Send a POST request to the server to retrieve questions based on the form data
     fetch('/get_questions', {
       method: 'POST',
@@ -160,11 +116,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
         console.log("Error in question retrieval occurred.");
         console.log('Data status:', data.status);
         console.log(`${status_code}: ${data.message}`);
-        
+          
         // Handle all errors
         return handleAllErrors({status_code: status_code, json: () => Promise.resolve(data)});
       }
-    
+      
       // Log the message from the server to the console
       console.log(data.message);
       return {data, status_code};
@@ -174,24 +130,24 @@ document.addEventListener('DOMContentLoaded', (event) => {
       const resultsTable = document.querySelector(".results-table");
       const tableBody = resultsTable.querySelector("tbody");
       tableBody.innerHTML = "";
-      
+        
       // Iterate over the selected questions and create table rows
       data.selected_questions.forEach(question => {
         const row = tableBody.insertRow();
         row.dataset.questionId = question.question_id;
-        
+          
         // Insert cells for each question attribute
         const cell1 = row.insertCell(0);
         const cell2 = row.insertCell(1);
         const cell3 = row.insertCell(2);
-    
+      
         // Create a checkbox input for selecting the question
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.name = 'select_question';
         checkbox.value = question.question_id; 
         cell3.appendChild(checkbox);
-    
+      
         // Populate cells with question attributes
         cell1.textContent = question.max_points;
         cell2.textContent = question.question_desc;
@@ -203,6 +159,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
   }
 
+  // ---------- Functions for handling adding questions to side panel ----------
   // Function to handle the click event on the add button
   function handleAddButtonClick() {
     // Retrieve all selected checkboxes from the results table
@@ -293,6 +250,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     return removeButton;
   }
 
+  // ---------- Functions to calculating and retrieving the point value of question on the side panel ----------
   // Function to update the total points displayed in the submission table
   function updateTotalPoints() {
     // Initialize totalPoints variable to store the sum of question points
@@ -335,6 +293,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     return totalPoints;
   }
 
+  // ---------- Input validation and collection ----------
   function validateInputs() {
     // Log the validation stage
     console.log('Validating inputs.')
@@ -346,16 +305,33 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let isValid = true;
     
     // Check each selected question's order value for validity
-    selectedQuestions.forEach(row => {
-      const input = row.querySelector('input[type="number"]');
-      const orderValue = input ? parseInt(input.value, 10) : null;
+    const orderValues = []; 
+    let maxOrderValue = 0; 
+    let orderValue; 
+    let input; 
 
-      // Check if orderValue is not null and greater than 0
-      if (orderValue === null || orderValue <= 0 || isNaN(orderValue)) {
+    selectedQuestions.forEach((row, index) => {
+      input = row.querySelector('input[type="number"]');
+      orderValue = input ? parseInt(input.value, 10) : null;
+    
+      // Check if orderValue is not null, greater than 0, and is not larger then the number of question
+      if (orderValue === null || orderValue <= 0 || isNaN(orderValue) || orderValue > selectedQuestions.length) {
         input.classList.add('error');
         isValid = false;
       } else {
-        input.classList.remove('error');
+        // Check for duplicate order values
+        if (orderValues.includes(orderValue)) {
+          input.classList.add('error');
+          isValid = false;
+        } else {
+          input.classList.remove('error');
+          orderValues.push(orderValue);
+        }
+    
+        // Update the maximum order value
+        if (orderValue > maxOrderValue) {
+          maxOrderValue = orderValue;
+        }
       }
     });
     
@@ -422,6 +398,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     return testCreationData;
   }
   
+  // ---------- Function for test creation ----------
   // Function to handle the creation of a test based on user input and selected questions
   function handleTestCreation() {
     // Log the initiation of the test creation process
@@ -440,7 +417,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     console.log('Inputs validated.');
 
     // Collect data from the inputs
-    testCreationData = collectInputs();
+    const testCreationData = collectInputs();
     
     // Log the initiation of test creation attempt
     console.log('Attempting test creation.');
@@ -480,6 +457,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
   }
 
+  // ---------- Function to open created test in a new tab ----------
   // Function to export the test after successful creation
   function exportTest(testId) {
     // Log the successful test creation
@@ -507,6 +485,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     form.submit();
   }
 
+  // ---------- Function for error handling ----------
   // Function to handle all errors returned from API requests
   function handleAllErrors(response, context = {}) {
     // If the response status is 200, no error handling is required
@@ -561,6 +540,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
   }
 
+  //---------- Function to reset inputs ---------- 
   // Function to reset the values of all select and input elements on the page
   function resetInputs() {
     // Select all select elements and reset their selected index to 0
@@ -574,6 +554,55 @@ document.addEventListener('DOMContentLoaded', (event) => {
     inputElements.forEach(input => {
       input.value = '';
     });
+  }
+
+  // ---------- Functions that manage element behavior ----------
+  // Function to toggle the side panel's visibility and remove animation
+  function toggleSidePanel() {
+    // Toggle the "side-panel-open" class on the wrapper element
+    // This class controls the visibility of the side panel
+    wrapper.classList.toggle("side-panel-open");
+  
+    // Remove the 'animate' class from the animatedBorder element
+    // This class controls the animation of the border element
+    animatedBorder.classList.remove('animate');
+  }
+
+  // Function to adjust the position of the side panel and its toggle button based on the scroll position of the main container.
+  function adjustPanelPosition() {
+    // Get the new top position of the side panel based on the scroll position of the main container
+    let newTopPosition = mainContainer.scrollTop;
+  
+    // Set the top position of the side panel to match the new scroll position
+    sidePanel.style.top = `${newTopPosition}px`;
+  
+    // Set the top position of the side panel toggle button slightly below the side panel
+    sidePanelToggle.style.top = `${newTopPosition + 20}px`;
+
+    // If the animatedBorder element has the class 'animate', then adjust its position as well.
+    if(animatedBorder.classList.contains('animate')) {
+      // Call the adjustAnimatedBorderPosition function to reposition the animated border
+      adjustAnimatedBorderPosition();
+    }
+  }
+
+
+  // Function to adjust the position of the animated border relative to the side panel toggle button.
+  function adjustAnimatedBorderPosition() {
+    // Get the position and dimensions of the sidePanelToggle element and the mainContainer element
+    const toggleRect = sidePanelToggle.getBoundingClientRect();
+    const containerRect = mainContainer.getBoundingClientRect();
+
+    // Calculate the top and right positions of the animated border
+    const topPosition = toggleRect.top - containerRect.top + mainContainer.scrollTop;
+    const rightPosition = containerRect.right - toggleRect.right;
+
+    // Set the top, right, width, and height styles of the animated border
+    // Adjusting them to align properly with the side panel toggle button
+    animatedBorder.style.top = `${topPosition - 5}px`;
+    animatedBorder.style.right = `${rightPosition - 17}px`; 
+    animatedBorder.style.width = `137px`;
+    animatedBorder.style.height = `49px`;
   }
 
   // Call the initializeApp function to run it on page load
