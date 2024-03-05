@@ -10,7 +10,7 @@ table#datasTable {
     height: 90%;
     display: block;
     overflow-x: auto;
-    overflow-y: hidden;
+    overflow-y: auto;
     max-width: 100% ;
 }
 
