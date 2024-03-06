@@ -140,6 +140,12 @@
                 const newData = prompt('Enter the new topic:');
                 const newDescription = prompt('Enter the description for the new data:');
                 const newFacility = prompt('Enter the facility for the new data:');
+                const maxInputLength = 35;
+
+                if (newData.length > maxInputLength) {
+                    alert("The input exceeds the maximum length of " + maxInputLength + " characters.");
+                    return;
+                }
 
                 if(newData != null && newDescription != null && newFacility != null) {
                     xhrSend("add",""+subject_id,""+newData,""+newDescription,""+newFacility,"","");

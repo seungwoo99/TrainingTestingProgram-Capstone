@@ -132,6 +132,13 @@
                     function addData() {
                         const newData = prompt('Enter the new data:');
                         const newDescription = prompt('Enter the description for the new data:');
+                        const maxInputLength = 40;
+
+                        // Check if the input exceeds the maximum length
+                        if (newData && newData.length > maxInputLength) {
+                            alert("The input exceeds the maximum length of " + maxInputLength + " characters.");
+                            return;
+                        }
 
                         if(newData != null && newDescription != null) {
                             xhrSend("add", "" + newData, "" + newDescription, "");

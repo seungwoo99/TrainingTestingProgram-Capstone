@@ -35,6 +35,7 @@ body {
   align-items: center;
   justify-content: center;
   flex-direction: column;
+  max-width: 100%;
 }
 
 /* Wrapper Styles */
@@ -44,6 +45,7 @@ body {
   align-items: center;
   justify-content: center;
   height: 100vh;
+  max-width: 100%;
 }
 
 .container button {
@@ -124,7 +126,9 @@ tbody{
 .topics-table td:nth-child(2),
 .topics-table th:nth-child(2) {
   width: 200px;
+  max-width: 200px;
   text-overflow: ellipsis;
+  word-wrap: break-word;
 }
 .topics-table td:nth-child(3),
 .topics-table th:nth-child(3) {
@@ -148,11 +152,15 @@ tbody{
 .subject-table th:nth-child(2) {
   width: 300px;
   text-overflow: ellipsis;
+  max-width: 300px;
+  word-wrap: break-word;
 }
 .subject-table td:nth-child(3),
 .subject-table th:nth-child(3) {
   width: 500px;
   text-overflow: ellipsis;
+  max-width: 500px;
+  word-wrap: break-word;
 }
 
 /* OBJECTIVES TABLE */
@@ -171,6 +179,8 @@ tbody{
 .objectives-table th:nth-child(2) {
   width: 350px;
   text-overflow: ellipsis;
+  max-width: 350px;
+  word-wrap: break-word;
 }
 .objectives-table td:nth-child(3),
 .objectives-table th:nth-child(3) {
@@ -340,7 +350,10 @@ button:active{
 
 /* Heading Styles */
 h1 {
-  font-size: 225%;
+  font-size: 200%;
   font-weight: 700;
   margin-bottom: 1%;
+  max-width: 75%;
+  overflow: hidden;
+  word-wrap: break-word;
 }
