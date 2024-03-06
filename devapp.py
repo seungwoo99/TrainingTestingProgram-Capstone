@@ -840,9 +840,9 @@ def get_test_statistics(test_id):
         FROM
             tests t
         LEFT JOIN
-            test_scores ts ON t.test_id = ts.test_id
+            test_scores ts ON t.test_id = ts.test_id AND ts.total_score >= 0
         WHERE
-            t.test_id = :test_id AND ts.total_score >= 0
+            t.test_id = :test_id
         GROUP BY
             t.test_id, t.test_name
     """)
@@ -863,7 +863,8 @@ def get_test_statistics(test_id):
         #print(dummy_statistics)
         return dummy_statistics
     else:
-        return {'error': 'Test not found'}
+        return {'error': 'Test not found', 'scores': []}
+
 
 @app.route('/scoring_metrics')
 def scoring():
