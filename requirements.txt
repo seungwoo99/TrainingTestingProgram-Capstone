@@ -6,7 +6,6 @@ itsdangerous==2.1.2
 matplotlib==3.3.4
 numpy==1.26.4
 Pillow==9.1.0
-Pillow==10.2.0
 python-dotenv==1.0.1
 reportlab==3.6.8
 SQLAlchemy==1.4.51
