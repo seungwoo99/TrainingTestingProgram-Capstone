@@ -31,9 +31,8 @@ from itsdangerous import URLSafeTimedSerializer
 # Local application/library specific imports
 from config import MailConfig
 from db_config import db
-from data_retrieval import (fetch_test_creation_options, get_questions,get_questions_for_modify, create_test,create_test_for_modify, get_user,
-
-                            get_test_questions,
+from data_retrieval import (fetch_test_creation_options, get_questions, get_questions_for_modify, create_test,
+                            create_test_for_modify, get_user, get_test_questions,
                             check_registered, get_test_data, get_tests, get_topics, get_subjects,
                             get_all_subjects, get_tester_list,
                             selectSubjectNames, selectSubjectDescriptions, insertSubject, get_all_topics, insertTopic,
@@ -43,7 +42,7 @@ from data_retrieval import (fetch_test_creation_options, get_questions,get_quest
 # Load environment variables from a .env file
 load_dotenv()
 
-#Initialize Flask App
+# Initialize Flask App
 app = Flask(__name__)
 
 # Configure Flask app to use SQLAlchemy for a local MySQL database
@@ -946,9 +945,9 @@ def get_test_statistics(test_id):
         FROM
             tests t
         LEFT JOIN
-            test_scores ts ON t.test_id = ts.test_id
+            test_scores ts ON t.test_id = ts.test_id AND ts.total_score >= 0
         WHERE
-            t.test_id = :test_id AND ts.total_score >= 0
+            t.test_id = :test_id
         GROUP BY
             t.test_id, t.test_name
     """)
@@ -968,7 +967,7 @@ def get_test_statistics(test_id):
         }
         return dummy_statistics
     else:
-        return {'error': 'Test not found'}
+        return {'error': 'Test not found', 'scores': []}
 
 
 # Route for exporting test score metrics
@@ -2025,4 +2024,3 @@ def verify_email(username, user_hash):
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
-
