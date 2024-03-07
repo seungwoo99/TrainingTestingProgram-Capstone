@@ -6,11 +6,13 @@ document.addEventListener('DOMContentLoaded', function () {
   const toggleDivs = document.querySelectorAll('.toggle-btn');
   const confirmButton = document.getElementById('confirm-selection');
   const categoryButtons = document.querySelectorAll('.select-category');
+  const resetButton = document.getElementById('reset-selection');
   
   // Function to attach event listeners
   function initializeApp() {
     // Attach event listeners
     confirmButton.addEventListener('click', handleTestCreation);
+    resetButton.addEventListener('click', resetInputs);
 
     toggleDivs.forEach(function (div) {
       // Specify the 'click' event and provide the function to be called
@@ -135,6 +137,7 @@ document.addEventListener('DOMContentLoaded', function () {
       testDescriptionInput.classList.remove('error');
     }
 
+    console.log(isValid)
     // Return the validation result
     return isValid;
   }
@@ -157,6 +160,7 @@ document.addEventListener('DOMContentLoaded', function () {
       setTimeout(() => {
         alert('Please fill in all the required fields correctly.');
       }, 100);
+      return;
     }
       
     // Log the successful completions of input validation
@@ -443,7 +447,6 @@ document.addEventListener('DOMContentLoaded', function () {
             case 406:
               errorTriggered = true;
               console.log('406 error occurred--No valid combo')
-              resetInputs();
               resetConfirmButtonState()
               reject(new Error('Process terminated due to no valid combination of questions meeting selection criteria.'));
               break;

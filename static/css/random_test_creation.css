@@ -137,13 +137,32 @@ h1 {
     font-weight: 200;
 }
 
+#reset-selection {
+    padding: 20px 30px;
+    background-color: #ff1a1a;
+    color: #FFFFFF;
+    border: none;
+    cursor: pointer;
+    font-size: 125%;
+    font-family: 'Code Next', sans-serif;
+    font-weight: 200;
+    text-shadow: -1px -1px 0 #800d0d, 1px -1px 0 #800d0d, -1px 1px 0 #800d0d, 1px 1px 0 #800d0d;
+    margin-left: 20px;
+}
+
 #confirm-selection:hover {
     background-color: #0a679a;
     box-shadow: 0 5px 10px rgba(0,0,0,0.3);
 }
 
+#reset-selection:hover {
+    background-color: #b30000;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+  }
+
 #confirm-selection:active, 
-#confirm-selection.disabled {
+#confirm-selection.disabled,
+#reset-selection:active {
     background-color: #040f16 !important;
     box-shadow: 0 5px #726e60 !important;
     transform: translateY(4px) !important;
