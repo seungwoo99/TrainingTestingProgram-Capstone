@@ -85,12 +85,12 @@ tbody{
   display:block;
   overflow-y:scroll;
   overflow-x:hidden;
-  height:400px;
+  height:360px;
 }
 
 .objectives-table tbody,
 .topics-table tbody {
-  height: 500px;
+  height: 360px;
 }
 
 .questions-table td:nth-child(1),
