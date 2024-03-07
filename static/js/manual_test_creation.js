@@ -195,6 +195,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
     // Extract the question ID from the dataset of the parent row
     const questionId = row.dataset.questionId;
 
+    // Check if the question already exists in the selected table
+    const existingQuestion = selectedTableBody.querySelector(`tr[data-question-id="${questionId}"]`);
+      if (existingQuestion) {
+        // If the question already exists, return without adding it again
+        return;
+      }
+
     // Insert a new row into the selected table
     const newRow = selectedTableBody.insertRow();
     newRow.dataset.questionId = questionId;
