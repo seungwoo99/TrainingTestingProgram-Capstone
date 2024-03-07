@@ -34,6 +34,22 @@ body {
   overflow-x: hidden;
 }
 
+.password-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 25%;
+  margin: auto;
+  padding: 1.5%;
+  background: #fff;
+  border-radius: 7px;
+  box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+  overflow-x: hidden;
+  min-width: 400px;
+  min-height: 300px;
+}
+
 .centered-container {
   display: flex;
   justify-content: center;
@@ -86,7 +102,7 @@ body {
   margin-bottom: 1.3rem;
   border: 1px solid #ddd;
   outline: none;
-  font-family: 'Code Next', sans-serif;
+  font-family: inherit;
 }
 
 .form input:hover {
@@ -119,19 +135,20 @@ body {
 .form input.button {
   color: #fff;
   background: #0b80bd;
-  font-size: 150%;
+  font-size: 125%;
   font-weight: 500;
   letter-spacing: 0.05vw;
   margin-top: 3vh;
   cursor: pointer;
-  width: 80%;
-  padding-left: 0;
+  width: 70%;
+  padding: 3%;
+  align-content: center;
+  margin: 2% 5% 2% 5%;
 }
 
 .form input.button:hover {
   background: #0d688f;
   box-shadow: 0 5px 10px rgba(0,0,0,0.3);
-  border: none !important;
 }
 
 .form input.button:active {
