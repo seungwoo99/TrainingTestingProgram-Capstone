@@ -9,10 +9,10 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
     </head>
     <body>
-        <div class="container">
+        <div class="password-container">
             <input type="checkbox" id="check">
             <div class="login form">
-                <header>Verification</header>
+                <header class="form-header">Verification</header>
                 <p>Enter the 6-digit verification code from the email sent to {{user_email}}</p>
                 <form action="{{ url_for('reset_otp') }}" method="post">
                     <input type="hidden" id="user_email" name="user_email" value="{{user_email}}">
@@ -21,9 +21,11 @@
                     {% if verification_result %}
                         <p class="{{ verification_result['category'] }}">{{ verification_result['message'] }}</p>
                     {% endif %}
-                    <input type="submit" class="button" value="Continue">
-                    <p> If you have not recieved an email, input the correct email and try again</p>
-                    <a href="{{ url_for('password_reset') }}">Try again</a>
+                    <p> If you have not received an email, input the correct email and try again</p>
+                    <div class="centered-container">
+                        <input type="submit" class="button" value="Continue">
+                        <input type="button" class="button" value="Back" onclick="window.location.href='{{ url_for('password_reset') }}';">
+                    </div>
                 </form>
             </div>
         </div>
