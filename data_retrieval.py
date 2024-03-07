@@ -557,7 +557,7 @@ def get_tests():
                       + "LEFT JOIN learning_objectives lo ON q.obj_id = lo.obj_id "
                       + "LEFT JOIN topics tp ON lo.topic_id = tp.topic_id "
                       + "LEFT JOIN subjects s ON tp.subject_id = s.subject_id "
-                      + "GROUP BY t.test_id, t.test_name, s.name, t.creation_date, t.last_modified_date")
+                      + "GROUP BY t.test_id, t.test_name, t.creation_date, t.last_modified_date")
     test_result = db.engine.execute(test_query)
 
     # fetch all rows of the result
